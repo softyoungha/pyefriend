@@ -1,12 +1,12 @@
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
 
-from utils.const import PROGID
+from utils.const import System
 
 
 class Core:
     def __init__(self):
-        self.conn = QAxWidget(PROGID)
+        self.conn = QAxWidget(System.PROGID)
         self.event_loop = None
 
     def clear_event_loop(self):

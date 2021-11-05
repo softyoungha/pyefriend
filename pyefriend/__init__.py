@@ -1,6 +1,7 @@
-from .api import StockAPI
+from .api import API, DomesticAPI
 
 
 __all__ = [
-    'StockAPI',
+    'API',
+    'DomesticAPI',
 ]

@@ -1,0 +1,3 @@
+# Need python 32-bit and administrator
+PyQt5==5.15.6
+requests==2.26.0

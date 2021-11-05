@@ -2,8 +2,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
-# from PyQt5.QtGui import *
-from pyefriend import StockAPI
+from pyefriend import DomesticAPI
 
 if __name__ == "__main__":
 
@@ -11,6 +10,13 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # api
-    api = StockAPI()
+    api = DomesticAPI()
+    print('api.is_connected', api.is_connected)
+    print('encrypted_password', api.encrypted_password)
+    print('all_accounts', api.all_accounts)
+
+    print('Session', api.session.GetAccountCount())
+
     api.show()
-    app.exec_()
+
+    sys.exit(app.exec_())
