@@ -1,23 +1,36 @@
+import time
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
 
-from utils.const import System
+from pyefriend.utils.const import System
 
 
 class Conn:
+    """ QAxWidget을 통해 Connection Instance 생성(Low-Level) """
     def __init__(self):
         self.instance = QAxWidget(System.PROGID)
-        self.event_loop = None
+        self._event_loop = None
+        self._error = None
+
+    def dynamic_call(self, func_name: str, *args):
+        return self.instance.dynamicCall(func_name, *args)
 
     def clear_event_loop(self):
-        if self.event_loop is not None:
-            self.event_loop.exit()
-            self.event_loop = None
+        if self._event_loop is not None:
+            self._event_loop.exit()
+            self._event_loop = None
         return self
 
     def execute_event_loop(self):
-        self.event_loop = QEventLoop()  # 이벤트루프 할당
-        self.event_loop.exec_()  # 이벤트루프 실행
+        # delay 추가
+        time.sleep(0.01)
+
+        if self._error is not None:
+            # event loop 내에서 에러 생겼을 경우 error 받아옴
+            raise self._error
+        
+        self._event_loop = QEventLoop()  # 이벤트루프 할당
+        self._event_loop.exec_()  # 이벤트루프 실행
         return self
 
     def _set_event_handler(self, event, handler):
@@ -25,7 +38,10 @@ class Conn:
 
         # 데코레이터
         def decorated_handler():
-            handler()
+            try:
+                handler()
+            except Exception as e:
+                self._error = e
             self.clear_event_loop()
 
         event.connect(decorated_handler)  # handler 연결
@@ -43,15 +59,15 @@ class Conn:
     # Wrapper
     def SetSingleData(self, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 단건(Single 형) 데이터 값일 때 사용하는 공통함수 """
-        return self.instance.dynamicCall('SetSingleData(int, QString)', field_index, value)
+        return self.dynamic_call('SetSingleData(int, QString)', field_index, value)
 
     def SetSingleDataEx(self, block_index: int, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 다건 데이터 값일 때 사용하는 공통함수 """
-        return self.instance.dynamicCall('SetSingleDataEx(int, int, QString)', block_index, field_index, value)
+        return self.dynamic_call('SetSingleDataEx(int, int, QString)', block_index, field_index, value)
 
     def SetMultiData(self, record_index: int, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 다건(Multi 형) 데이터 값일 때 사용하는 공통함수 """
-        return self.instance.dynamicCall('SetMultiData(int, int, QString)', record_index, field_index, value)
+        return self.dynamic_call('SetMultiData(int, int, QString)', record_index, field_index, value)
 
     def GetSingleFieldCount(self) -> int:
         """
@@ -59,21 +75,21 @@ class Conn:
 
         :return ReceiveData로 수신된 단건 Output 필드 개수
         """
-        return self.instance.dynamicCall("GetSingleFieldCount()")
+        return self.dynamic_call("GetSingleFieldCount()")
 
     def GetMultiBlockCount(self) -> int:
         """
         요청한 데이터를 ReceiveData에서 받았을 때Output 블록에 Multi 블록이 하나 이상일 경우 블록 개수를 반환하는 공통함수
         서비스의 Multi(다건) 블록이 여러 개 일 경우 사용함(보통은 하나이므로 예외적인 케이스에만 사용함)
         """
-        return self.instance.dynamicCall("GetMultiBlockCount()")
+        return self.dynamic_call("GetMultiBlockCount()")
 
     def GetMultiRecordCount(self, block_index: int) -> int:
         """
         요청한 데이터를 ReceiveData에서 받았을 때 멀티 블록 레코드(Row) 개수를 반환하는 공통함수
         해당 서비스의 Output 블록이 Multi일 때 레코드 개수(Occurs Count)를 반환합니다.
         """
-        return self.instance.dynamicCall("GetMultiRecordCount(int)", block_index)
+        return self.dynamic_call("GetMultiRecordCount(int)", block_index)
 
     def GetMultiFieldCount(self, block_index: int, record_index: int) -> int:
         """
@@ -81,7 +97,7 @@ class Conn:
 
         :return 선택한 멀티 블록 레코드의 필드 개수
         """
-        return self.instance.dynamicCall("GetMultiFieldCount(int, int)", block_index, record_index)
+        return self.dynamic_call("GetMultiFieldCount(int, int)", block_index, record_index)
 
     def GetSingleData(self, field_index: int, attribute_type: int) -> str:
         """
@@ -93,14 +109,14 @@ class Conn:
         :param attribute_type: 얻고자 하는 데이터 타입을 입력(0: 데이터값, 1: 속성값)
         :return 수신된 서비스의 데이터 값과 속성 값
         """
-        return self.instance.dynamicCall("GetSingleData(int, int)", field_index, attribute_type)
+        return self.dynamic_call("GetSingleData(int, int)", field_index, attribute_type)
 
     def GetSingleDataEx(self, block_index: int, field_index: int, attribute_type: int) -> str:
         """
         요청한 데이터를 ReceiveData, ReceiveRealData에서 받았을 때 다건 데이터 필드 값을 얻을 때 사용하는 공통함수
         (* 공식 메뉴얼에 자세한 설명이 없으나, GetSingleData과 blockIndex 이외에는 GetSingleData와 동일한 것으로 보임)
         """
-        return self.instance.dynamicCall("GetSingleDataEx(int, int, int)", block_index, field_index, attribute_type)
+        return self.dynamic_call("GetSingleDataEx(int, int, int)", block_index, field_index, attribute_type)
 
     def GetMultiData(self, block_index: int, record_index: int, field_index: int, attribute_type: int = 0) -> str:
         """
@@ -115,7 +131,7 @@ class Conn:
         :param attribute_type: 해당 인덱스의 속성 값(0: 데이터값, 1: 속성값)
         :return 선택한 인덱스의 데이터 값을 반환합니다.
         """
-        return self.instance.dynamicCall("GetMultiData(int, int, int, int)",
+        return self.dynamic_call("GetMultiData(int, int, int, int)",
                                          block_index, record_index, field_index, attribute_type)
 
     def GetReqMsgCode(self) -> str:
@@ -125,7 +141,7 @@ class Conn:
 
         :return 선택한 인덱스의 데이터 값을 반환합니다.
         """
-        return self.instance.dynamicCall("GetReqMsgCode()")
+        return self.dynamic_call("GetReqMsgCode()")
 
     def GetRtCode(self) -> str:
         """
@@ -134,7 +150,7 @@ class Conn:
 
         :return 서버에서 수신된 서비스의 메시지 코드 값을 반환합니다.
         """
-        return self.instance.dynamicCall("GetRtCode()")
+        return self.dynamic_call("GetRtCode()")
 
     def GetReqMessage(self) -> str:
         """
@@ -143,7 +159,7 @@ class Conn:
 
         :return 서버에서 수신된 서비스의 통신 메시지를 받습니다.
         """
-        return self.instance.dynamicCall("GetReqMessage()")
+        return self.dynamic_call("GetReqMessage()")
 
     def RequestData(self, service: str):
         """
@@ -152,7 +168,11 @@ class Conn:
 
         :param service: 요청할 서비스명
         """
-        self.instance.dynamicCall("RequestData(QString)", service)
+        # transaction
+        time.sleep(0.1)
+
+        # call
+        self.dynamic_call("RequestData(QString)", service)
 
         # clear and execute
         return (
@@ -168,7 +188,7 @@ class Conn:
 
         :param service: 요청할 서비스명
         """
-        self.instance.dynamicCall("RequestData(QString)", service)
+        self.dynamic_call("RequestData(QString)", service)
 
         # clear and execute
         return (
@@ -193,9 +213,9 @@ class Conn:
 
         :return 0(FALSE) 이면 실패, 1(TRUE) 이면 성공
         """
-        result = self.instance.dynamicCall("SetMultiBlockData(int, int, int, QString)",
+        result = self.dynamic_call("SetMultiBlockData(int, int, int, QString)",
                                            block_index, record_index, field_index, value)
-        print(result)
+        print(result, type(result))
 
         return result == '1'
 
@@ -205,7 +225,7 @@ class Conn:
 
         :return: 다음 조회가 있으면 TRUE 를 반환, 없으면 FALSE 반환
         """
-        return self.instance.dynamicCall("IsMoreNextData()")
+        return self.dynamic_call("IsMoreNextData()")
 
     def GetAccountCount(self) -> int:
         """
@@ -214,7 +234,7 @@ class Conn:
 
         :return 계좌 개수를 반환
         """
-        return self.instance.dynamicCall("GetAccountCount()")
+        return self.dynamic_call("GetAccountCount()")
 
     def GetAccount(self, account_index: int) -> str:
         """
@@ -224,7 +244,7 @@ class Conn:
         :param account_index: 계좌의 인덱스 값.
         :return 계좌 번호 반환 (단, 이때 총 10자리를 반환하며, 앞의 8자리는 종합계좌 번호 뒤의 2자리는 상품계좌 번호이다.)
         """
-        return self.instance.dynamicCall("GetAccount(int)", account_index)
+        return self.dynamic_call("GetAccount(int)", account_index)
 
     def GetEncryptPassword(self, raw_password) -> str:
         """
@@ -235,7 +255,7 @@ class Conn:
         :param raw_password: 암호화 안 된 비밀번호
         :return 암호화 처리된 비밀번호
         """
-        return self.instance.dynamicCall("GetEncryptPassword(QString)", raw_password)
+        return self.dynamic_call("GetEncryptPassword(QString)", raw_password)
 
     def GetOverSeasStockSise(self) -> str:
         """
@@ -244,7 +264,7 @@ class Conn:
 
         :return 해외주식 이용 사용자 권한 정보
         """
-        return self.instance.dynamicCall("GetOverSeasStockSise()")
+        return self.dynamic_call("GetOverSeasStockSise()")
 
     def GetSingleDataStockMaster(self, product_code: str, field_index: int) -> str:
         """
@@ -252,7 +272,7 @@ class Conn:
 
         :return: 입력한 종목코드(vStkCode)의 nFieldIdx 번째 항목 종목 정보
         """
-        return self.instance.dynamicCall("GetSingleDataStockMaster(QString, int)", product_code, field_index)
+        return self.dynamic_call("GetSingleDataStockMaster(QString, int)", product_code, field_index)
 
     def IsVTS(self) -> bool:
         """
@@ -260,6 +280,6 @@ class Conn:
 
         :return: 모의투자 접속 여부 (TRUE : 모의투자 접속, FALSE : 운영 접속)
         """
-        return self.instance.dynamicCall("IsVTS()")
+        return self.dynamic_call("IsVTS()")
 
 

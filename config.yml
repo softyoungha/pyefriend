@@ -1,0 +1,8 @@
+user:
+  test_account: '5005775101'
+  test_password: 'Dmazhffk1'
+  real_account: '7289926901'
+  real_password: '3685'
+
+database:
+  sqlalchemy_conn_str: 'sqlite:///database.db'

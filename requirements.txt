@@ -1,6 +1,9 @@
+# default
+pyyaml==6.0
+requests==2.26.0
+
 # Need python 32-bit and administrator
 PyQt5==5.15.6
-requests==2.26.0
 
 # visualization
 ipython==7.29.0
@@ -10,3 +13,4 @@ pywinpty<1,>=0.5
 
 # sqlalchemy
 sqlalchemy==1.4.26
+

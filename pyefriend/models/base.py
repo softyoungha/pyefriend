@@ -3,16 +3,20 @@ from typing import Optional
 from sqlalchemy import MetaData, Column, Integer, DateTime, func, text
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm.decl_api import DeclarativeMeta
-from utils.config import Database
 
-metadata: Optional[MetaData] = MetaData(schema=Database.SQLALCHEMY_CONN_STR)
+from pyefriend.settings import engine
 
+# create metadata
+metadata: Optional[MetaData] = MetaData(bind=engine)
+
+# create base
 Base: DeclarativeMeta = declarative_base(metadata=metadata)
 
 
 # init
 class Length:
     ID = 100
+    TYPE = 30
     DESC = 5000
 
 

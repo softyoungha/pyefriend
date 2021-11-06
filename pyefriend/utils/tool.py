@@ -1,4 +1,7 @@
+import os
+import yaml
 import requests
+
 from .const import Currency
 
 
@@ -14,4 +17,10 @@ def get_currency(raise_error: bool = False):
         print('설정된 환율을 사용합니다.')
         return Currency.BASE
 
+
+def load_yaml(file_path: str) -> dict:
+    with open(file_path) as f:
+        _dict = yaml.load(f, Loader=yaml.FullLoader)
+
+    return _dict
 

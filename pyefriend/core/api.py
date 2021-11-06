@@ -1,15 +1,18 @@
 from typing import List, Dict, Union, Optional
 from datetime import datetime
 
-from pyefriend.connection import Conn
+from pyefriend.settings import logger
+from pyefriend.config import Config
+from pyefriend.utils.const import System, Service, MarketCode
+from pyefriend.exceptions import UnExpectedException, UnAuthorizedAccountException, NotConnectedException
 
-from utils.const import System, Service, NAS
-from utils.exceptions import UnExpectedException, UnAuthorizedAccountException
+from .connection import Conn
+
 
 conn: Optional[Conn] = None
 
 
-def get_or_create_conn(raise_error: bool = False):
+def get_or_create_conn(raise_error: bool = True):
     global conn
 
     if conn is None:
@@ -30,7 +33,7 @@ def get_or_create_conn(raise_error: bool = False):
                         raise UnExpectedException(msg)
 
                 else:
-                    print(f'[ERROR][{msg_code}] {conn.GetReqMessage()}')
+                    logger.error(f'[{msg_code}] {conn.GetReqMessage()}')
 
         conn.set_receive_data_event_handler(send_log_when_error)
         conn.set_receive_error_data_handler(send_log_when_error)
@@ -39,17 +42,24 @@ def get_or_create_conn(raise_error: bool = False):
 
 
 class Api:
+    """ High Level API """
     def __init__(self, target_account: str = None, test: bool = True):
         self.test = test
         self._encrypted_password = None
 
         if target_account is None:
             if self.test:
-                from utils.config import TestUser as User
+                self.target_account = Config.get('user', 'TEST_ACCOUNT')
             else:
-                from utils.config import User
-            self.target_account = User.DEFAULT_ACCOUNT
-        print('connection: ', self.conn)
+                self.target_account = Config.get('user', 'REAL_ACCOUNT')
+
+        if not self.is_connected:
+            raise NotConnectedException()
+
+        if self.conn.IsVTS():
+            logger.info(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
+        else:
+            logger.warn(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
 
     @property
     def conn(self):
@@ -72,11 +82,11 @@ class Api:
     def encrypted_password(self):
         if self._encrypted_password is None:
             if self.test:
-                from utils.config import TestUser as User
+                raw_password = Config.get('user', 'TEST_ACCOUNT')
             else:
-                from utils.config import User
+                raw_password = Config.get('user', 'REAL_ACCOUNT')
 
-            self._encrypted_password = self.conn.GetEncryptPassword(User.PASSWORD)
+            self._encrypted_password = self.conn.GetEncryptPassword(raw_password)
         return self._encrypted_password
 
     @property
@@ -90,15 +100,20 @@ class Api:
 
         account_num, product_code = self._parse_account(account=account)
 
-        self.set_data(0, account_num)
-        self.set_data(1, product_code)
-        self.set_data(2, self.encrypted_password)
+        return (
+            self.set_data(0, account_num)
+                .set_data(1, product_code)
+                .set_data(2, self.encrypted_password)
+        )
 
     def set_data(self, field_index: int, value: str):
         self.conn.SetSingleData(field_index, value)
+        return self
 
-    def get_data(self, field_index: int = None, multiple: bool = False, columns: List[Dict] = None) -> Union[
-        str, List[Dict]]:
+    def get_data(self,
+                 field_index: int = None,
+                 multiple: bool = False,
+                 columns: List[Dict] = None) -> Union[str, List[Dict]]:
         """
         columns: example)
                 [
@@ -140,44 +155,42 @@ class Api:
 
     def request_data(self, service: str):
         self.conn.RequestData(service=service)
+        return self
 
 
 class DomesticApi(Api):
     def get_stock_name(self, product_code: str):
         return self.conn.GetSingleDataStockMaster(product_code, 2)
 
-    def get_stock_price(self, product_code: str) -> int:
+    def get_stock_price(self, product_code: str, market_code: str = None) -> int:
         # set
-        self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
-        self.set_data(1, product_code)  # 1: 종목코드
-
-        # request
-        self.request_data(Service.SCP)
+        (
+            self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.SCP)
+        )
 
         # response
         return int(self.get_data(11))  # 11: 주식 현재가
 
     def get_total_cash(self, account: str = None) -> int:
         """ 총 주문가능현금 """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(5, '01')  # 01: 시장가로 계산
-
-        # request
-        self.request_data(Service.SCAP)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(5, '01')  # 01: 시장가로 계산
+                .request_data(Service.SCAP)
+        )
 
         # response
         return int(self.get_data(0))  # 0: 주문가능현금
 
     def get_stocks(self, account: str = None) -> List[Dict]:
         """ 주식별 정보 """
-        # 계정 정보
-        self.set_account_info(account=account)
 
-        # request
-        self.request_data(Service.SATPS)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .request_data(Service.SATPS)  # request
+        )
 
         # response as table
         columns = [
@@ -201,17 +214,15 @@ class DomesticApi(Api):
         설정한 price보다 낮으면 product_code의 종목 시장가로 매수
         :return 주문번호
         """
-        # 계정 정보
-        self.set_account_info(account=account)
 
-        # set
-        self.set_data(3, product_code)
-        self.set_data(4, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
-        self.set_data(5, str(amount))  # 주문수량
-        self.set_data(6, str(price))  # 주문단가
-
-        # request
-        self.request_data(Service.SCABO)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, product_code)
+                .set_data(4, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
+                .set_data(5, str(amount))  # 주문수량
+                .set_data(6, str(price))  # 주문단가
+                .request_data(Service.SCABO)
+        )
 
         return self.get_data(1)  # 1: 주문번호
 
@@ -220,18 +231,15 @@ class DomesticApi(Api):
         설정한 price보다 낮으면 product_code의 종목 매도
         :return 주문번호
         """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, product_code)
-        self.set_data(4, '01')  # 매도유형(고정값)
-        self.set_data(5, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
-        self.set_data(6, str(amount))  # 주문수량
-        self.set_data(7, str(price))  # 주문단가
-
-        # request
-        self.request_data(Service.SCAAO)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, product_code)
+                .set_data(4, '01')  # 매도유형(고정값)
+                .set_data(5, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
+                .set_data(6, str(amount))  # 주문수량
+                .set_data(7, str(price))  # 주문단가
+                .request_data(Service.SCAAO)
+        )
 
         return self.get_data(1)  # 1: 주문번호
 
@@ -241,18 +249,15 @@ class DomesticApi(Api):
         if start_date is None:
             start_date = today
 
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, start_date)
-        self.set_data(4, today)
-        self.set_data(5, '00')  # 매도매수구분코드  전체: 00 / 매도: 01 / 매수: 02
-        self.set_data(6, '00')  # 조회구분        역순: 00 / 정순: 01
-        self.set_data(8, '01')  # 체결구분        전체: 00 / 체결: 01 / 미체결: 02
-
-        # request
-        self.request_data(Service.TC8001R)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, start_date)
+                .set_data(4, today)
+                .set_data(5, '00')  # 매도매수구분코드  전체: 00 / 매도: 01 / 매수: 02
+                .set_data(6, '00')  # 조회구분        역순: 00 / 정순: 01
+                .set_data(8, '01')  # 체결구분        전체: 00 / 체결: 01 / 미체결: 02
+                .request_data(Service.TC8001R)
+        )
 
         # response as table
         columns = [
@@ -265,14 +270,11 @@ class DomesticApi(Api):
         return self.get_data(multiple=True, columns=columns)
 
     def get_unprocessed_orders(self, account: str = None) -> List[Dict]:
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(5, '0')  # 조회구분      주문순: 0 / 종목순 1
-
-        # request
-        self.request_data(Service.SMCP)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(5, '0')  # 조회구분      주문순: 0 / 종목순 1
+                .request_data(Service.SMCP)
+        )
 
         # response as table
         columns = [
@@ -286,16 +288,14 @@ class DomesticApi(Api):
         return self.get_data(multiple=True, columns=columns)
 
     def cancel_order(self, order_num: str, amount: int, account: str = None) -> str:
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(4, order_num)
-        self.set_data(5, "00")  # 주문 구분, 취소인 경우는 00
-        self.set_data(5, "02")  # 정정취소구분코드. 02: 취소, 01: 정정
-        self.set_data(7, str(amount))  # 주문수량
-
-        self._core.RequestData("SMCO")  # 국내 주식 주문 정정 취소
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(4, order_num)
+                .set_data(5, "00")  # 주문 구분, 취소인 경우는 00
+                .set_data(5, "02")  # 정정취소구분코드. 02: 취소, 01: 정정
+                .set_data(7, str(amount))  # 주문수량
+                .request_data(Service.SMCO)
+        )
 
         return self.get_data(1)  # 1: 주문번호
 
@@ -317,45 +317,40 @@ class DomesticApi(Api):
 
 class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
-        self.set_data(index, self.conn.GetOverSeasStockSise())
+        return self.set_data(index, self.conn.GetOverSeasStockSise())
 
     def get_currency(self, account: str = None):
         """
         1 달러 -> 원으로 환전할때의 현재 기준 예상환율을 반환
         예상환율은 최초고시 환율로 매일 08:15시경에 당일 환율이 제공됨
         """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, '512')  # 미국: 512
-
-        # request
-        self.request_data('OS_OS3004R')
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, '512')  # 미국: 512
+                .request_data(Service.OS_OS3004R)
+        )
 
         # response
         return float(self.conn.GetMultiData(3, 0, 4))
 
-    def get_stock_price(self, product_code: str, market_code: str = NAS) -> int:
-        self.set_Auth()
-
-        # set
-        self.set_data(1, market_code)  # 0: 시장분류코드 / J: 주식, ETF, ETN
-        self.set_data(2, product_code)  # 1: 종목코드
-
-        # request
-        self.request_data(Service.OS_ST01)
+    def get_stock_price(self, product_code: str, market_code: str = MarketCode.NASD) -> float:
+        (
+            self.set_auth(0)  # 권한 확인
+                .set_data(1, MarketCode.as_short(market_code))
+                .set_data(2, product_code)  # 1: 종목코드
+                .request_data(Service.OS_ST01)
+        )
 
         # response
-        return int(self.get_data(12))  # 11: 현재가
+        print(market_code, product_code, self.get_data(4))
+        return float(self.get_data(4))  # 4: 현재가
 
     def get_total_cash(self, account: str = None) -> float:
         """ 총 주문가능현금 """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # request
-        self.request_data(Service.OS_US_DNCL)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .request_data(Service.OS_US_DNCL)
+        )
 
         # response: get table
         columns = [
@@ -374,11 +369,10 @@ class OverSeasApi(Api):
             return 0.0
 
     def get_stocks(self, account: str = None) -> List[Dict]:
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # request
-        self.request_data(Service.OS_US_CBLC)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .request_data(Service.OS_US_CBLC)
+        )
 
         # response as table
         columns = [
@@ -402,7 +396,7 @@ class OverSeasApi(Api):
                   product_code: str,
                   amount: int,
                   price: int = 0,
-                  market_code: str = NAS,
+                  market_code: str = MarketCode.NASD,
                   account: str = None) -> str:
         """
         미국주식 매수
@@ -410,16 +404,16 @@ class OverSeasApi(Api):
         :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
         :return 주문번호
         """
-        # 계정 정보
-        self.set_account_info(account=account)
 
-        # set
-        self.set_data(3, market_code)
-        self.set_data(4, product_code)
-        self.set_data(5, str(amount))
-        self.set_data(6, f"{price:.2f}")  # 소숫점 2자리까지로 설정해야 오류가 안남
-        self.set_data(9, '0')  # 주문서버구분코드, 0으로 입력
-        self.set_data(10, '00')  # 주문구분, 00: 지정가
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, market_code)
+                .set_data(4, product_code)
+                .set_data(5, str(amount))
+                .set_data(6, f"{price:.2f}")  # 소숫점 2자리까지로 설정해야 오류가 안남
+                .set_data(9, '0')  # 주문서버구분코드, 0으로 입력
+                .set_data(10, '00')  # 주문구분, 00: 지정가
+        )
 
         # request
         self.request_data(Service.OS_US_BUY)  # 미국매수 주문
@@ -431,7 +425,7 @@ class OverSeasApi(Api):
                    product_code: str,
                    amount: int,
                    price: int = 0,
-                   market_code: str = NAS,
+                   market_code: str = MarketCode.NASD,
                    account: str = None) -> str:
         """
         미국주식 매도
@@ -439,25 +433,22 @@ class OverSeasApi(Api):
         :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
         :return 주문번호
         """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, market_code)
-        self.set_data(4, product_code)
-        self.set_data(5, str(amount))
-        self.set_data(6, str(price))
-        self.set_data(9, '0')  # 주문서버구분코드, 0으로 입력
-        self.set_data(10, '00')  # 주문구분, 00: 지정가
-
-        # request
-        self.request_data(Service.OS_US_SEL)  # 미국매도 주문
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, market_code)
+                .set_data(4, product_code)
+                .set_data(5, str(amount))
+                .set_data(6, str(price))
+                .set_data(9, '0')  # 주문서버구분코드, 0으로 입력
+                .set_data(10, '00')  # 주문구분, 00: 지정가
+                .request_data(Service.OS_US_SEL)  # 미국매도 주문
+        )
 
         # response
         return self.get_data(1)  # 1: 주문번호
 
     def get_processed_orders(self,
-                             market_code: str = NAS,
+                             market_code: str = MarketCode.NASD,
                              start_date: str = None,
                              account: str = None) -> List[Dict]:
         """
@@ -471,17 +462,15 @@ class OverSeasApi(Api):
             start_date = today
 
         # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(4, start_date)
-        self.set_data(5, today)
-        self.set_data(6, '00')  # 매도매수구분코드  전체: 00 / 매도: 01 / 매수: 02
-        self.set_data(7, '01')  # 체결구분        전체: 00 / 체결: 01 / 미체결: 02
-        self.set_data(8, market_code)
-
-        # request
-        self.request_data(Service.OS_US_CCLD)
+        (
+            self.set_account_info(account=account)
+                .set_data(4, start_date)
+                .set_data(5, today)
+                .set_data(6, '00')  # 매도매수구분코드  전체: 00 / 매도: 01 / 매수: 02
+                .set_data(7, '01')  # 체결구분        전체: 00 / 체결: 01 / 미체결: 02
+                .set_data(8, market_code)
+                .request_data(Service.OS_US_CCLD)
+        )
 
         # response as table
         columns = [
@@ -494,20 +483,17 @@ class OverSeasApi(Api):
         ]
         return self.get_data(multiple=True, columns=columns)
 
-    def get_unprocessed_orders(self, market_code: str = NAS, account: str = None) -> List[Dict]:
+    def get_unprocessed_orders(self, market_code: str = MarketCode.NASD, account: str = None) -> List[Dict]:
         """
         미국 주식 미체결 내역 조회
 
         :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
         """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, market_code)
-
-        # request
-        self.request_data(Service.OS_US_NCCS)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, market_code)
+                .request_data(Service.OS_US_NCCS)
+        )
 
         # response as table
         columns = [
@@ -523,30 +509,27 @@ class OverSeasApi(Api):
                      product_code: str,
                      order_num: str,
                      amount: int,
-                     market_code: str = NAS,
+                     market_code: str = MarketCode.NASD,
                      account: str = None) -> str:
         """
         미국 주식 주문 취소
 
         :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
         """
-        # 계정 정보
-        self.set_account_info(account=account)
-
-        # set
-        self.set_data(3, market_code)
-        self.set_data(4, product_code)
-        self.set_data(5, order_num)
-        self.set_data(6, '02')  # 02 : 취소, 01 : 정정
-        self.set_data(7, str(amount))
-
-        # request
-        self._core.RequestData(Service.OS_US_CNC)
+        (
+            self.set_account_info(account=account)  # 계정 정보
+                .set_data(3, market_code)
+                .set_data(4, product_code)
+                .set_data(5, order_num)
+                .set_data(6, '02')  # 02 : 취소, 01 : 정정
+                .set_data(7, str(amount))
+                .request_data(Service.OS_US_CNC)
+        )
 
         # response
         return self.get_data(1)  # 1: 주문번호
 
-    def cancel_all_unprocessed_orders(self, market_code: str = NAS, account: str = None) -> List[str]:
+    def cancel_all_unprocessed_orders(self, market_code: str = MarketCode.NASD, account: str = None) -> List[str]:
         """
         미체결 국내 주식 주문을 모두 취소
 

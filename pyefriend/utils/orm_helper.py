@@ -2,18 +2,14 @@ from typing import Callable, TypeVar
 from functools import wraps
 from inspect import signature
 from contextlib import contextmanager
-
 from sqlalchemy.orm import Session
 
-from pyefriend import session
-
-
-# sqlalchemy session
+from pyefriend import settings
 
 
 @contextmanager
 def create_session() -> Session:
-    s: Session = session.Session()
+    s: Session = settings.Session()
 
     try:
         yield s
