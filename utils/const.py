@@ -5,6 +5,13 @@ class System:
     PROGID = 'ITGExpertCtl.ITGExpertCtlCtrl.1'
 
 
+class Target:
+    # 국내
+    DOMESTIC = 'domestic'
+    # 해외(미국)
+    OVERSEAS = 'overseas'
+
+
 # 환율 정보
 class Currency:
     URL = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
@@ -18,6 +25,21 @@ class Service:
     SATPS = 'SATPS'                 # 주식 계좌 당일 잔고 현황 조회
     SCABO = 'SCABO'                 # 주식 현금 매수 주문
     SCAAO = 'SCAAO'                 # 주식 현금 매도 주문
-    SDOC = 'SDOC'                   # 주식 일별 주문 체결 조회
+    TC8001R = 'TC8001R'             # 주식 일별 주문 체결 조회(3개월 이내)
     SMCP = 'SMCP'                   # 주식 정정 취소 가능 주문 조회
     SMCO = 'SMCO'                   # 주식 정정 취소 주문
+
+    # 미국
+    OS_ST01 = 'OS_ST01'             # 해외주식 현재가 체결
+    OS_US_DNCL = 'OS_US_DNCL'       # 야간 외화예수금
+    OS_US_CBLC = 'OS_US_CBLC'       # 미국 잔고
+    OS_OS3004R = 'OS_OS3004R'       # 해외 증거금 조회
+    OS_US_BUY = 'OS_US_BUY'         # 미국 매수 주문
+    OS_US_SEL = 'OS_US_SEL'         # 미국 매도 주문
+    OS_US_CCLD = 'OS_US_CCLD'       # 미국 체결 내역 조회
+    OS_US_NCCS = 'OS_US_NCCS'       # 미국 미체결 내역 조회
+    OS_US_CNC = 'OS_US_CNC'         # 미국 주식 주문 취소
+
+
+# 나스닥
+NAS = 'NAS'
