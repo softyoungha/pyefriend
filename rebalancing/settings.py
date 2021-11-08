@@ -9,15 +9,20 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from rebalancing.config import Config, HOME_PATH
 from rebalancing.utils.log import get_logger
+from rebalancing.utils.tool import is_jupyter_kernel
 
-
+# 기본 폴더
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# sqlalchemy engine & session
 engine: Optional[Engine] = None
 Session: Optional[scoped_session] = None
 
-
+# logger
 logger = get_logger('re-balancing')
+
+# jupyter kernel인지 여부
+IS_JUPYTER_KERNEL = is_jupyter_kernel()
 
 
 def prepare_syspath():
