@@ -1,4 +1,5 @@
 import os, sys
+import logging
 
 from typing import Optional
 
@@ -15,7 +16,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 engine: Optional[Engine] = None
 Session: Optional[scoped_session] = None
 
-logger = get_logger('REBALANCING')
+
+logger = get_logger('re-balancing')
 
 
 def prepare_syspath():

@@ -1,4 +1,6 @@
-# about PyQt5 connection
+""" Exceptions """
+
+
 class UnExpectedException(Exception):
     """ 예상치못한 에러 """
 

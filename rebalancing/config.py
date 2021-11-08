@@ -7,11 +7,12 @@ from rebalancing.utils.tool import load_yaml
 
 
 HOME_PATH = os.getenv("REBALANCING_HOME", '.')
+CONF_PATH = os.getenv("REBALANCING_CONF", './config.yml')
 
 
 def get_config_yaml():
     # config
-    config_path = os.path.abspath(os.path.join(HOME_PATH, 'config.yml'))
+    config_path = os.path.abspath(CONF_PATH)
 
     if os.path.exists(config_path):
         # get from config.yml
@@ -25,11 +26,6 @@ def get_config_yaml():
 
 
 class Config:
-    """
-    # priority
-    1. environment variables
-    2. config.yml
-    """
     conf = get_config_yaml()
 
     @classmethod
@@ -122,7 +118,7 @@ class Config:
             if '%' in val:
                 val = val.replace('%', '')
 
-            return float(val)
+            return float(val) * 0.01
         except ValueError:
             raise ConfigException(
                 f'Failed to convert value to float. Please check "{key}" key in "{section}" section. '

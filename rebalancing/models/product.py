@@ -67,9 +67,8 @@ class Product(Base):
     def insert(cls, items: List[Dict], session: Session = None):
         session.bulk_save_objects([cls(**item) for item in items])
 
-
     @property
-    def stock_quote_unit(self) -> Union[int, float]:
+    def quote_unit(self) -> Union[int, float]:
         if self.market_code in MarketCode.us_list():
             return 0.01
 
@@ -103,7 +102,7 @@ class ProductHistory(Base):
     closing = Column(Float, comment='종가')
 
     # relation
-    product = relationship('Product', backref='history')
+    product = relationship('Product', uselist=False, backref='history')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -112,14 +111,16 @@ class ProductHistory(Base):
         return f"<Portfolio(product_name='{self.product_name}')>"
 
     @property
-    @provide_session
-    def product_code(self, session: Session = None):
+    def market_code(self):
+        return self.product.market_code
+
+    @property
+    def product_code(self):
         return self.product.code
 
     @property
-    @provide_session
-    def market_code(self, session: Session = None):
-        return self.product.market_code
+    def current(self):
+        return self.product.current
 
     @classmethod
     @provide_session

@@ -2,7 +2,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 
 from .const import Service, MarketCode
-from .log import logger
+from .log import logger as pyefriend_logger
 from .connection import Conn
 from .exceptions import *
 
@@ -11,16 +11,13 @@ from .exceptions import *
 conn: Optional[Conn] = None
 
 
-# [Section] Constants
-
-
 # [Section] Modules
 
-def get_or_create_conn(raise_error: bool = True):
+def get_or_create_conn(logger=None, raise_error: bool = True):
     global conn
 
     if conn is None:
-        conn = Conn()
+        conn = Conn(logger)
 
         def send_log_when_error():
             return_code = conn.GetRtCode()
@@ -46,10 +43,22 @@ def get_or_create_conn(raise_error: bool = True):
 
 
 class Api:
-    """ High Level API """
+    """
+    High Level API
+
+    :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
+    :param product_code: 종목 코드
+    :param order_num: 주문번호
+    """
+
     def __init__(self,
                  target_account: str,
-                 password: str):
+                 password: str,
+                 logger=None):
+        if not logger:
+            logger = pyefriend_logger
+        self.logger = logger
+
         self.target_account = target_account
         self._all_accounts = None
         self._encrypted_password = self.conn.GetEncryptPassword(password)
@@ -70,7 +79,7 @@ class Api:
     @property
     def conn(self):
         """ connection load """
-        return get_or_create_conn()
+        return get_or_create_conn(self.logger)
 
     @property
     def account(self):
@@ -116,6 +125,8 @@ class Api:
                  columns: List[Dict] = None,
                  block_index: int = 0) -> Union[str, List[Dict]]:
         """
+        pk = True인 column은 value가 ''인 것을 체크하여 for문을 나가므로 columns의 맨 앞에 위치해야합니다.
+
         :param multiple: 테이블형태로 데이터를 get해올 경우 True, 단일 로그일 경우 False
         :param columns: example)
                 [
@@ -135,7 +146,7 @@ class Api:
             record_ct = self.conn.GetMultiRecordCount(block_index)
 
             for record_idx in range(record_ct):
-
+                skip = False
                 data = {}
                 for column in columns:
                     key = column.get('key')
@@ -146,13 +157,14 @@ class Api:
                                                    record_index=record_idx,
                                                    field_index=index)
 
-                    if pk and data == '':
+                    if pk and value == '':
                         # pk column의 값이 ''일 경우 break
                         break
 
                     data[key] = value if dtype == str else dtype(value)
 
-                data_list.append(data)
+                if len(data) > 0:
+                    data_list.append(data)
 
             return data_list
         else:
@@ -184,21 +196,35 @@ class Api:
         현재 보유한 주식 리스트 반환
         :return: [
             {
-            '종목코드': str
-            '종목명': str
-            '현재가': int
-            '보유수량': int
-            '평가금액': int
+            'product_code': str
+            'product_name': str
+            'current': int
+            'count': int
+            'price': int
             },
             ...
         ]
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    @property
-    def total_evaluated_price(self):
-        """ 전체 금액 반환(deposit + stocks 전체 금액) """
-        raise NotImplementedError('해당 함수가 설정되어야 합니다.')
+    def evaluate_amount(self, product_codes: List[str] = None):
+        """
+        전체 금액 반환(deposit + stocks 전체 금액)
+        :param product_codes: 포함된 종목 코드들에 대해서만 금액 계산(포함되지 않은 종목들은 예산에서 제외)
+        """
+        deposit = self.deposit
+        stocks = self.stocks
+
+        if product_codes is not None:
+            stocks = [stock
+                      for stock in self.stocks
+                      if stock['product_code'] in product_codes]
+
+
+
+        # sum
+        total_amount = self.deposit + sum([stock['price'] for stock in stocks])
+        return deposit, stocks, total_amount
 
     def get_stock_name(self, product_code: str):
         """ 종목명 반환 """
@@ -214,8 +240,6 @@ class Api:
     def get_stock_histories(self, product_code: str, standard: str = 'W', market_code: str = None) -> List[Dict]:
         """
         일자별 상세 정보 로드
-
-        :param product_code: 종목코드
         :param standard: D: 일/ W: 주/ M: 월
         :return [
             {
@@ -230,33 +254,33 @@ class Api:
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def buy_stock(self, product_code: str, amount: int, price: int = 0) -> str:
+    def buy_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 시장가로 매수
         :return 주문번호
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def sell_stock(self, product_code: str, amount: int, price: int = 0) -> str:
+    def sell_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 매도
         :return 주문번호
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_processed_orders(self, start_date: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
         """ start_date 이후의 체결된 주문 리스트 반환 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_unprocessed_orders(self) -> List[Dict]:
+    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         """ 미체결된 주문 리스트 반환 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def cancel_order(self, order_num: str, amount: int) -> str:
+    def cancel_order(self, order_num: str, count: int, product_code: str = None, market_code: str = None) -> str:
         """ 주문 취소 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def cancel_all_unprocessed_orders(self) -> List[str]:
+    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
         """ 미체결된 모든 리스트 취소 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
@@ -264,7 +288,6 @@ class Api:
 class DomesticApi(Api):
     @property
     def deposit(self) -> int:
-        """ 총 주문가능현금 """
         (
             self.set_account_info()  # 계정 정보
                 .set_data(5, '01')  # 01: 시장가로 계산
@@ -276,8 +299,6 @@ class DomesticApi(Api):
 
     @property
     def stocks(self) -> List[Dict]:
-        """ 주식별 정보 """
-
         (
             self.set_account_info()  # 계정 정보
                 .request_data(Service.SATPS)  # request
@@ -285,17 +306,13 @@ class DomesticApi(Api):
 
         # response as table
         columns = [
-            {'index': 0, 'key': '종목코드', 'pk': True},
-            {'index': 1, 'key': '종목명'},
-            {'index': 11, 'key': '현재가', 'dtype': int},
-            {'index': 7, 'key': '보유수량', 'dtype': int},
-            {'index': 12, 'key': '평가금액', 'dtype': int},
+            dict(index=0, key='product_code', pk=True),
+            dict(index=1, key='product_name'),
+            dict(index=11, key='current', dtype=int),
+            dict(index=7, key='count', dtype=int),
+            dict(index=12, key='price', dtype=int),
         ]
         return self.get_data(multiple=True, columns=columns)
-
-    @property
-    def total_evaluated_price(self):
-        return self.deposit + sum([stock['평가금액'] for stock in self.stocks])
 
     def get_stock_name(self, product_code: str):
         return self.conn.GetSingleDataStockMaster(product_code, 2)
@@ -330,42 +347,42 @@ class DomesticApi(Api):
         )
 
         columns = [
-            {'index': 0, 'key': '영업일자', 'pk': True},
-            {'index': 3, 'key': '최저가', 'dtype': int},
-            {'index': 2, 'key': '최고가', 'dtype': int},
-            {'index': 1, 'key': '시가', 'dtype': int},
-            {'index': 4, 'key': '종가', 'dtype': int},
+            dict(index=0, key='영업일자', pk=True),
+            dict(index=3, key='최저가', dtype=int),
+            dict(index=2, key='최고가', dtype=int),
+            dict(index=1, key='시가', dtype=int),
+            dict(index=4, key='종가', dtype=int),
         ]
 
         # response
         return self.get_data(multiple=True, columns=columns)
 
-    def buy_stock(self, product_code: str, amount: int, price: int = 0) -> str:
+    def buy_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, product_code)
                 .set_data(4, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
-                .set_data(5, str(amount))  # 주문수량
+                .set_data(5, str(count))  # 주문수량
                 .set_data(6, str(price))  # 주문단가
                 .request_data(Service.SCABO)
         )
 
         return self.get_data(1)  # 1: 주문번호
 
-    def sell_stock(self, product_code: str, amount: int, price: int = 0) -> str:
+    def sell_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, product_code)
                 .set_data(4, '01')  # 매도유형(고정값)
                 .set_data(5, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
-                .set_data(6, str(amount))  # 주문수량
+                .set_data(6, str(count))  # 주문수량
                 .set_data(7, str(price))  # 주문단가
                 .request_data(Service.SCAAO)
         )
 
         return self.get_data(1)  # 1: 주문번호
 
-    def get_processed_orders(self, start_date: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
@@ -383,15 +400,15 @@ class DomesticApi(Api):
 
         # response as table
         columns = [
-            {'index': 1, 'key': '주문번호', 'pk': True},
-            {'index': 2, 'key': '원주문번호'},
-            {'index': 4, 'key': '상품번호'},
-            {'index': 13, 'key': '매수매도구분코드명'},
-            {'index': 7, 'key': '주문수량'},
+            dict(index=1, key='주문번호', pk=True),
+            dict(index=2, key='원주문번호'),
+            dict(index=4, key='상품번호'),
+            dict(index=13, key='매수매도구분코드명'),
+            dict(index=7, key='주문수량'),
         ]
         return self.get_data(multiple=True, columns=columns)
 
-    def get_unprocessed_orders(self) -> List[Dict]:
+    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(5, '0')  # 조회구분      주문순: 0 / 종목순 1
@@ -400,37 +417,41 @@ class DomesticApi(Api):
 
         # response as table
         columns = [
-            {'index': 0, 'key': '주문일자', 'pk': True},
-            {'index': 2, 'key': '주문번호'},
-            {'index': 3, 'key': '원주문번호'},
-            {'index': 7, 'key': '상품번호'},
-            {'index': 6, 'key': '매수매도구분코드명'},
-            {'index': 9, 'key': '주문수량'},
+            dict(index=0, key='주문일자', pk=True),
+            dict(index=2, key='주문번호'),
+            dict(index=3, key='원주문번호'),
+            dict(index=7, key='상품번호'),
+            dict(index=6, key='매수매도구분코드명'),
+            dict(index=9, key='주문수량'),
         ]
         return self.get_data(multiple=True, columns=columns)
 
-    def cancel_order(self, order_num: str, amount: int) -> str:
+    def cancel_order(self,
+                     order_num: str,
+                     count: int,
+                     product_code: str = None,
+                     market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(4, order_num)
                 .set_data(5, "00")  # 주문 구분, 취소인 경우는 00
-                .set_data(5, "02")  # 정정취소구분코드. 02: 취소, 01: 정정
-                .set_data(7, str(amount))  # 주문수량
+                .set_data(6, "02")  # 정정취소구분코드. 02: 취소, 01: 정정
+                .set_data(7, str(count))  # 주문수량
                 .request_data(Service.SMCO)
         )
 
         return self.get_data(1)  # 1: 주문번호
 
-    def cancel_all_unprocessed_orders(self) -> List[str]:
+    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
         unprocessed_orders = self.get_unprocessed_orders()
 
         results = []
 
         for order in unprocessed_orders:
             order_num = order.get('원주문번호') or order.get('주문번호')
-            amount = order.get('주문수량')
+            count = order.get('주문수량')
 
-            result = self.cancel_order(order_num=order_num, amount=amount)
+            result = self.cancel_order(order_num=order_num, count=count)
 
             results.append(result)
 
@@ -443,7 +464,6 @@ class OverSeasApi(Api):
 
     @property
     def deposit(self) -> float:
-        """ 총 주문가능현금 """
         (
             self.set_account_info()  # 계정 정보
                 .request_data(Service.OS_US_DNCL)
@@ -451,16 +471,16 @@ class OverSeasApi(Api):
 
         # response: get table
         columns = [
-            {'index': 0, 'key': '통화코드'},
-            {'index': 4, 'key': '외화주문가능금액'},
+            dict(index=0, key='currency_code'),
+            dict(index=4, key='available_amount'),
         ]
         data = self.get_data(multiple=True, columns=columns)
 
         # filter USD
-        data = [item for item in data if item['통화코드'] == 'USD']
+        data = [item for item in data if item['currency_code'] == 'USD']
 
         if len(data) > 0:
-            return float(data[0])
+            return float(data[0].get('available_amount', 0))
 
         else:
             return 0.0
@@ -474,18 +494,14 @@ class OverSeasApi(Api):
 
         # response as table
         columns = [
-            {'index': 14, 'key': '해외거래소코드'},
-            {'index': 3, 'key': '종목코드', 'pk': True},
-            {'index': 4, 'key': '종목명', 'dtype': int},
-            {'index': 12, 'key': '현재가', 'dtype': int},
-            {'index': 8, 'key': '보유수량', 'dtype': int},
-            {'index': 11, 'key': '평가금액', 'dtype': int},
+            dict(index=14, key='market_code', pk=True),
+            dict(index=3, key='product_code', pk=True),
+            dict(index=4, key='product_name', dtype=str),
+            dict(index=12, key='current', dtype=float),
+            dict(index=8, key='count', dtype=int),
+            dict(index=11, key='price', dtype=float),
         ]
         return self.get_data(multiple=True, columns=columns)
-
-    @property
-    def total_evaluated_price(self):
-        return self.deposit + sum([stock['평가금액'] for stock in self.stocks])
 
     @property
     def currency(self):
@@ -505,7 +521,6 @@ class OverSeasApi(Api):
     def get_stock_info(self,
                        product_code: str,
                        market_code: str = MarketCode.NASD) -> Tuple[float, float, float, float, float]:
-        """ 입력한 종목의 현재가, 최저가, 최고가, 시가, 전일종가 로드 """
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
@@ -526,11 +541,6 @@ class OverSeasApi(Api):
                             product_code: str,
                             market_code: str = None,
                             standard: str = 'W') -> List[Dict]:
-        """
-        일자별 상세 정보 로드
-
-        :param standard: D: 일/ W: 주/ M: 월
-        """
         if standard == 'D':
             standard = '0'
         elif standard == 'W':
@@ -548,11 +558,11 @@ class OverSeasApi(Api):
         )
 
         columns = [
-            {'index': 0, 'key': '영업일자', 'pk': True},
-            {'index': 7, 'key': '최저가', 'dtype': float},
-            {'index': 6, 'key': '최고가', 'dtype': float},
-            {'index': 5, 'key': '시가', 'dtype': float},
-            {'index': 1, 'key': '종가', 'dtype': float},
+            dict(index=0, key='영업일자', pk=True),
+            dict(index=7, key='최저가', dtype=float),
+            dict(index=6, key='최고가', dtype=float),
+            dict(index=5, key='시가', dtype=float),
+            dict(index=1, key='종가', dtype=float),
         ]
 
         # response
@@ -560,21 +570,14 @@ class OverSeasApi(Api):
 
     def buy_stock(self,
                   product_code: str,
-                  amount: int,
+                  count: int,
                   price: int = 0,
                   market_code: str = MarketCode.NASD) -> str:
-        """
-        미국주식 매수
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        :return 주문번호
-        """
-
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
                 .set_data(4, product_code)
-                .set_data(5, str(amount))
+                .set_data(5, str(count))
                 .set_data(6, f"{price:.2f}")  # 소숫점 2자리까지로 설정해야 오류가 안남
                 .set_data(9, '0')  # 주문서버구분코드, 0으로 입력
                 .set_data(10, '00')  # 주문구분, 00: 지정가
@@ -588,20 +591,14 @@ class OverSeasApi(Api):
 
     def sell_stock(self,
                    product_code: str,
-                   amount: int,
+                   count: int,
                    price: int = 0,
                    market_code: str = MarketCode.NASD) -> str:
-        """
-        미국주식 매도
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        :return 주문번호
-        """
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
                 .set_data(4, product_code)
-                .set_data(5, str(amount))
+                .set_data(5, str(count))
                 .set_data(6, str(price))
                 .set_data(9, '0')  # 주문서버구분코드, 0으로 입력
                 .set_data(10, '00')  # 주문구분, 00: 지정가
@@ -612,13 +609,8 @@ class OverSeasApi(Api):
         return self.get_data(1)  # 1: 주문번호
 
     def get_processed_orders(self,
-                             market_code: str = MarketCode.NASD,
-                             start_date: str = None) -> List[Dict]:
-        """
-        미국주식 체결 내역 조회
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        """
+                             start_date: str = None,
+                             market_code: str = MarketCode.NASD) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
@@ -637,21 +629,16 @@ class OverSeasApi(Api):
 
         # response as table
         columns = [
-            {'index': 0, 'key': "주문일자"},
-            {'index': 2, 'key': "주문번호"},
-            {'index': 3, 'key': "원주문번호"},
-            {'index': 12, 'key': "상품번호"},
-            {'index': 10, 'key': "주문수량"},
-            {'index': 13, 'key': "체결단가"},
+            dict(index=0, key="주문일자"),
+            dict(index=2, key="주문번호"),
+            dict(index=3, key="원주문번호"),
+            dict(index=12, key="상품번호"),
+            dict(index=10, key="주문수량"),
+            dict(index=13, key="체결단가"),
         ]
         return self.get_data(multiple=True, columns=columns)
 
     def get_unprocessed_orders(self, market_code: str = MarketCode.NASD) -> List[Dict]:
-        """
-        미국 주식 미체결 내역 조회
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        """
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -660,31 +647,26 @@ class OverSeasApi(Api):
 
         # response as table
         columns = [
-            {'index': 0, 'key': "주문일자"},
-            {'index': 2, 'key': "주문번호"},
-            {'index': 3, 'key': "원주문번호"},
-            {'index': 5, 'key': "상품번호"},
-            {'index': 17, 'key': "주문수량"},
+            dict(index=0, key="주문일자"),
+            dict(index=2, key="주문번호"),
+            dict(index=3, key="원주문번호"),
+            dict(index=5, key="상품번호"),
+            dict(index=17, key="주문수량"),
         ]
         return self.get_data(multiple=True, columns=columns)
 
     def cancel_order(self,
-                     product_code: str,
                      order_num: str,
-                     amount: int,
+                     count: int,
+                     product_code: str = None,
                      market_code: str = MarketCode.NASD) -> str:
-        """
-        미국 주식 주문 취소
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        """
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
                 .set_data(4, product_code)
                 .set_data(5, order_num)
                 .set_data(6, '02')  # 02 : 취소, 01 : 정정
-                .set_data(7, str(amount))
+                .set_data(7, str(count))
                 .request_data(Service.OS_US_CNC)
         )
 
@@ -692,12 +674,6 @@ class OverSeasApi(Api):
         return self.get_data(1)  # 1: 주문번호
 
     def cancel_all_unprocessed_orders(self, market_code: str = MarketCode.NASD) -> List[str]:
-        """
-        미체결 국내 주식 주문을 모두 취소
-
-        :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-        :return:
-        """
         unprocessed_orders = self.get_unprocessed_orders(market_code=market_code)
 
         results = []
@@ -705,12 +681,12 @@ class OverSeasApi(Api):
         for order in unprocessed_orders:
             order_num = order.get('원주문번호') or order.get('주문번호')
             product_code = order.get('상품번호')
-            amount = order.get('주문수량')
+            count = order.get('주문수량')
 
             result = self.cancel_order(market_code=market_code,
                                        product_code=product_code,
                                        order_num=order_num,
-                                       amount=amount)
+                                       count=count)
 
             results.append(result)
 

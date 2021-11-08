@@ -5,7 +5,11 @@ import logging
 LOG_LEVEL = os.getenv('PYEFRIEND__LOG_LEVEL')
 
 
-def get_logger(name: str, log_level: int = logging.INFO, use_stream: bool = True) -> logging.Logger:
+def get_logger(name: str = 'pyefriend',
+               log_level: int = logging.INFO,
+               use_stream: bool = True,
+               use_file: bool = True,
+               path: str = None) -> logging.Logger:
     logger = logging.getLogger(name)
 
     # get log level
@@ -16,9 +20,11 @@ def get_logger(name: str, log_level: int = logging.INFO, use_stream: bool = True
 
     # create formatter
     formatter = logging.Formatter('[%(levelname)s]'
-                                  '[%(name)s]'
-                                  '[%(pathname)s - %(funcName)s, %(lineno)s] '
-                                  '%(asctime)s: %(message)s')
+                                  '%(asctime)s - '
+                                  '%(name)s/%(filename)s/%(funcName)s, '
+                                  '%(lineno)s: '
+                                  '%(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
 
     # stream handler
     if use_stream:
@@ -26,7 +32,14 @@ def get_logger(name: str, log_level: int = logging.INFO, use_stream: bool = True
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
+    if use_file:
+        if not path:
+            path = 'process.log'
+        file_handler = logging.FileHandler(path, mode="w")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
     return logger
 
 
-logger = get_logger('pyefriend')
+logger = get_logger()

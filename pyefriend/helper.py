@@ -1,4 +1,10 @@
-import logging
+"""
+# Helper
+
+- QApplication 을 하나만 유지
+- api를 with절로 활용하거나, 단일 api를 불러오는 데에 용이
+"""
+
 import sys
 from typing import Union, Optional
 from contextlib import contextmanager
@@ -8,9 +14,12 @@ from .api import DomesticApi, OverSeasApi
 from .log import logger
 from .const import Target
 
+# [Section] Variables
 
 app: Optional[QApplication] = None
 
+
+# [Section] Modules
 
 def run_app():
     global app
@@ -22,28 +31,30 @@ def run_app():
     return app
 
 
-def load_api(target: str,
-             account: str,
-             password: str) -> Union[DomesticApi, OverSeasApi]:
+def load_api(target: str, account: str, password: str, logger=None) -> Union[DomesticApi, OverSeasApi]:
+    """
+    api 로드
+    :param target: 'domestic' / 'overseas'
+    """
+    assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
+
     # run app
     run_app()
 
     if target == Target.DOMESTIC:
-        return DomesticApi(target_account=account, password=password)
+        return DomesticApi(target_account=account, password=password, logger=logger)
 
     elif target == Target.OVERSEAS:
-        return OverSeasApi(target_account=account, password=password)
+        return OverSeasApi(target_account=account, password=password, logger=logger)
 
 
 @contextmanager
-def api_context(target: str, account: str, password: str):
+def api_context(target: str, account: str, password: str, logger=logger) -> Union[DomesticApi, OverSeasApi]:
     """
-    session생성
-
+    api 생성
     :param target: 'domestic' / 'overseas'
-    :return: session
     """
-    assert target in (Target.DOMESTIC, Target.OVERSEAS), ""
+    assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
 
     # run app
     run_app()
@@ -51,10 +62,10 @@ def api_context(target: str, account: str, password: str):
     try:
         # api
         if target == Target.DOMESTIC:
-            api = DomesticApi(target_account=account, password=password)
+            api = DomesticApi(target_account=account, password=password, logger=logger)
 
         elif target == Target.OVERSEAS:
-            api = OverSeasApi(target_account=account, password=password)
+            api = OverSeasApi(target_account=account, password=password, logger=logger)
 
         yield api
 
@@ -65,38 +76,15 @@ def api_context(target: str, account: str, password: str):
         logger.info('exit context')
 
 
-def domestic_context(account: str, password: str) -> DomesticApi:
+def domestic_context(account: str, password: str, logger=None) -> DomesticApi:
     return api_context(target=Target.DOMESTIC,
                        account=account,
-                       password=password)
+                       password=password,
+                       logger=logger)
 
 
-def overseas_context(account: str, password: str) -> OverSeasApi:
+def overseas_context(account: str, password: str, logger=None) -> OverSeasApi:
     return api_context(target=Target.OVERSEAS,
                        account=account,
-                       password=password)
-
-
-def calculate_stock_quote_unit(target: str, price: int) -> Union[int, float]:
-    """ 주식시장별 기준가격에 따른 호가단위 """
-    assert target in (Target.DOMESTIC, Target.OVERSEAS), ""
-
-    if target == Target.DOMESTIC:
-
-        if price < 1000:
-            return 1
-        elif price < 5000:
-            return 5
-        elif price < 10000:
-            return 10
-        elif price < 50000:
-            return 50
-        elif price < 100000:
-            return 100
-        elif price < 500000:
-            return 500
-        else:
-            return 1000
-
-    elif target == Target.OVERSEAS:
-        return 0.01
+                       password=password,
+                       logger=logger)

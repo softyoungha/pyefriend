@@ -4,10 +4,7 @@ from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
 
 from .const import System
-from .log import logger
-
-
-# [Section] Constants
+from .log import logger as pyefriend_logger
 
 
 # [Section] Modules
@@ -15,17 +12,20 @@ from .log import logger
 class Conn:
     """ QAxWidget을 통해 Connection Instance 생성(Low-Level) """
 
-    def __init__(self):
+    def __init__(self, logger=None):
         self.instance = QAxWidget(System.PROGID)
         self._event_loop = None
         self._error = None
+        if not logger:
+            logger = pyefriend_logger
+        self.logger = logger
 
     def dynamic_call(self, func_name: str, *args, log: bool = False):
         if log:
-            logger.debug(f'Call {func_name} with args: {str(args)}')
+            self.logger.debug(f'Call {func_name} with args: {str(args)}')
         response = self.instance.dynamicCall(func_name, *args)
         if log:
-            logger.debug(f'Response, {response}')
+            self.logger.debug(f'Response, {response}')
         return response
 
     def clear_event_loop(self):
@@ -38,7 +38,7 @@ class Conn:
         # delay 추가
         time.sleep(0.01)
 
-        logger.debug('Start Event Loop')
+        self.logger.debug('Start Event Loop')
 
         if self._error is not None:
             # event loop 내에서 에러 생겼을 경우 error 받아옴
