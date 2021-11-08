@@ -11,14 +11,15 @@ HOME_PATH = os.getenv("REBALANCING_HOME", '.')
 
 def get_config_yaml():
     # config
-    config_path = os.path.join(HOME_PATH, 'config.yml')
+    config_path = os.path.abspath(os.path.join(HOME_PATH, 'config.yml'))
 
     if os.path.exists(config_path):
         # get from config.yml
         return load_yaml(config_path)
 
     else:
-        raise FileNotFoundError(f"can't find config.yml: {config_path}")
+        raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: '{config_path}'"
+                                f"rebalancing module 내의 config.template.yml을 복사하여 위의 경로에 위치시키세요")
 
 
 class Config:
