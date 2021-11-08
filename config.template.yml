@@ -1,0 +1,12 @@
+user:
+  # 모의투자시 사용하는 계정
+  test_account: ''
+  test_password: ''
+
+  # 실제 계정
+  real_account: ''
+  real_password: ''
+
+# backend로 사용할 database
+database:
+  sqlalchemy_conn_str: 'sqlite:///database.db'
