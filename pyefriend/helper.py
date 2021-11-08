@@ -1,12 +1,15 @@
+import logging
 import sys
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 from contextlib import contextmanager
 from PyQt5.QtWidgets import QApplication
 
-from pyefriend.settings import logger
-from pyefriend.utils.const import Target
 from .api import DomesticApi, OverSeasApi
+from .log import logger
 
+
+# 상수
+from .const import Target
 
 app: Optional[QApplication] = None
 
@@ -21,21 +24,21 @@ def run_app():
     return app
 
 
-def load_api(target: str = Target.DOMESTIC,
-             account: str = None,
-             test: bool = True) -> Union[DomesticApi, OverSeasApi]:
+def load_api(target: str,
+             account: str,
+             password: str) -> Union[DomesticApi, OverSeasApi]:
     # run app
     run_app()
 
     if target == Target.DOMESTIC:
-        return DomesticApi(target_account=account, test=test)
+        return DomesticApi(target_account=account, password=password)
 
     elif target == Target.OVERSEAS:
-        return OverSeasApi(target_account=account, test=test)
+        return OverSeasApi(target_account=account, password=password)
 
 
 @contextmanager
-def api_context(target: str, account: str = None, test: bool = True):
+def api_context(target: str, account: str, password: str):
     """
     session생성
 
@@ -50,10 +53,10 @@ def api_context(target: str, account: str = None, test: bool = True):
     try:
         # api
         if target == Target.DOMESTIC:
-            api = DomesticApi(target_account=account, test=test)
+            api = DomesticApi(target_account=account, password=password)
 
         elif target == Target.OVERSEAS:
-            api = OverSeasApi(target_account=account, test=test)
+            api = OverSeasApi(target_account=account, password=password)
 
         yield api
 
@@ -64,13 +67,15 @@ def api_context(target: str, account: str = None, test: bool = True):
         logger.info('exit context')
 
 
-def domestic_context(account: str = None, test: bool = True) -> DomesticApi:
+def domestic_context(account: str, password: str) -> DomesticApi:
     return api_context(target=Target.DOMESTIC,
                        account=account,
-                       test=test)
+                       password=password)
 
 
-def overseas_context(account: str = None, test: bool = True) -> OverSeasApi:
+def overseas_context(account: str, password: str) -> OverSeasApi:
     return api_context(target=Target.OVERSEAS,
                        account=account,
-                       test=test)
+                       password=password)
+
+

@@ -4,7 +4,7 @@ from sqlalchemy import MetaData, Column, Integer, DateTime, func, text
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
-from pyefriend.settings import engine
+from rebalancing.settings import engine
 
 # create metadata
 metadata: Optional[MetaData] = MetaData(bind=engine)

@@ -1,4 +1,12 @@
-from .settings import initialize, logger
+from .api import DomesticApi, OverSeasApi
+from .helper import api_context, load_api, domestic_context, overseas_context
 
-logger.info('Loaded pyefriend!')
-initialize()
+
+__all__ = [
+    'DomesticApi',
+    'OverSeasApi',
+    'api_context',
+    'load_api',
+    'domestic_context',
+    'overseas_context',
+]

@@ -2,7 +2,7 @@ from typing import List, Dict
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref, Session
 
-from pyefriend.utils.orm_helper import provide_session
+from rebalancing.utils.orm_helper import provide_session
 from .base import Base, Length
 
 

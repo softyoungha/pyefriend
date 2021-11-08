@@ -10,12 +10,6 @@ class Target:
     OVERSEAS = 'overseas'  # 해외(미국)
 
 
-class Currency:
-    """ 환율 정보 """
-    URL = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
-    BASE = 1186.50  # 2021-11-06 기준
-
-
 class Service:
     """ 한국투자증권 서비스 """
 
@@ -60,3 +54,9 @@ class MarketCode:
             return 'AMS'
         else:
             raise KeyError(f'no such code: {code}')
+
+
+class Currency:
+    """ 환율 정보 """
+    URL = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
+    BASE = 1186.50  # 2021-11-06 기준

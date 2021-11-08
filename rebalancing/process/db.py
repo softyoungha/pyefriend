@@ -3,10 +3,10 @@ import pandas as pd
 from typing import Dict, List
 from sqlalchemy.orm import Session
 
-from pyefriend.settings import BASE_DIR, logger
-from pyefriend.models.base import metadata
-from pyefriend.models import Product, Portfolio
-from pyefriend.utils.orm_helper import provide_session
+from rebalancing.settings import BASE_DIR, logger
+from rebalancing.models.base import metadata
+from rebalancing.models import Product, Portfolio
+from rebalancing.utils.orm_helper import provide_session
 
 
 def init_db():

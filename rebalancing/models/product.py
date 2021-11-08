@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
-from pyefriend.utils.orm_helper import provide_session
-from pyefriend.utils.const import MarketCode
+from rebalancing.utils.orm_helper import provide_session
+from rebalancing.utils.const import MarketCode
 from .base import Base, Length
 
 

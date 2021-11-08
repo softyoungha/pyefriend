@@ -1,16 +1,20 @@
 from typing import List, Dict, Union, Optional
 from datetime import datetime
 
-from pyefriend.settings import logger
-from pyefriend.config import Config
-from pyefriend.utils.const import System, Service, MarketCode
-from pyefriend.exceptions import UnExpectedException, UnAuthorizedAccountException, NotConnectedException
-
+from .const import Service, MarketCode
+from .exceptions import UnExpectedException, UnAuthorizedAccountException, NotConnectedException
+from .log import logger
 from .connection import Conn
 
+# [Section] Variables
 
 conn: Optional[Conn] = None
 
+
+# [Section] Constants
+
+
+# [Section] Modules
 
 def get_or_create_conn(raise_error: bool = True):
     global conn
@@ -43,15 +47,12 @@ def get_or_create_conn(raise_error: bool = True):
 
 class Api:
     """ High Level API """
-    def __init__(self, target_account: str = None, test: bool = True):
-        self.test = test
-        self._encrypted_password = None
 
-        if target_account is None:
-            if self.test:
-                self.target_account = Config.get('user', 'TEST_ACCOUNT')
-            else:
-                self.target_account = Config.get('user', 'REAL_ACCOUNT')
+    def __init__(self,
+                 target_account: str,
+                 password: str):
+        self.target_account = target_account
+        self._encrypted_password = self.conn.GetEncryptPassword(password)
 
         if not self.is_connected:
             raise NotConnectedException()
@@ -59,7 +60,7 @@ class Api:
         if self.conn.IsVTS():
             logger.info(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
         else:
-            logger.warn(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
+            logger.warning(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
 
     @property
     def conn(self):
@@ -80,13 +81,6 @@ class Api:
 
     @property
     def encrypted_password(self):
-        if self._encrypted_password is None:
-            if self.test:
-                raw_password = Config.get('user', 'TEST_ACCOUNT')
-            else:
-                raw_password = Config.get('user', 'REAL_ACCOUNT')
-
-            self._encrypted_password = self.conn.GetEncryptPassword(raw_password)
         return self._encrypted_password
 
     @property

@@ -2,11 +2,11 @@
 import os
 from typing import Any, Optional, List
 
-from pyefriend.exceptions import ConfigException
-from pyefriend.utils.tool import load_yaml
+from rebalancing.exceptions import ConfigException
+from rebalancing.utils.tool import load_yaml
 
 
-HOME_PATH = os.getenv("PYEFRIEND_HOME", '.')
+HOME_PATH = os.getenv("REBALANCING_HOME", '.')
 
 
 def get_config_yaml():

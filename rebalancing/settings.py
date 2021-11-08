@@ -6,8 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from pyefriend.config import Config, HOME_PATH
-from pyefriend.utils.log import get_logger
+from rebalancing.config import Config, HOME_PATH
+from rebalancing.utils.log import get_logger
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +15,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 engine: Optional[Engine] = None
 Session: Optional[scoped_session] = None
 
-logger = get_logger('pyefriend')
+logger = get_logger('REBALANCING')
 
 
 def prepare_syspath():
