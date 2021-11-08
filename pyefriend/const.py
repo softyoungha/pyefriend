@@ -15,6 +15,7 @@ class Service:
 
     # 국내
     SCP = 'SCP'  # 주식 현재가 시세
+    SCPD = 'SCPD'  # 주식 현재가 일자별
     SCAP = 'SCAP'  # 주식 현금 금액 잔고 조회
     SATPS = 'SATPS'  # 주식 계좌 당일 잔고 현황 조회
     SCABO = 'SCABO'  # 주식 현금 매수 주문
@@ -25,6 +26,8 @@ class Service:
 
     # 미국
     OS_ST01 = 'OS_ST01'  # 해외주식 현재가 체결
+    OS_ST02 = 'OS_ST02'  # 해외주식 현재가 10호가(?)
+    OS_ST03 = 'OS_ST03'  # 해외주식 일,주,월 종가 시세
     OS_US_DNCL = 'OS_US_DNCL'  # 야간 외화예수금
     OS_US_CBLC = 'OS_US_CBLC'  # 미국 잔고
     OS_OS3004R = 'OS_OS3004R'  # 해외 증거금 조회
@@ -54,6 +57,10 @@ class MarketCode:
             return 'AMS'
         else:
             raise KeyError(f'no such code: {code}')
+
+    @classmethod
+    def us_list(cls):
+        return [cls.NASD, cls.NYSE, cls.AMEX]
 
 
 class Currency:

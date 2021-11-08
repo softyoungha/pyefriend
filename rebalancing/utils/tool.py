@@ -18,7 +18,7 @@ import requests
 
 
 def load_yaml(file_path: str) -> dict:
-    with open(file_path) as f:
+    with open(file_path, encoding='utf-8') as f:
         _dict = yaml.load(f, Loader=yaml.FullLoader)
 
     return _dict

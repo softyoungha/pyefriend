@@ -18,6 +18,7 @@ class Length:
     ID = 100
     TYPE = 30
     DESC = 5000
+    DATE = 8
 
 
 class NamedColumns:

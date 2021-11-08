@@ -1,3 +1,5 @@
+import os
+import pandas as pd
 from typing import List, Dict
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref, Session
@@ -12,7 +14,7 @@ class Portfolio(Base):
     # columns
     product_name = Column(String(Length.ID), ForeignKey('product.name'), primary_key=True, comment='종목명')
     weight = Column(Float, comment='가중치(평가액)')
-    last_price = Column(Float, comment='마지막 조회시 종목 금액')
+    planning_price = Column(Float, comment='')
     use_yn = Column(Boolean, default=False, comment='포함 여부')
 
     # relation
@@ -26,15 +28,25 @@ class Portfolio(Base):
 
     @property
     @provide_session
-    def product_code(self, session=None):
+    def product_code(self, session: Session = None):
         return self.product.code
 
     @property
     @provide_session
-    def market_code(self, session=None):
+    def market_code(self, session: Session = None):
         return self.product.market_code
+
+    @property
+    @provide_session
+    def current(self, session: Session = None):
+        return self.product.current
 
     @classmethod
     @provide_session
-    def update_price(cls, data: List[Dict], session: Session = None):
+    def update(cls, data: List[Dict], session: Session = None):
         session.bulk_update_mappings(cls, data)
+
+    @classmethod
+    @provide_session
+    def insert(cls, items: List[dict], session: Session = None):
+        session.bulk_save_objects([cls(**item) for item in items])

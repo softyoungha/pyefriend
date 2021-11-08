@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from rebalancing.settings import BASE_DIR, logger
 from rebalancing.models.base import metadata
 from rebalancing.models import Product, Portfolio
-from rebalancing.utils.orm_helper import provide_session
 
 
 def init_db():
@@ -24,7 +23,6 @@ def reset_db():
 
 
 def load_data(data_path: str):
-
     if not os.path.exists(data_path):
         raise FileNotFoundError(data_path)
 
@@ -42,31 +40,13 @@ def load_data(data_path: str):
     )
 
     # initialize
-    save_products(products)
-    save_portfolios(products)
-
-
-@provide_session
-def save_products(products: List[Dict], session: Session = None):
-    product_instances = [
-        Product(code=product.get('product_code'),
-                name=product.get('product_name'),
-                market_code=product.get('market_code'))
-        for product in products
-    ]
-
-    session.bulk_save_objects(product_instances)
-
-
-@provide_session
-def save_portfolios(products: List[Dict], session: Session = None):
-    portfolio_instances = [
-        Portfolio(product_name=product.get('product_name'),
-                  weight=product.get('weight'))
-        for product in products
-    ]
-
-    session.bulk_save_objects(portfolio_instances)
+    Product.insert([{'code': product.get('product_code'),
+                     'name': product.get('product_name'),
+                     'market_code': product.get('market_code')}
+                    for product in products])
+    Portfolio.insert([{'product_name': product.get('product_name'),
+                       'weight': product.get('weight')}
+                      for product in products])
 
 
 def init_data():

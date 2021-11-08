@@ -19,7 +19,9 @@ def get_config_yaml():
 
     else:
         raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: '{config_path}'"
-                                f"rebalancing module 내의 config.template.yml을 복사하여 위의 경로에 위치시키세요")
+                                f"\n1. 환경변수에 REBALANCING_HOME를 추가하세요."
+                                f"\n2. rebalancing module 내의 config.template.yml을 복사하여 "
+                                "{REBALANCING_HOME}/config.yml 로 위치시키세요.")
 
 
 class Config:
@@ -111,3 +113,18 @@ class Config:
 
         elif isinstance(val, list):
             return val
+
+    @classmethod
+    def get_percent(cls, section: str, key: str, **kwargs) -> Optional[float]:
+        val = cls.get(section, key, **kwargs)
+
+        try:
+            if '%' in val:
+                val = val.replace('%', '')
+
+            return float(val)
+        except ValueError:
+            raise ConfigException(
+                f'Failed to convert value to float. Please check "{key}" key in "{section}" section. '
+                f'Current value: "{val}".'
+            )

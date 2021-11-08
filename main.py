@@ -1,9 +1,9 @@
 
-from pyefriend.core import DomesticApi, domestic_context
+from pyefriend import DomesticApi, domestic_context
 
 
-def main(test: bool = True):
-    with domestic_context(test=test) as api:
+def main():
+    with domestic_context() as api:
         api: DomesticApi
         print('session.is_connected', api.is_connected)
         print('isVTS', api.conn.IsVTS())
@@ -14,7 +14,7 @@ def main(test: bool = True):
         # 신세계 코드
         product_code = '004170'
         print('명칭', api.get_stock_name(product_code))
-        print('신세계 가격', api.get_stock_price(product_code))
+        print('신세계 가격', api.get_stock_info(product_code))
         print(api.buy_stock('004170', 1))
         print('get_total_cash', api.get_total_cash())
         print('get_stocks', api.get_stocks())

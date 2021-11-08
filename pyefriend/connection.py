@@ -14,14 +14,19 @@ from .log import logger
 
 class Conn:
     """ QAxWidget을 통해 Connection Instance 생성(Low-Level) """
+
     def __init__(self):
         self.instance = QAxWidget(System.PROGID)
         self._event_loop = None
         self._error = None
 
-    def dynamic_call(self, func_name: str, *args):
-        logger.info(f'Call {func_name} with args: {str(args)}')
-        return self.instance.dynamicCall(func_name, *args)
+    def dynamic_call(self, func_name: str, *args, log: bool = False):
+        if log:
+            logger.debug(f'Call {func_name} with args: {str(args)}')
+        response = self.instance.dynamicCall(func_name, *args)
+        if log:
+            logger.debug(f'Response, {response}')
+        return response
 
     def clear_event_loop(self):
         if self._event_loop is not None:
@@ -33,12 +38,12 @@ class Conn:
         # delay 추가
         time.sleep(0.01)
 
-        logger.info('Start Event Loop')
+        logger.debug('Start Event Loop')
 
         if self._error is not None:
             # event loop 내에서 에러 생겼을 경우 error 받아옴
             raise self._error
-        
+
         self._event_loop = QEventLoop()  # 이벤트루프 할당
         self._event_loop.exec_()  # 이벤트루프 실행
         return self
@@ -142,7 +147,7 @@ class Conn:
         :return 선택한 인덱스의 데이터 값을 반환합니다.
         """
         return self.dynamic_call("GetMultiData(int, int, int, int)",
-                                         block_index, record_index, field_index, attribute_type)
+                                 block_index, record_index, field_index, attribute_type)
 
     def GetReqMsgCode(self) -> str:
         """
@@ -151,7 +156,7 @@ class Conn:
 
         :return 선택한 인덱스의 데이터 값을 반환합니다.
         """
-        return self.dynamic_call("GetReqMsgCode()")
+        return self.dynamic_call("GetReqMsgCode()", log=False)
 
     def GetRtCode(self) -> str:
         """
@@ -160,7 +165,7 @@ class Conn:
 
         :return 서버에서 수신된 서비스의 메시지 코드 값을 반환합니다.
         """
-        return self.dynamic_call("GetRtCode()")
+        return self.dynamic_call("GetRtCode()", log=False)
 
     def GetReqMessage(self) -> str:
         """
@@ -169,7 +174,7 @@ class Conn:
 
         :return 서버에서 수신된 서비스의 통신 메시지를 받습니다.
         """
-        return self.dynamic_call("GetReqMessage()")
+        return self.dynamic_call("GetReqMessage()", log=False)
 
     def RequestData(self, service: str):
         """
@@ -182,7 +187,7 @@ class Conn:
         time.sleep(0.1)
 
         # call
-        self.dynamic_call("RequestData(QString)", service)
+        self.dynamic_call("RequestData(QString)", service, log=True)
 
         # clear and execute
         return (
@@ -224,7 +229,7 @@ class Conn:
         :return 0(FALSE) 이면 실패, 1(TRUE) 이면 성공
         """
         result = self.dynamic_call("SetMultiBlockData(int, int, int, QString)",
-                                           block_index, record_index, field_index, value)
+                                   block_index, record_index, field_index, value)
         print(result, type(result))
 
         return result == '1'
@@ -291,5 +296,3 @@ class Conn:
         :return: 모의투자 접속 여부 (TRUE : 모의투자 접속, FALSE : 운영 접속)
         """
         return self.dynamic_call("IsVTS()")
-
-

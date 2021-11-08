@@ -6,10 +6,8 @@ from PyQt5.QtWidgets import QApplication
 
 from .api import DomesticApi, OverSeasApi
 from .log import logger
-
-
-# 상수
 from .const import Target
+
 
 app: Optional[QApplication] = None
 
@@ -79,3 +77,26 @@ def overseas_context(account: str, password: str) -> OverSeasApi:
                        password=password)
 
 
+def calculate_stock_quote_unit(target: str, price: int) -> Union[int, float]:
+    """ 주식시장별 기준가격에 따른 호가단위 """
+    assert target in (Target.DOMESTIC, Target.OVERSEAS), ""
+
+    if target == Target.DOMESTIC:
+
+        if price < 1000:
+            return 1
+        elif price < 5000:
+            return 5
+        elif price < 10000:
+            return 10
+        elif price < 50000:
+            return 50
+        elif price < 100000:
+            return 100
+        elif price < 500000:
+            return 500
+        else:
+            return 1000
+
+    elif target == Target.OVERSEAS:
+        return 0.01

@@ -13,5 +13,12 @@ class NotConnectedException(Exception):
         super().__init__(msg)
 
 
+class AccountNotExistsException(Exception):
+    """ 입력한 계좌가 존재하지 않습니다. """
+    def __init__(self):
+        msg = "입력한 계좌가 존재하지 않습니다."
+        super().__init__(msg)
+
+
 class UnAuthorizedAccountException(Exception):
     """ 계좌 권한 관련 에러 """
