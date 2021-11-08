@@ -302,6 +302,7 @@ class Executor:
         self.logger.info(f'리밸런싱된 후 전체 금액(tobe_total_amount): {tobe_total_amount}')
         self.logger.info(f'리밸런싱 후 감소 금액: {numeric_type(total_budget) - tobe_total_amount}')
 
+        # 결과 집계
         results = {}
         results['deposit'] = deposit
         results['total_amount'] = total_amount
@@ -311,6 +312,7 @@ class Executor:
         results['tobe_total_amount'] = tobe_total_amount
 
         def _print_log_save(df: pd.DataFrame, index_name: str, title: str, filename: str):
+            """ 반복 작업 최소화 """
             df.index.name = index_name
             self.logger.info(f'{title}: \n{df.to_string()}')
             display(Markdown(f'### {title}'))
