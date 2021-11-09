@@ -8,11 +8,11 @@ install_requires = [
 ]
 
 setup(name='pyefriend',
-      version='1.0',
+      version='1.0.1',
       author='Youngha Park',
       author_email='proyoungha@naver.com',
       install_requires=install_requires,
-      url='https://softyoungha.github.io/',
+      url='https://github.com/softyoungha',
       license='MIT',
       description="Python API link to 'efriend expert'",
       long_description=open('README.md', encoding='utf-8').read(),
