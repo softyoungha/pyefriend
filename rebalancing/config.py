@@ -6,11 +6,14 @@ from rebalancing.exceptions import ConfigException
 from rebalancing.utils.tool import load_yaml
 
 
-HOME_PATH = os.getenv("REBALANCING_HOME", '.')
-CONF_PATH = os.getenv("REBALANCING_CONF", './config.yml')
+HOME_PATH = os.getenv("REBAL_HOME", None)
+CONF_PATH = os.getenv("REBAL_CONF", None)
+
+assert HOME_PATH is not None, "환경변수 'REBAL_HOME'를 설정해야합니다."
+assert CONF_PATH is not None, "환경변수 'REBAL_CONF'를 설정해야합니다."
 
 
-def get_config_yaml():
+def get_config_yaml() -> dict:
     # config
     config_path = os.path.abspath(CONF_PATH)
 
@@ -19,11 +22,11 @@ def get_config_yaml():
         return load_yaml(config_path)
 
     else:
-        raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: "
-                                f"\n config경로: '{config_path}'"
-                                f"\n1. 환경변수에 'REBALANCING_HOME를' 추가하세요."
-                                f"\n2. rebalancing module 내의 config.template.yml을 복사하여 "
-                                "{REBALANCING_HOME}/config.yml 로 위치시키세요.")
+        raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: \n"
+                                f"config경로: '{config_path}'\n"
+                                f"1. 환경변수에 'REBAL_CONF'를 추가하세요.\n"
+                                f"2. rebalancing module 내의 config.template.yml을 복사하여"
+                                f"'REBAL_CONF'로 위치시킨 후 config 내용을 수정하세요.")
 
 
 class Config:

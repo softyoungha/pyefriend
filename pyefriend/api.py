@@ -1,7 +1,8 @@
 from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
+import requests
 
-from .const import Service, MarketCode
+from .const import Service, MarketCode, Currency
 from .log import logger as pyefriend_logger
 from .connection import Conn
 from .exceptions import *
@@ -24,17 +25,20 @@ def get_or_create_conn(logger=None, raise_error: bool = True):
             msg_code = conn.GetReqMsgCode()
 
             if return_code != '0':
-                msg = conn.GetReqMessage()
+                msg = f'[{msg_code}] {conn.GetReqMessage()}'
 
                 if raise_error:
                     if msg_code == '40910000':
                         raise UnAuthorizedAccountException(msg)
 
+                    elif msg_code == '40580000':
+                        raise MarketClosingException(msg)
+
                     else:
                         raise UnExpectedException(msg)
 
                 else:
-                    logger.error(f'[{msg_code}] {conn.GetReqMessage()}')
+                    logger.error(msg)
 
         conn.set_receive_data_event_handler(send_log_when_error)
         conn.set_receive_error_data_handler(send_log_when_error)
@@ -515,8 +519,23 @@ class OverSeasApi(Api):
                 .request_data(Service.OS_OS3004R)
         )
 
-        # response
-        return float(self.conn.GetMultiData(3, 0, 4))
+        # get data
+        currency = self.conn.GetMultiData(3, 0, 4)
+
+        # 값을 불러오지 못할 때가 있음
+        if currency != '':
+            return float(currency)
+
+        try:
+            # requests 모듈로 타 사이트에서 로드해옴
+            response = requests.get(Currency.URL)
+            data = response.json()
+            return data[0]['basePrice']
+
+        except Exception as e:
+            self.logger.error('환율 정보를 불러오는 데 실패하였습니다.'
+                              '설정된 환율을 사용합니다.')
+            return Currency.BASE
 
     def get_stock_info(self,
                        product_code: str,

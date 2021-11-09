@@ -4,19 +4,23 @@ core:
 
   # 모의투자 계좌('-' 없이)
   test_account: ''
+
   # 모의투자 비밀번호
   test_password: ''
 
   # 실제 계좌명('-' 없이)
   real_account: ''
+
   # 실제 계좌 비밀번호
   real_password: ''
 
-  # 리포트 저장 경로
-  report_dir: 'reports'
+  # 리포트 저장 경로(. = REBAL_HOME)
+  report_dir: './reports'
 
 # backend로 사용할 database
 database:
+
+  # sqlite일 경우 절대경로로 설정 가능
   sqlalchemy_conn_str: 'sqlite:///database.db'
 
 

@@ -35,8 +35,7 @@ def configure_sqlalchemy_session(echo: bool = False):
     global Session
 
     # set engine
-    engine = create_engine(Config.get('database', 'SQLALCHEMY_CONN_STR'),
-                           echo=echo)
+    engine = create_engine(Config.get('database', 'SQLALCHEMY_CONN_STR'), echo=echo)
     logger.info('create engine')
 
     # set Session

@@ -24,3 +24,7 @@ class AccountNotExistsException(Exception):
 
 class UnAuthorizedAccountException(Exception):
     """ 계좌 권한 관련 에러 """
+
+
+class MarketClosingException(Exception):
+    """ 장 종료 """
