@@ -381,5 +381,5 @@ class Executor:
                                  title='Rebalance Detail(WON)',
                                  filename='detail_won.csv')
 
-    def re_balance(self):
+    def re_balance(self, how=''):
         pass

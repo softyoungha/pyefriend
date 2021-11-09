@@ -73,3 +73,9 @@ pip install pyefriend
 
 
 ## Links
+
+- [Pypi](https://pypi.org/project/pyefriend/1.0/)
+
+- [Github](https://github.com/softyoungha)
+
+- [Github blog](https://softyoungha.github.io/))
