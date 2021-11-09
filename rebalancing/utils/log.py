@@ -1,8 +1,9 @@
 import logging
+
 from rebalancing.config import Config
 
 
-def get_logger(name: str,
+def get_logger(name: str = 're-balancing',
                log_level: int = None,
                use_stream: bool = True,
                use_file: bool = True,

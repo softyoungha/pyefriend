@@ -42,4 +42,4 @@ def get_logger(name: str = 'pyefriend',
     return logger
 
 
-logger = get_logger()
+logger = get_logger(use_file=False)

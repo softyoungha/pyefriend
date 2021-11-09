@@ -1,6 +1,6 @@
 # default
 setuptools==58.5.3
-whell==0.37.0
+wheel==0.37.0
 pip==21.3.1
 pyyaml==6.0
 requests==2.26.0

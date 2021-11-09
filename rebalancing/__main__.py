@@ -1,20 +1,24 @@
-import argparse
+#-*- coding:utf-8 -*-
+from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Optional
+from getpass import getpass
 
 
-def argument_parser() -> argparse.ArgumentParser:
+def argument_parser() -> ArgumentParser:
     from pyefriend.const import Target
 
     description = 'Rebalancing App 실행을 위해 '
-    parser = argparse.ArgumentParser(description=description)
+    parser = ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
     parser.add_argument('--target', '-t',
                         type=str,
-                        help='국내/해외 투자 선택',
+                        help='domestic: 국내 투자 선택\n'
+                             'overseas: 해외 투자 선택',
                         choices=[Target.DOMESTIC, Target.OVERSEAS],
                         required=True)
     parser.add_argument('--load', '-l',
                         type=str,
-                        help="이전 timestamp 이력에 덮어쓰기 ('%Y%m%d_%H_%M_%S')",
+                        help="이전 timestamp 이력에 덮어쓰기\n"
+                             "str type with format 'YYYYmmdd_HH_MM_SS'",
                         default=None)
     parser.add_argument('--real', '-r',
                         action="store_true",
@@ -25,10 +29,12 @@ def argument_parser() -> argparse.ArgumentParser:
                         default=None)
     parser.add_argument('--password', '-p',
                         action="store_true",
-                        help="비밀번호. 입력하지 않을 경우 config.yml에서 사용")
+                        help="계좌 매수/매도시 입력 비밀번호\n"
+                             "입력하지 않을 경우 config.yml에서 사용\n"
+                             "-p/--password 입력 후 별도로 입력")
     parser.add_argument('--skip-refresh', '-s',
                         action="store_true",
-                        help="종목 최신화 skip")
+                        help="입력시 종목 최신화 skip")
 
     return parser
 
@@ -49,7 +55,7 @@ def main():
     skip: bool = parsed_args.skip_refresh
 
     if parsed_args.password:
-        password: Optional[str] = input('password: ')
+        password: Optional[str] = getpass('Password: ')
     else:
         password = None
 

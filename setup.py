@@ -1,22 +1,10 @@
 #-*- coding:utf-8 -*-
 from setuptools import setup, find_packages
+from pip._internal.req import parse_requirements
 
 install_requires = [
-      # default
-      'pyyaml==6.0',
-      'requests==2.26.0',
-
-      # Need python 32-bit and administrator
-      'PyQt5==5.15.6',
-
-      # visualization
-      'ipython==7.29.0',
-      'jupyter==1.0.0',
-      'notebook==6.4.5',
-      'pywinpty<1,>=0.5',
-
-      # sqlalchemy
-      'sqlalchemy==1.4.26',
+      str(r.requirement)
+      for r in parse_requirements('requirements.txt', session='hack')
 ]
 
 setup(name='pyefriend',
@@ -42,6 +30,5 @@ setup(name='pyefriend',
       entry_points={
             'console_scripts': [
                   'rebalancing=rebalancing.__main__:main',
-                  'rebalancing2=rebalancing:main',
             ],
       })

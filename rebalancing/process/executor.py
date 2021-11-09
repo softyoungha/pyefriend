@@ -1,5 +1,4 @@
 import os
-import shutil
 from datetime import datetime
 import pandas as pd
 from typing import Union
@@ -152,7 +151,7 @@ class Executor:
     @property
     def logger(self):
         if not self._logger:
-            self._logger = get_logger('re-balancing', path=self.path('log.txt'))
+            self._logger = get_logger(path=self.path('log.txt'))
         return self._logger
 
     @provide_session

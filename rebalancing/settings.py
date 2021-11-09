@@ -19,7 +19,7 @@ engine: Optional[Engine] = None
 Session: Optional[scoped_session] = None
 
 # logger
-logger = get_logger('re-balancing')
+logger = get_logger(use_file=False)
 
 # jupyter kernel인지 여부
 IS_JUPYTER_KERNEL = is_jupyter_kernel()

@@ -13,7 +13,7 @@ core:
   real_password: ''
 
   # 리포트 저장 경로
-  reports_path: './reports/{report_name}'
+  report_dir: 'reports'
 
 # backend로 사용할 database
 database:
