@@ -1,4 +1,7 @@
 # default
+setuptools==58.5.3
+whell==0.37.0
+pip==21.3.1
 pyyaml==6.0
 requests==2.26.0
 
@@ -12,5 +15,6 @@ notebook==6.4.5
 pywinpty<1,>=0.5
 
 # sqlalchemy
+numpy==1.21.4
+pandas==1.3.4
 sqlalchemy==1.4.26
-

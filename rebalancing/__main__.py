@@ -1,11 +1,10 @@
 import argparse
 from typing import Optional
 
-from rebalancing.process import Executor
-from pyefriend.const import Target
-
 
 def argument_parser() -> argparse.ArgumentParser:
+    from pyefriend.const import Target
+
     description = 'Rebalancing App 실행을 위해 '
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--target', '-t',
@@ -53,6 +52,9 @@ def main():
         password: Optional[str] = input('password: ')
     else:
         password = None
+
+    # arg parsing 이후에 import
+    from rebalancing.process import Executor
 
     # create executor
     executor = Executor(target=target,

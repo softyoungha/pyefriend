@@ -2,12 +2,14 @@ core:
   # log format
   log_format: '[%(levelname)s] %(asctime)s - %(name)s/%(filename)s/%(funcName)s, %(lineno)s: %(message)s'
 
-  # 모의투자시 사용하는 계정
+  # 모의투자 계좌('-' 없이)
   test_account: ''
+  # 모의투자 비밀번호
   test_password: ''
 
-  # 실제 계정
+  # 실제 계좌명('-' 없이)
   real_account: ''
+  # 실제 계좌 비밀번호
   real_password: ''
 
   # 리포트 저장 경로

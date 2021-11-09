@@ -54,3 +54,7 @@ def configure_sqlalchemy_session(echo: bool = False):
 def initialize():
     prepare_syspath()
     configure_sqlalchemy_session()
+
+
+logger.info('Initialize Re-balancing!')
+initialize()

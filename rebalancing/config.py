@@ -19,8 +19,9 @@ def get_config_yaml():
         return load_yaml(config_path)
 
     else:
-        raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: '{config_path}'"
-                                f"\n1. 환경변수에 REBALANCING_HOME를 추가하세요."
+        raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: "
+                                f"\n config경로: '{config_path}'"
+                                f"\n1. 환경변수에 'REBALANCING_HOME를' 추가하세요."
                                 f"\n2. rebalancing module 내의 config.template.yml을 복사하여 "
                                 "{REBALANCING_HOME}/config.yml 로 위치시키세요.")
 
