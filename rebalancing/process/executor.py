@@ -195,7 +195,7 @@ class Executor:
             {
                 'product_name': name,
                 'standard_date': record['영업일자'],
-                'mininum': record['최저가'],
+                'minimum': record['최저가'],
                 'maximum': record['최고가'],
                 'opening': record['시가'],
                 'closing': record['종가']

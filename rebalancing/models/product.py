@@ -96,7 +96,7 @@ class ProductHistory(Base):
     # id = Column(Integer(), primary_key=True, autoincrement=True)
     product_name = Column(String(Length.ID), ForeignKey('product.name'), primary_key=True, comment='종목명')
     standard_date = Column(String(Length.DATE), primary_key=True, comment='영업일자')
-    mininum = Column(Float, comment='최저가')
+    minimum = Column(Float, comment='최저가')
     maximum = Column(Float, comment='최고가')
     opening = Column(Float, comment='시가')
     closing = Column(Float, comment='종가')
