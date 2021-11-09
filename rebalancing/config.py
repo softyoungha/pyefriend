@@ -10,7 +10,16 @@ HOME_PATH = os.getenv("REBAL_HOME", None)
 CONF_PATH = os.getenv("REBAL_CONF", None)
 
 assert HOME_PATH is not None, "환경변수 'REBAL_HOME'를 설정해야합니다."
-assert CONF_PATH is not None, "환경변수 'REBAL_CONF'를 설정해야합니다."
+
+if CONF_PATH is not None:
+    CONF_PATH = os.path.join(HOME_PATH, 'config.yml')
+
+REPORT_DIR = os.path.join(HOME_PATH, 'report')
+
+print(f"다음의 경로를 사용합니다.\n"
+      f"- HOME_PATH='{HOME_PATH}'\n"
+      f"- CONF_PATH='{CONF_PATH}'\n"
+      f"- REPORT_DIR='{REPORT_DIR}")
 
 
 def get_config_yaml() -> dict:
@@ -23,7 +32,6 @@ def get_config_yaml() -> dict:
 
     else:
         raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: \n"
-                                f"config경로: '{config_path}'\n"
                                 f"1. 환경변수에 'REBAL_CONF'를 추가하세요.\n"
                                 f"2. rebalancing module 내의 config.template.yml을 복사하여"
                                 f"'REBAL_CONF'로 위치시킨 후 config 내용을 수정하세요.")

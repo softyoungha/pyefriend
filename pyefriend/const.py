@@ -36,6 +36,7 @@ class Service:
     OS_US_CCLD = 'OS_US_CCLD'  # 미국 체결 내역 조회
     OS_US_NCCS = 'OS_US_NCCS'  # 미국 미체결 내역 조회
     OS_US_CNC = 'OS_US_CNC'  # 미국 주식 주문 취소
+    PFX06910000 = 'PFX06910000'  # 해외증시 일주월별 조회
 
 
 class MarketCode:
@@ -61,6 +62,20 @@ class MarketCode:
     @classmethod
     def us_list(cls):
         return [cls.NASD, cls.NYSE, cls.AMEX]
+
+
+class ProductCode:
+    # 업종 코드: 'U'
+    KOSPI = '0001'
+    KOSDAQ = '1001'
+    KOSPI200 = '2001'
+
+    # S&P 500
+    SPX = 'SPX'
+
+    # 시장분류코드: 'J'
+    SAMSUNG = '005930'
+    APPLE = 'AAPL'  # NASD
 
 
 class Currency:

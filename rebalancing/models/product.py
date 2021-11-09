@@ -100,6 +100,7 @@ class ProductHistory(Base):
     maximum = Column(Float, comment='최고가')
     opening = Column(Float, comment='시가')
     closing = Column(Float, comment='종가')
+    volume = Column(int, comment='거래량')
 
     # relation
     product = relationship('Product', uselist=False, backref='history')

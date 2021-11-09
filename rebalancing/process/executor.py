@@ -8,7 +8,7 @@ from pyefriend import load_api
 from pyefriend.const import MarketCode, Target
 
 from rebalancing.settings import IS_JUPYTER_KERNEL
-from rebalancing.config import Config, HOME_PATH
+from rebalancing.config import Config, REPORT_DIR
 from rebalancing.models import Product, Portfolio, ProductHistory
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
@@ -126,7 +126,7 @@ class Executor:
     def report_path(self):
         if not self._report_path:
             # get
-            report_dir = os.path.join(HOME_PATH, Config.get('core', 'REPORT_DIR'))
+            report_dir = REPORT_DIR
 
             # expand ~ -> HOME path
             report_dir = os.path.expanduser(report_dir)

@@ -1,5 +1,7 @@
 # pyefriend
 
+##### By Youngha Park
+
 python을 이용하여 한국투자증권 OpenAPI에 연동하여 트레이딩이 가능한 모듈입니다. 
 [eFriendPy](https://github.com/pjueon/eFriendPy)를 참고하여 만든 코드를 재해석하여 구성하였습니다.
 
@@ -16,7 +18,8 @@ python을 이용하여 한국투자증권 OpenAPI에 연동하여 트레이딩�
 ## Warning
 
 - pyefriend, rebalancing 코드는 개인 투자 목적으로 사용하거나 스터디 용도로만 사용하실 수 있습니다. 
-- pyefriend는 [한국투자증권 Expert 표준 API Reference Guide(2021-11-09 업데이트)](https://new.real.download.dws.co.kr/download/expert_manual.pdf))를
+- pyefriend는 [한국투자증권 Expert 표준 API Reference Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)
+  (2021-11-09 기준)를
 참고하여 작성하였습니다.
 - pyefriend 코드는 Window 환경에서만 작동합니다.(Window 10에서 개발 진행)
 - 한국투자증권 공식홈페이지에서 OpenAPI 신청 후 eFriend Expert를 다운받아 **관리자 권한**으로 실행해야 정상 작동합니다.
@@ -69,8 +72,10 @@ pip install pyefriend
 
 ## Links
 
-- [Pypi](https://pypi.org/project/pyefriend/1.0/)
-
 - [Github](https://github.com/softyoungha)
 
 - [Github blog](https://softyoungha.github.io/)
+
+- [Pypi: pyefriend](https://pypi.org/project/pyefriend/1.0/)
+
+- [한국투자증권 Expert 표준 API Reference Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)

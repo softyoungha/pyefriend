@@ -2,7 +2,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency
+from .const import Service, MarketCode, Currency, ProductCode
 from .log import logger as pyefriend_logger
 from .connection import Conn
 from .exceptions import *
@@ -118,9 +118,15 @@ class Api:
         """ target_account 존재여부 계산 """
         return self.target_account in self.all_accounts
 
-    def set_data(self, field_index: int, value: str):
+    def set_data(self,
+                 field_index: int,
+                 value: str,
+                 block_index: int = None):
         """ set data """
-        self.conn.SetSingleData(field_index, value)
+        if block_index is not None:
+            self.conn.SetSingleDataEx(block_index=block_index, field_index=field_index, value=value)
+        else:
+            self.conn.SetSingleData(field_index, value)
         return self
 
     def get_data(self,
@@ -189,6 +195,53 @@ class Api:
         self.conn.RequestData(service=service)
         return self
 
+    def get_kospi_histories(self, standard: str = 'D'):
+        # set
+        (
+            self.set_data(0, 'U')  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, ProductCode.KOSPI)  # 1: 종목코드
+                .set_data(2, standard)  # D: 일/ W: 주/ M: 월
+                .request_data(Service.SCPD)
+        )
+
+        columns = [
+            dict(index=0, key='standard_date', pk=True),
+            dict(index=3, key='mininum', dtype=float),
+            dict(index=2, key='maximum', dtype=float),
+            dict(index=1, key='opening', dtype=float),
+            dict(index=4, key='closing', dtype=float),
+            dict(index=5, key='volume', dtype=int),
+        ]
+
+        # response
+        return self.get_data(multiple=True, columns=columns)
+
+    def get_sp500_histories(self, standard: str = 'D'):
+        if standard == 'D':
+            standard = '0'
+        elif standard == 'W':
+            standard = '1'
+        elif standard == 'M':
+            standard = '2'
+
+        # set
+        (
+            self.set_data(0, 'N')  # 0: 시장 분류 코드, 'N': 기본
+                .set_data(1, ProductCode.SPX)  # 1: 종목코드
+                .set_data(2, standard)
+                .request_data(Service.PFX06910000)
+        )
+
+        columns = [
+            dict(index=0, key='standard_date', pk=True),
+            dict(index=7, key='mininum', dtype=float),
+            dict(index=6, key='maximum', dtype=float),
+            dict(index=5, key='opening', dtype=float),
+            dict(index=1, key='closing', dtype=float),
+        ]
+
+        return self.get_data(multiple=True, columns=columns)
+
     @property
     def deposit(self) -> Union[int, float]:
         """ 예수금 전체 금액 """
@@ -247,11 +300,11 @@ class Api:
         :param standard: D: 일/ W: 주/ M: 월
         :return [
             {
-                '영업일자': 'YYYYMMDD'
-                '최저가': number
-                '최고가': number
-                '시가': number
-                '종가': number
+                'standard_date': 'YYYYMMDD'
+                'mininum': number
+                'maximum': number
+                'opening': number
+                'closing': number
             },
             ...
         ]
@@ -340,7 +393,7 @@ class DomesticApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            standard: str = 'W',
+                            standard: str = 'D',
                             market_code: str = None) -> List[Dict]:
         # set
         (
@@ -351,11 +404,12 @@ class DomesticApi(Api):
         )
 
         columns = [
-            dict(index=0, key='영업일자', pk=True),
-            dict(index=3, key='최저가', dtype=int),
-            dict(index=2, key='최고가', dtype=int),
-            dict(index=1, key='시가', dtype=int),
-            dict(index=4, key='종가', dtype=int),
+            dict(index=0, key='standard_date', pk=True),
+            dict(index=3, key='mininum', dtype=int),
+            dict(index=2, key='maximum', dtype=int),
+            dict(index=1, key='opening', dtype=int),
+            dict(index=4, key='closing', dtype=int),
+            dict(index=5, key='volume', dtype=int),
         ]
 
         # response
@@ -539,7 +593,7 @@ class OverSeasApi(Api):
 
     def get_stock_info(self,
                        product_code: str,
-                       market_code: str = MarketCode.NASD) -> Tuple[float, float, float, float, float]:
+                       market_code: str = None) -> Tuple[float, float, float, float, float]:
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
@@ -558,8 +612,8 @@ class OverSeasApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            market_code: str = None,
-                            standard: str = 'W') -> List[Dict]:
+                            standard: str = 'D',
+                            market_code: str = None) -> List[Dict]:
         if standard == 'D':
             standard = '0'
         elif standard == 'W':
@@ -577,11 +631,12 @@ class OverSeasApi(Api):
         )
 
         columns = [
-            dict(index=0, key='영업일자', pk=True),
-            dict(index=7, key='최저가', dtype=float),
-            dict(index=6, key='최고가', dtype=float),
-            dict(index=5, key='시가', dtype=float),
-            dict(index=1, key='종가', dtype=float),
+            dict(index=0, key='standard_date', pk=True),
+            dict(index=7, key='mininum', dtype=float),
+            dict(index=6, key='maximum', dtype=float),
+            dict(index=5, key='opening', dtype=float),
+            dict(index=1, key='closing', dtype=float),
+            dict(index=8, key='volume', dtype=int),
         ]
 
         # response
@@ -591,7 +646,7 @@ class OverSeasApi(Api):
                   product_code: str,
                   count: int,
                   price: int = 0,
-                  market_code: str = MarketCode.NASD) -> str:
+                  market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -612,7 +667,7 @@ class OverSeasApi(Api):
                    product_code: str,
                    count: int,
                    price: int = 0,
-                   market_code: str = MarketCode.NASD) -> str:
+                   market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -629,7 +684,7 @@ class OverSeasApi(Api):
 
     def get_processed_orders(self,
                              start_date: str = None,
-                             market_code: str = MarketCode.NASD) -> List[Dict]:
+                             market_code: str = None) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
@@ -657,7 +712,7 @@ class OverSeasApi(Api):
         ]
         return self.get_data(multiple=True, columns=columns)
 
-    def get_unprocessed_orders(self, market_code: str = MarketCode.NASD) -> List[Dict]:
+    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -678,7 +733,7 @@ class OverSeasApi(Api):
                      order_num: str,
                      count: int,
                      product_code: str = None,
-                     market_code: str = MarketCode.NASD) -> str:
+                     market_code: str = None) -> str:
         (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -692,7 +747,7 @@ class OverSeasApi(Api):
         # response
         return self.get_data(1)  # 1: 주문번호
 
-    def cancel_all_unprocessed_orders(self, market_code: str = MarketCode.NASD) -> List[str]:
+    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
         unprocessed_orders = self.get_unprocessed_orders(market_code=market_code)
 
         results = []
