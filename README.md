@@ -67,15 +67,10 @@ pip install pyefriend
 
 [국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp)
 
-#### 2021-08 기준 국민연금
-
-- 국내주식: 19.0%/해외주식: 26.7%
-
-
 ## Links
 
 - [Pypi](https://pypi.org/project/pyefriend/1.0/)
 
 - [Github](https://github.com/softyoungha)
 
-- [Github blog](https://softyoungha.github.io/))
+- [Github blog](https://softyoungha.github.io/)
