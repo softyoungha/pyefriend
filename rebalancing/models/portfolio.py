@@ -4,7 +4,7 @@ from typing import List, Dict
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref, Session
 
-from pyefriend.const import MarketCode
+from rebalancing.utils.const import MarketCode
 from rebalancing.utils.orm_helper import provide_session
 from .base import Base, Length
 
@@ -54,7 +54,11 @@ class Portfolio(Base):
 
     @classmethod
     @provide_session
-    def list(cls, domestic: bool, only_y: bool = True, session: Session = None):
+    def list(cls,
+             is_domestic: bool,
+             only_y: bool = True,
+             as_tuple: bool = True,
+             session: Session = None):
         from .product import Product
 
         query = session.query(cls).join(Product)
@@ -62,17 +66,20 @@ class Portfolio(Base):
         if only_y:
             query = query.filter(cls.use_yn == True)
 
-        if domestic:
+        if is_domestic:
             query = query.filter(Product.market_code == MarketCode.KRX)
         else:
             query = query.filter(Product.market_code != MarketCode.KRX)
 
-        return [
-            (item.product_code,
-             item.product_name,
-             item.current,
-             item.weight,
-             item.quote_unit)
-            for item in query.all()
-        ]
+        if as_tuple:
+            return [
+                (item.product_code,
+                 item.product_name,
+                 item.current,
+                 item.weight,
+                 item.quote_unit)
+                for item in query.all()
+            ]
+        else:
+            return query.all()
 

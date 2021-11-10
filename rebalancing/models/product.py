@@ -36,21 +36,22 @@ class Product(Base):
             'product_code': self.code,
             'product_name': self.name,
             'market_code': self.market_code,
+            'current': self.current,
+            'minimum': self.minimum,
+            'maximum': self.maximum,
+            'opening': self.opening,
+            'base': self.base,
         }
 
     @classmethod
     @provide_session
-    def list(cls, market: str = None, only_oversea: bool = False, session: Session = None):
+    def list(cls, is_domestic: bool, session: Session = None):
         query = session.query(cls)
 
-        if only_oversea:
-            return query.filter(cls.market_code != MarketCode.KRX).all()
-
-        if market is None:
-            return query.all()
-
+        if is_domestic:
+            return query.filter(cls.market_code == MarketCode.KRX).all()
         else:
-            return query.filter(cls.market_code == market).all()
+            return query.filter(cls.market_code != MarketCode.KRX).all()
 
     @classmethod
     @provide_session

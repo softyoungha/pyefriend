@@ -36,7 +36,14 @@ class ReportOutput(BaseModel):
 
 
 class PricesOutput(BaseModel):
-    pass
+    product_code: str = Field(..., title='종목코드')
+    product_name: str = Field(..., title='종목명')
+    market_code: str = Field(..., title='거래소(KRX: 한국거래소/NASD/NYSE/AMEX')
+    current: float = Field(..., title='현재가')
+    minimum: float = Field(..., title='최저가')
+    maximum: float = Field(..., title='최고가')
+    opening: float = Field(..., title='시가')
+    base: float = Field(..., title='종가')
 
 
 class PlanOutput(BaseModel):

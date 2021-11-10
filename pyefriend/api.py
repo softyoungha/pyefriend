@@ -350,6 +350,10 @@ class Api:
 
 class DomesticApi(Api):
     @property
+    def unit(self):
+        return 'KRW'
+
+    @property
     def deposit(self) -> int:
         return int(
             self.set_account_info()  # 계정 정보
@@ -512,6 +516,10 @@ class DomesticApi(Api):
 
 
 class OverSeasApi(Api):
+    @property
+    def unit(self):
+        return 'USD'
+
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.conn.GetOverSeasStockSise())
 

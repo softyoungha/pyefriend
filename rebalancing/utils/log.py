@@ -19,6 +19,10 @@ def get_logger(name: str = 're-balancing',
         log_level = logging.INFO
     logger.setLevel(log_level)
 
+    # delete all handlers
+    while logger.hasHandlers():
+        logger.removeHandler(logger.handlers[0])
+
     # create formatter
     formatter = logging.Formatter(log_format,
                                   datefmt='%Y-%m-%d %H:%M:%S')

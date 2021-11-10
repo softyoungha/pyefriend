@@ -26,6 +26,10 @@ def get_logger(name: str,
                                   '%(message)s',
                                   datefmt='%Y-%m-%d %H:%M:%S')
 
+    # delete all handlers
+    while logger.hasHandlers():
+        logger.removeHandler(logger.handlers[0])
+
     # stream handler
     if use_stream:
         stream_handler = logging.StreamHandler()

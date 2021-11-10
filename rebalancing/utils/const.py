@@ -1,1 +1,10 @@
-from pyefriend.const import System, Target, Service, MarketCode, Currency
+from pyefriend.const import *
+
+__all__ = [
+    'System',
+    'Target',
+    'Service',
+    'MarketCode',
+    'ProductCode',
+    'Currency',
+]

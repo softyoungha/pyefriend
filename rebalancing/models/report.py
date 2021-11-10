@@ -2,13 +2,14 @@ import os
 from datetime import datetime
 import pandas as pd
 import logging
-from typing import Union
+from typing import Union, Dict, List
 from IPython.display import display, Markdown
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
 from pyefriend import load_api, encrypt_password
 from pyefriend.const import MarketCode, Target
 
+from rebalancing.exceptions import ReportNotFound
 from rebalancing.settings import IS_JUPYTER_KERNEL
 from rebalancing.config import Config, REPORT_DIR
 from rebalancing.models import Product, Portfolio, ProductHistory
@@ -25,6 +26,20 @@ def display_only_jupyter(data: Union[str, pd.DataFrame]):
             display(Markdown(data))
 
 
+class Status:
+    """ Report 상태 """
+    CREATED = 'CREATED'
+    PLANNING = 'PLANNING'
+    EXECUTED = 'EXECUTED'
+
+
+class How:
+    """ 매수/매도시 가격 결정 방법 """
+    MARKET = 'market'   # 시장가격에 매수/패도
+    N_DIFF = 'n_diff'   # 호가 단위 x n 원 아래에서 매수/ 위에서 매도
+    REGRESSION = 'regression'   # linear regression
+
+
 class Report(Base):
     __tablename__ = 'report'
 
@@ -35,6 +50,7 @@ class Report(Base):
     target = Column(String(Length.TYPE), comment="국내/해외 여부('domestic', 'overseas')")
     account = Column(String(Length.ID), comment='계좌명')
     encrypted_password = Column(String(Length.DESC), comment='암호화된 비밀번호')
+    status = Column(String(Length.TYPE), default=Status.CREATED, comment='상태')
 
     __table_args__ = (
         Index('idx_report', target, report_name, created_time, unique=True),
@@ -48,6 +64,7 @@ class Report(Base):
                  encrypted_password: str = None,
                  created_time: str = None,
                  prompt: bool = False,
+                 status: str = Status.CREATED,
                  **kwargs):
         """
         re-balancing 실행 후 자동 리포트 생성
@@ -116,6 +133,9 @@ class Report(Base):
 
         display_only_jupyter(f'##### 다음 경로에 report가 저장됩니다. \n{self.report_path}')
 
+        # set status
+        self.status = status
+
     def __repr__(self):
         return f"<Report(code='{self.report_name}')>"
 
@@ -134,7 +154,8 @@ class Report(Base):
         if delete_if_exists:
             report = Report.get(report_name=self.report_name,
                                 created_time=self.created_time,
-                                raise_if_not_exists=False, session=session)
+                                raise_if_not_exists=False,
+                                session=session)
             if report:
                 report.delete()
 
@@ -144,21 +165,36 @@ class Report(Base):
     @provide_session
     def get(cls,
             report_name: str,
-            created_time: str,
-            raise_if_not_exists: bool = True, session=None):
-        row = (
-            session.query(cls)
-                .filter(cls.report_name == report_name,
-                        cls.created_time == created_time)
-                .first()
-        )
+            created_time: str = None,
+            statuses: List[str] = None,
+            raise_if_not_exists: bool = True,
+            session=None):
+        query = session.query(cls).filter(cls.report_name == report_name)
+
+        if statuses:
+            query = query.filter(cls.status.in_(statuses))
+
+        if created_time:
+            query = (
+                query
+                    .filter(cls.created_time == created_time)
+                    .order_by(cls.created_time.desc())
+            )
+
+        row = query.first()
+
         if row:
             return row.init()
         else:
             if raise_if_not_exists:
-                raise
+                raise ReportNotFound()
             else:
                 return None
+
+    @provide_session
+    def update_status(self, status: str, session=None):
+        report = session.query(Report).filter(Report.id==self.id).first()
+        report.status = status
 
     @property
     def api(self):
@@ -170,15 +206,12 @@ class Report(Base):
         return self._api
 
     @property
-    def is_target_domestic(self):
+    def is_domestic(self):
         return self.target == Target.DOMESTIC
 
     @property
     def unit(self):
-        if self.is_target_domestic:
-            return 'KRW'
-        else:
-            return 'USD'
+        return self.api.unit
 
     @property
     def report_path(self):
@@ -207,18 +240,30 @@ class Report(Base):
         return os.path.join(self.report_path, file_name)
 
     @property
-    def logger_name(self):
+    def summary_path(self):
+        return self.path('summary.csv')
+
+    @property
+    def plan_path(self):
+        return self.path('plan.csv')
+
+    @property
+    def name(self):
         return f'{self.target}_{self.report_name}_{self.created_time}'
 
     @property
     def logger(self):
         if not self._logger:
-            self._logger = get_logger(name=f'{self.logger_name}', path=self.path('log.txt'))
+            self._logger = get_logger(name=self.name, path=self.path('log.txt'))
         return self._logger
+
+    def remove_logger(self):
+        while self.logger.hasHandlers():
+            self.logger.removeHandler(self.logger.handlers[0])
 
     @provide_session
     def refresh_prices(self, session=None):
-        if self.is_target_domestic:
+        if self.is_domestic:
             products = Product.list(MarketCode.KRX, session=session)
 
         else:
@@ -276,12 +321,24 @@ class Report(Base):
 
         return self
 
-    def get_prices(self):
-        return self
+    def get_prices(self) -> List[Dict]:
+        
+        # 사용하는 포트폴리오 종목 리스트
+        used_product_names = [
+            portfolio.product_name
+            for portfolio in Portfolio.list(is_domestic=self.is_domestic, as_tuple=False)
+        ]
 
-    def _print_log_save(self, df: pd.DataFrame, index_name: str, title: str, filename: str):
+        # 사용하는 상품 정보 리스트
+        used_products = [
+            product.as_dict
+            for product in Product.list(is_domestic=self.is_domestic)
+            if product.name in used_product_names
+        ]
+        return used_products
+
+    def _print_log_save(self, df: pd.DataFrame, index_name: str, title: str, filepath: str):
         """ 반복 작업 최소화 """
-        filepath = self.path(filename)
         df.index.name = index_name
         self.logger.info(f'{title}: \n{df.to_string()}')
         display_only_jupyter(f'### {title}')
@@ -321,7 +378,7 @@ class Report(Base):
         available_percent = Config.get_percent('rebalance', 'LIMIT')
 
         # percent: 국내/해외 주식 비율 %
-        if self.is_target_domestic:
+        if self.is_domestic:
             percent = Config.get_percent('rebalance', 'DOMESTIC_PERCENT')
             numeric_type = int
 
@@ -330,7 +387,7 @@ class Report(Base):
             numeric_type = float
 
         # list all portfolio with use_yn = True
-        portfolios = Portfolio.list(domestic=self.is_target_domestic, only_y=True)
+        portfolios = Portfolio.list(is_domestic=self.is_domestic, only_y=True)
 
         # product_codes_in_portfolio: 포트폴리오에 포함된 product_code
         product_codes_in_portfolio = [product_code
@@ -417,16 +474,16 @@ class Report(Base):
         self._print_log_save(df=df_results,
                              index_name='결과생성일자',
                              title='Rebalance Result',
-                             filename='result.csv')
+                             filepath=self.summary_path)
 
         # plan dataframe
         df_plan = pd.DataFrame(plan_data, index=plan_index)
         self._print_log_save(df=df_plan,
                              index_name='product_code',
                              title='Rebalance Detail',
-                             filename='detail.csv')
+                             filepath=self.plan_path)
 
-        if not self.is_target_domestic:
+        if not self.is_domestic:
             # 환율 계산
             currency = self.api.currency
 
@@ -437,7 +494,7 @@ class Report(Base):
             self._print_log_save(df=df_results_won,
                                  index_name='결과생성일자',
                                  title='Rebalance Result(WON)',
-                                 filename='result_won.csv')
+                                 filepath='summary_won.csv')
 
             # plan dataframe(WON)
             df_plan_won = df_plan.copy()
@@ -446,19 +503,24 @@ class Report(Base):
             self._print_log_save(df=df_plan_won,
                                  index_name='결과생성일자',
                                  title='Rebalance Detail(WON)',
-                                 filename='detail_won.csv')
+                                 filepath='plan_won.csv')
 
-        return self
+        self.update_status(Status.PLANNING)
 
-    def get_plan(self):
         return self
 
     def adjust_plan(self):
         return self
 
-    def execute_plan(self, how=''):
-        return self
+    def execute_plan(self, how: str = How.MARKET):
+        dtype = {
+            'market_code': str,
+            'product_name': str,
+            'product_code': str,
+            'weight': float
+        }
 
-    def __del__(self):
-        while self.logger.hasHandlers():
-            self.logger.removeHandler(self.logger.handlers[0])
+        df = pd.read_csv(self.plan_path, sep=',', dtype=dtype)
+
+        self.update_status(Status.EXECUTED)
+        return self
