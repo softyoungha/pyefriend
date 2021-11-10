@@ -68,29 +68,29 @@ def main():
                         password=password,
                         prompt=False,
                         test=test,
-                        load=load)
+                        load_time=load)
 
     # refresh
     if skip:
         executor.logger.info('종목 최신화를 Skip합니다.')
 
     else:
-        executor.refresh_price()
+        executor.refresh_prices()
 
     # plan
-    executor.planning_re_balancing()
+    executor.make_plan()
 
     msg = f"\n저장된 결과를 보고 리밸런싱을 진행할지 여부를 결정합니다." \
           f"\nY 또는 1을 입력할 경우 리밸런싱 대상 종목에 대한 매수/매도가 진행됩니다." \
           f"\n그외의 값을 입력할 경우 프로그램이 종료됩니다." \
           f"\n- report_name: '{executor.account}'" \
-          f"\n- 생성시간: '{executor.now}'"
+          f"\n- 생성시간: '{executor.created_time}'"
     print(msg)
 
     answer = input("Input(Y or N): ")
 
     if answer.lower() in ('y', '1'):
-        executor.re_balance()
+        executor.execute()
     else:
         exit()
 

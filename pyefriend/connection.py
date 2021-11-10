@@ -1,5 +1,7 @@
+import sys
 import time
-
+from typing import Optional
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import QEventLoop
 
@@ -7,12 +9,25 @@ from .const import System
 from .log import logger as pyefriend_logger
 
 
+app: Optional[QApplication] = None
+
+
 # [Section] Modules
+
+def run_app():
+    global app
+
+    if app is None:
+        app = QApplication(sys.argv)
+        pyefriend_logger.info('Start APP')
+
+    return app
+
 
 class Conn:
     """ QAxWidget을 통해 Connection Instance 생성(Low-Level) """
-
     def __init__(self, logger=None):
+        run_app()
         self.instance = QAxWidget(System.PROGID)
         self._event_loop = None
         self._error = None
@@ -296,3 +311,8 @@ class Conn:
         :return: 모의투자 접속 여부 (TRUE : 모의투자 접속, FALSE : 운영 접속)
         """
         return self.dynamic_call("IsVTS()")
+
+
+def encrypt_password(raw_password: str):
+    conn = Conn()
+    return conn.GetEncryptPassword(raw_password)

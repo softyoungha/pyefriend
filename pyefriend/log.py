@@ -5,7 +5,7 @@ import logging
 LOG_LEVEL = os.getenv('PYEFRIEND__LOG_LEVEL')
 
 
-def get_logger(name: str = 'pyefriend',
+def get_logger(name: str,
                log_level: int = logging.INFO,
                use_stream: bool = True,
                use_file: bool = True,
@@ -42,4 +42,4 @@ def get_logger(name: str = 'pyefriend',
     return logger
 
 
-logger = get_logger(use_file=False)
+logger = get_logger(name='pyefriend', use_file=False)

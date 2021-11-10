@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
@@ -57,15 +58,20 @@ class Api:
 
     def __init__(self,
                  target_account: str,
-                 password: str,
+                 password: str = None,
+                 encrypted_password: str = None,
                  logger=None):
         if not logger:
             logger = pyefriend_logger
-        self.logger = logger
+        self.logger: Logger = logger
 
         self.target_account = target_account
         self._all_accounts = None
-        self._encrypted_password = self.conn.GetEncryptPassword(password)
+
+        assert password or encrypted_password, "password 혹은 암호화된 password 둘 중 하나는 입력해야 합니다."
+
+        if encrypted_password:
+            self._encrypted_password = self.conn.GetEncryptPassword(password)
 
         if not self.is_connected:
             raise NotConnectedException()

@@ -14,18 +14,13 @@ core:
   # 실제 계좌 비밀번호
   real_password: ''
 
-  # 리포트 저장 경로(. = REBAL_HOME)
-  report_dir: './reports'
 
-# backend로 사용할 database
 database:
-
   # sqlite일 경우 절대경로로 설정 가능
   sqlalchemy_conn_str: 'sqlite:///database.db'
 
 
 rebalance:
-
   # 계좌 전체 금액 중 사용할 금액 %
   limit: 90%
 

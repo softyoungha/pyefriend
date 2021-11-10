@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
 import pandas as pd
+import logging
 from typing import Union
 from IPython.display import display, Markdown
+from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
-from pyefriend import load_api
+from pyefriend import load_api, encrypt_password
 from pyefriend.const import MarketCode, Target
 
 from rebalancing.settings import IS_JUPYTER_KERNEL
@@ -12,6 +14,7 @@ from rebalancing.config import Config, REPORT_DIR
 from rebalancing.models import Product, Portfolio, ProductHistory
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
+from .base import Base, Length
 
 
 def display_only_jupyter(data: Union[str, pd.DataFrame]):
@@ -22,68 +25,88 @@ def display_only_jupyter(data: Union[str, pd.DataFrame]):
             display(Markdown(data))
 
 
-class Executor:
+class Report(Base):
+    __tablename__ = 'report'
+
+    # columns
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    report_name = Column(String(Length.ID), comment='리포트명')
+    created_time = Column(String(Length.TYPE), comment='Report 생성일자')
+    target = Column(String(Length.TYPE), comment="국내/해외 여부('domestic', 'overseas')")
+    account = Column(String(Length.ID), comment='계좌명')
+    encrypted_password = Column(String(Length.DESC), comment='암호화된 비밀번호')
+
+    __table_args__ = (
+        Index('idx_report', target, report_name, created_time, unique=True),
+    )
+
     def __init__(self,
                  target: str,
                  test: bool = True,
                  account: str = None,
                  password: str = None,
-                 prompt: bool = True,
-                 load: str = None):
+                 encrypted_password: str = None,
+                 created_time: str = None,
+                 prompt: bool = False,
+                 **kwargs):
         """
-        re-balancing 실행기
+        re-balancing 실행 후 자동 리포트 생성
 
-        :param target: 'domestic', 'overseas'
-        :param test: config.yml 내의 모의주문 계정 사용여부(account, password)
-        :param account: config.yml에 있는 계좌가 아닌 입력된 계좌를 사용
-        :param password: account를 직접 입력했을 경우 사용할 password
-        :param prompt: True일 경우 report_name을 직접 입력할 수 있습니다. False일 경우 계좌명을 report_name으로 사용합니다.
-        :param load: [%Y%m%d_%H_%M_%S, str] 입력될 경우 해당 시간에 계산된 rebalancing 결과를 바라봅니다.
-                         입력되지 않을 경우 Executor가 실행된 시간으로 저장합니다(report_path의 폴더구분으로 사용됩니다)
+        :param target:          'domestic', 'overseas'
+        :param test:            config.yml 내의 모의주문 계정 사용여부(account, password)
+        :param account:         config.yml에 있는 계좌가 아닌 입력된 계좌를 사용
+        :param password:        account를 직접 입력했을 경우 사용할 password
+        :param created_time:   [%Y%m%d_%H_%M_%S, str] 입력될 경우 해당 시간에 계산된 rebalancing 결과를 바라봅니다.
+                                입력되지 않을 경우 Executor가 실행된 시간으로 저장합니다(report_path의 폴더구분으로 사용됩니다)
+        :param prompt:          True일 경우 report_name을 직접 입력할 수 있습니다. False일 경우 계좌명을 report_name으로 사용합니다.
         """
-        # now
-        if load:
+        super().__init__(**kwargs)
+
+        # initialize
+        self.init()
+
+        # set created_time
+        if created_time:
             try:
-                self.now = datetime.now().strptime('%Y%m%d_%H_%M_%S', load)
-
+                # format 확인
+                datetime.strptime(created_time, '%Y%m%d_%H_%M_%S')
             except Exception as e:
                 raise e
 
+            self.created_time = created_time
+
         else:
-            self.now = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+            self.created_time = datetime.now().strftime('%Y%m%d_%H_%M_%S')
 
+        # set target
         assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
+        self.target = target
 
-        # init
-        self._target = target
-        self._report_path = None
-        self._logger = None
-        self._api = None
-
+        # set account & encrypted_password
         if account:
             assert password is not None, "account가 입력되면 password도 입력되어야 합니다."
-            self._account_info = {
-                'account': account,
-                'password': password
-            }
 
         elif test:
             # 모의주문 계정
-            self._account_info = {
-                'account': Config.get('core', 'TEST_ACCOUNT'),
-                'password': Config.get('core', 'TEST_PASSWORD')
-            }
+            account = Config.get('core', 'TEST_ACCOUNT')
+            password = Config.get('core', 'TEST_PASSWORD')
         else:
             # 실제 계정
-            self._account_info = {
-                'account': Config.get('core', 'REAL_ACCOUNT'),
-                'password': Config.get('core', 'REAL_PASSWORD')
-            }
+            account = Config.get('core', 'REAL_ACCOUNT')
+            password = Config.get('core', 'REAL_PASSWORD')
 
-        # do prompt
+        # 계정 set
+        self.account = account
+
+        # 비밀번호는 암호화된 것만 저장 set
+        if encrypted_password:
+            self.encrypted_password = encrypted_password
+        else:
+            self.encrypted_password = encrypt_password(password)
+
+        # set report_name
         if prompt:
             # report prompt
-
             display_only_jupyter('##### 리밸런싱 생성시 결과 및 로그를 저장할 폴더명을 정합니다.')
             print('입력하지 않을 경우 계좌명으로 설정됩니다')
             self.report_name = input('report_name = ') or self.account
@@ -93,15 +116,58 @@ class Executor:
 
         display_only_jupyter(f'##### 다음 경로에 report가 저장됩니다. \n{self.report_path}')
 
+    def __repr__(self):
+        return f"<Report(code='{self.report_name}')>"
+
+    def init(self):
+        self._report_path = None
+        self._logger = None
+        self._api = None
+        return self
+
+    @provide_session
+    def delete(self, session=None):
+        session.delete(self)
+
+    @provide_session
+    def save(self, delete_if_exists: bool = False, session=None):
+        if delete_if_exists:
+            report = Report.get(report_name=self.report_name,
+                                created_time=self.created_time,
+                                raise_if_not_exists=False, session=session)
+            if report:
+                report.delete()
+
+        session.add(self)
+
+    @classmethod
+    @provide_session
+    def get(cls,
+            report_name: str,
+            created_time: str,
+            raise_if_not_exists: bool = True, session=None):
+        row = (
+            session.query(cls)
+                .filter(cls.report_name == report_name,
+                        cls.created_time == created_time)
+                .first()
+        )
+        if row:
+            return row.init()
+        else:
+            if raise_if_not_exists:
+                raise
+            else:
+                return None
+
     @property
     def api(self):
         if self._api is None:
-            self._api = load_api(target=self.target, **self.account_info, logger=self.logger)
+            self._api = load_api(target=self.target,
+                                 account=self.account,
+                                 encrypted_password=self.encrypted_password,
+                                 logger=self.logger)
         return self._api
-
-    @property
-    def target(self):
-        return self._target
 
     @property
     def is_target_domestic(self):
@@ -113,14 +179,6 @@ class Executor:
             return 'KRW'
         else:
             return 'USD'
-
-    @property
-    def account_info(self):
-        return self._account_info
-
-    @property
-    def account(self):
-        return self.account_info['account']
 
     @property
     def report_path(self):
@@ -135,7 +193,7 @@ class Executor:
             report_dir = os.path.abspath(report_dir)
 
             # join
-            report_path = os.path.join(report_dir, self.report_name, f'{self.target}_{self.now}')
+            report_path = os.path.join(report_dir, self.report_name, f'{self.target}_{self.created_time}')
 
             # create tree
             os.makedirs(report_path, exist_ok=True)
@@ -149,13 +207,17 @@ class Executor:
         return os.path.join(self.report_path, file_name)
 
     @property
+    def logger_name(self):
+        return f'{self.target}_{self.report_name}_{self.created_time}'
+
+    @property
     def logger(self):
         if not self._logger:
-            self._logger = get_logger(path=self.path('log.txt'))
+            self._logger = get_logger(name=f'{self.logger_name}', path=self.path('log.txt'))
         return self._logger
 
     @provide_session
-    def refresh_price(self, session=None):
+    def refresh_prices(self, session=None):
         if self.is_target_domestic:
             products = Product.list(MarketCode.KRX, session=session)
 
@@ -194,11 +256,11 @@ class Executor:
         product_histories = [
             {
                 'product_name': name,
-                'standard_date': record['영업일자'],
-                'minimum': record['최저가'],
-                'maximum': record['최고가'],
-                'opening': record['시가'],
-                'closing': record['종가']
+                'standard_date': record['standard_date'],
+                'minimum': record['minimum'],
+                'maximum': record['maximum'],
+                'opening': record['opening'],
+                'closing': record['closing']
             }
             for name, records in product_histories
             for record in records
@@ -212,6 +274,11 @@ class Executor:
 
         self.logger.info('종목 History가 최신화되었습니다.')
 
+        return self
+
+    def get_prices(self):
+        return self
+
     def _print_log_save(self, df: pd.DataFrame, index_name: str, title: str, filename: str):
         """ 반복 작업 최소화 """
         filepath = self.path(filename)
@@ -224,7 +291,7 @@ class Executor:
                   index=True)
         print(f"# '{title}' Successfully saved in '{filepath}'")
 
-    def planning_re_balancing(self):
+    def make_plan(self):
         """
         이미 매수된 종목이면서 포트폴리오에 포함되지 않은 종목은 제외됩니다.
 
@@ -346,7 +413,7 @@ class Executor:
         results['tobe_total_amount'] = tobe_total_amount
 
         # result dataframe
-        df_results = pd.DataFrame([results], index=[self.now])
+        df_results = pd.DataFrame([results], index=[self.created_time])
         self._print_log_save(df=df_results,
                              index_name='결과생성일자',
                              title='Rebalance Result',
@@ -381,5 +448,17 @@ class Executor:
                                  title='Rebalance Detail(WON)',
                                  filename='detail_won.csv')
 
-    def re_balance(self, how=''):
-        pass
+        return self
+
+    def get_plan(self):
+        return self
+
+    def adjust_plan(self):
+        return self
+
+    def execute_plan(self, how=''):
+        return self
+
+    def __del__(self):
+        while self.logger.hasHandlers():
+            self.logger.removeHandler(self.logger.handlers[0])

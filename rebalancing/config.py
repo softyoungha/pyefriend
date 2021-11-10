@@ -11,7 +11,7 @@ CONF_PATH = os.getenv("REBAL_CONF", None)
 
 assert HOME_PATH is not None, "환경변수 'REBAL_HOME'를 설정해야합니다."
 
-if CONF_PATH is not None:
+if CONF_PATH is None:
     CONF_PATH = os.path.join(HOME_PATH, 'config.yml')
 
 REPORT_DIR = os.path.join(HOME_PATH, 'report')
@@ -24,6 +24,7 @@ print(f"다음의 경로를 사용합니다.\n"
 
 def get_config_yaml() -> dict:
     # config
+    print()
     config_path = os.path.abspath(CONF_PATH)
 
     if os.path.exists(config_path):
