@@ -8,7 +8,7 @@ from rebalancing.models.report import Status, Report
 from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput
 
 r = APIRouter(prefix='/report',
-              tags=['v1/report'])
+              tags=['report'])
 
 
 @r.post('/', response_model=ReportOutput)

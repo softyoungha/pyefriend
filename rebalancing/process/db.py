@@ -48,10 +48,10 @@ def insert_data(products: List[Dict] = None, data_path: str = None):
     else:
         products = [
             {
-                'market_code': dtype['market_code'](product['market_code']),
-                'product_name': dtype['product_name'](product['product_name']),
-                'product_code': dtype['product_code'](product['product_code']),
-                'weight': dtype['weight'](product['weight']),
+                'market_code': str(product['market_code']),
+                'product_name': str(product['product_name']),
+                'product_code': str(product['product_code']),
+                'weight': float(product['weight']),
             }
             for product in products
         ]
