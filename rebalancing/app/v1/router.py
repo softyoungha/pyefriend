@@ -4,9 +4,11 @@ from .database.router import r as database_router
 from .report.router import r as report_router
 
 
-r = APIRouter(prefix='/v1',
-              tags=['v1'])
+r = APIRouter(prefix='/v1')
 
 r.include_router(report_router)
 r.include_router(database_router)
 r.include_router(setting_router)
+
+# set tags(ordering을 위해서)
+r.tags = ['v1']
