@@ -12,7 +12,7 @@ r = APIRouter(prefix='/database',
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
 async def initialize_database():
-    """ database 내 모든 테이블들 생성(이미 존재하는 테이블은 Skip) """
+    """### database 내 모든 테이블들 생성(이미 존재하는 테이블은 Skip) """
     init_db()
 
     return Response('Success', status_code=status.HTTP_200_OK)
@@ -20,7 +20,7 @@ async def initialize_database():
 
 @r.post('/reset-db', status_code=status.HTTP_200_OK)
 async def reset_database():
-    """ database 내 모든 테이블들 삭제 후 재생성 """
+    """### database 내 모든 테이블들 삭제 후 재생성 """
     reset_db()
 
     return Response('Success', status_code=status.HTTP_200_OK)
@@ -40,11 +40,7 @@ FileClass = File(None,
 
 @r.post('/insert-data', status_code=status.HTTP_200_OK)
 async def insert_data_to_database(file: Optional[UploadFile] = FileClass):
-    """
-    # Description
-
-    product, portfolio data 생성
-    """
+    """### product, portfolio data 생성"""
     if file is not None:
         contents = await file.read()
 

@@ -7,13 +7,14 @@ from pyefriend.exceptions import NotConnectedException, AccountNotExistsExceptio
 from rebalancing.models.report import Status, Report
 from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
 
+
 r = APIRouter(prefix='/report',
               tags=['report'])
 
 
 @r.post('/', response_model=ReportOutput)
 async def create_report(request: ReportInput):
-    """ pyefriend api 생성로 접속 테스트 """
+    """### pyefriend api 생성로 접속 테스트 후 성공시 report_name 생성 """
     try:
         # set report
         report: Report = Report(target=request.target,
@@ -54,7 +55,10 @@ async def create_report(request: ReportInput):
 
 @r.post('/{report_name}/prices', status_code=status.HTTP_200_OK)
 async def refresh_prices(report_name: str, created_time: Optional[str] = None):
-    """ DB 내 종목 가격 최신화('product' table) """
+    """### DB 내 종목 가격 최신화('product' table)
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
     report.refresh_prices()
     return Response('Success', status_code=status.HTTP_200_OK)
@@ -62,14 +66,20 @@ async def refresh_prices(report_name: str, created_time: Optional[str] = None):
 
 @r.get('/{report_name}/prices', response_model=List[PricesOutput])
 async def get_prices(report_name: str, created_time: Optional[str] = None):
-    """ DB 내 종목 가격 조회('product' table) """
+    """### DB 내 종목 가격 조회('product' table)
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
     return report.get_prices()
 
 
 @r.post('/{report_name}/plan', status_code=status.HTTP_200_OK)
 async def make_plan(report_name: str, created_time: Optional[str] = None):
-    """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
+    """### 최신화된 가격을 토대로 리밸런싱 플랜 생성
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time)
     report.make_plan()
@@ -80,9 +90,8 @@ async def make_plan(report_name: str, created_time: Optional[str] = None):
 async def get_plan(report_name: str,
                    created_time: Optional[str] = None,
                    summary: Optional[bool] = False):
-    """
-    ### 리밸런싱 플랜 조회
-    - report_name: 리포트명
+    """### 리밸런싱 플랜 조회
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     - summary: True일 경우 요약정보, False일 경우 상세정보
     """
@@ -106,7 +115,10 @@ async def get_plan(report_name: str,
 
 @r.put('/{report_name}/plan', status_code=status.HTTP_200_OK)
 async def adjust_plan(report_name: str, created_time: Optional[str] = None):
-    """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
+    """### 최신화된 가격을 토대로 리밸런싱 플랜 생성
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
@@ -117,7 +129,10 @@ async def adjust_plan(report_name: str, created_time: Optional[str] = None):
 
 @r.post('/{report_name}/execute', status_code=status.HTTP_200_OK)
 async def execute_plan(report_name: str, created_time: Optional[str] = None):
-    """ 플랜 """
+    """### 플랜 실행
+    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
