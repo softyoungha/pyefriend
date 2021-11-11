@@ -21,6 +21,7 @@ sqlalchemy==1.4.26
 # fastapi
 fastapi==0.70.0
 uvicorn[standard]==0.15.0
+python-multipart==0.0.5
 
 # python 32bit only
 pywin32 >= 302; platform_system=="Windows"
