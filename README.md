@@ -192,142 +192,146 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 
 1. rebalancing의 초기 설정을 위해서는 먼저 환경변수 설정을 해야합니다.
 
-```cmd
-# 실행 경로
-set REBAL_HOME=.
-
-# config.yml 위치(입력하지 않을 경우 %REBAL_HOME%/config.yml 로 자동 설정)
-set REBAL_CONF=./config.yml
-
-# FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
-set REBAL_PASSWORD=password
-```
+  ```cmd
+  # cmd terminal
+  # 실행 경로
+  set REBAL_HOME=.
+  
+  # config.yml 위치(입력하지 않을 경우 %REBAL_HOME%/config.yml 로 자동 설정)
+  set REBAL_CONF=./config.yml
+  
+  # FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
+  set REBAL_PASSWORD=password
+  ```
 
 2. REBAL_CONF 위치에 `config.template.yml`을 복사하여 설정값을 변경합니다.
 
-config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
-```yaml
-section:  
-  # key description
-  key: value
-  ...
-```
+  config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
+  ```yaml
+  # .../config.yml (%REBAL_CONF%)
+  section:  
+    # key description
+    key: value
+    ...
+  ```
 
 3. database를 생성합니다.
    
-config.yml -> `database` section -> `sqlalchemy_conn_str` 에서
-이미 생성되어 있는 다른 database connection을 설정할 수 있습니다.
-혹은, sqlite3(config.template.yml) 경로를 사용자 경로에 맞춰 변경한 뒤 다음의 코드를 실행하면
-   
-```shell
-# terminal
-ipython
-```
-```python
-from rebalancing.utils.db import init_db
-
-# database 생성
-init_db()
-```
-
-`init_db` 함수 실행과 동시에 sqlite3 database 파일(ex. database.db)이 생성되며
-rebalancing에서 사용하는 모든 테이블들이 생성됩니다.
-
-> rebalancing 내에서 사용하는 database 작업이 개인 사용 목적이므로 많은 세션을 요구하지 않고, 
-  잦은 transaction이 일어나지 않으므로 sqlite3만으로도 충분합니다.
+  config.yml -> `database` section -> `sqlalchemy_conn_str` 에서
+  이미 생성되어 있는 다른 database connection을 설정할 수 있습니다.
+  혹은, sqlite3(config.template.yml) 경로를 사용자 경로에 맞춰 변경한 뒤 다음의 코드를 실행하면
+     
+  ```shell
+  # cmd terminal: run ipython
+  ipython
+  ```
+  ```python
+  # ipython 
+  from rebalancing.utils.db import init_db
   
-> database 내에 'setting' 테이블이 init_db 실행과 함께 값이 insert됩니다.
+  # database 생성
+  init_db()
+  ```
+  
+  `init_db` 함수 실행과 동시에 sqlite3 database 파일(ex. database.db)이 생성되며
+  rebalancing에서 사용하는 모든 테이블들이 생성됩니다.
+  
+  > rebalancing 내에서 사용하는 database 작업이 개인 사용 목적이므로 많은 세션을 요구하지 않고, 
+    잦은 transaction이 일어나지 않으므로 sqlite3만으로도 충분합니다.
+    
+  > database 내에 'setting' 테이블이 init_db 실행과 함께 값이 insert됩니다.
 
 4. db table 내에 data를 insert합니다.
 
-```python
-from rebalancing.utils.db import init_data
+  ```python
+  # ipython
+  from rebalancing.utils.db import init_data
+  
+  # 초기 데이터 insert
+  init_data()
+  ```
 
-# 초기 데이터 insert
-init_data()
-```
+  생성되는 초기 데이터는 국민연금기관의 국내/해외 투자 포트폴리오를 기반으로 계산된 데이터입니다.
+  ([국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp))
 
-생성되는 초기 데이터는 국민연금기관의 국내/해외 투자 포트폴리오를 기반으로 계산된 데이터입니다.
-([국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp))
+  - rebalancing/data/init_data_domestic.csv
+  - rebalancing/data/init_data_overseas.csv
 
-- rebalancing/data/init_data_domestic.csv
-- rebalancing/data/init_data_overseas.csv
-
-weight 국민연금기관이 투자한 금액으로, 리밸런싱할 비율을 계산하는 값입니다.
+  weight 국민연금기관이 투자한 금액으로, 리밸런싱할 비율을 계산하는 값입니다.
 
 5. 생성된 'portfolio' 테이블에서 포트폴리오에서 사용할 종목만 use_yn = 1 로 변경
 
-가진 예산이 50만원일 때 모든 종목을 use_yn = 1로 하여도 개별 종목들이 비싸기 때문에
-리밸런싱으로 계산할 수 없습니다.(엔씨소프트 주식 현재가 70만원)
-따라서 예산에 감안해서 리밸런싱을 진행할 종목들을 선택해야 하고, 
-예산도 어느정도 확보한 상태에서 분산투자가 가능합니다. 
+  가진 예산이 50만원일 때 모든 종목을 use_yn = 1로 하여도 개별 종목들이 비싸기 때문에
+  리밸런싱으로 계산할 수 없습니다.(엔씨소프트 주식 현재가 70만원)
+  따라서 예산에 감안해서 리밸런싱을 진행할 종목들을 선택해야 하고, 
+  예산도 어느정도 확보한 상태에서 분산투자가 가능합니다. 
 
-> DBeaver와 같은 DB 접속 Tool을 사용하여 변경하는 것을 권장합니다.  
+  > DBeaver와 같은 DB 접속 Tool을 사용하여 변경하는 것을 권장합니다.  
 
 6. 리밸런싱 실행
 
-리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
+  리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
+  
+  #### cmd에서 python 프로그램으로 실행
+  
+    `python -m rebalancing -h` 커맨드를 입력하면 다음과 같이 help 메시지가 출력됩니다.
+    
+    > cmd.exe가 역시 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
+    
+    ```shell
+    (venv) C:\...\rebalancing> python -m rebalancing -h
+    usage: __main__.py [-h] --target {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
+    
+    Rebalancing App 실행을 위해
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --target {domestic,overseas}, -t {domestic,overseas}
+                            domestic: 국내 투자 선택
+                            overseas: 해외 투자 선택
+      --created CREATED, -c CREATED
+                            Report 생성이력(YYYYmmdd_HH_MM_SS format)
+      --test                테스트 계정 사용여부
+      --account ACCOUNT, -a ACCOUNT
+                            계좌명('-' 제외), 입력하지 않을 경우 config.yml에서 사용
+      --password, -p        계좌 매수/매도시 입력 비밀번호
+                            입력하지 않을 경우 config.yml에서 사용
+                            -p/--password 입력 후 별도로 입력
+      --skip-refresh, -s    입력시 종목 최신화 skip
+    
+    ```
 
-#### cmd에서 python 프로그램으로 실행
+  #### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
 
-`python -m rebalancing -h` 커맨드를 입력하면 다음과 같이 help 메시지가 출력됩니다.
+    **rebalancing_example.ipynb**를 참고하세요.
 
-> cmd.exe가 역시 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
+  #### FastAPI 실행 후 request
 
-```shell
-(venv) C:\...\rebalancing> python -m rebalancing -h
-usage: __main__.py [-h] --target {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
+    다음의 커맨드로 FastAPI를 실행합니다.
 
-Rebalancing App 실행을 위해
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --target {domestic,overseas}, -t {domestic,overseas}
-                        domestic: 국내 투자 선택
-                        overseas: 해외 투자 선택
-  --created CREATED, -c CREATED
-                        Report 생성이력(YYYYmmdd_HH_MM_SS format)
-  --test                테스트 계정 사용여부
-  --account ACCOUNT, -a ACCOUNT
-                        계좌명('-' 제외), 입력하지 않을 경우 config.yml에서 사용
-  --password, -p        계좌 매수/매도시 입력 비밀번호
-                        입력하지 않을 경우 config.yml에서 사용
-                        -p/--password 입력 후 별도로 입력
-  --skip-refresh, -s    입력시 종목 최신화 skip
-
-```
-
-#### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
-
-  **rebalancing_example.ipynb**를 참고하세요.
-
-#### FastAPI 실행 후 request
-
-  다음의 커맨드로 FastAPI를 실행합니다.
-
-> cmd.exe가 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
-
-```shell
-uvicorn rebalancing.api:app --reload
-```
-
-브라우저에서 `http://localhost:8000`로 접속하면 **Re-balancing App** 화면이 나옵니다.
-
-> fastapi 기본포트는 8000입니다.
->
-> 타 컴퓨터에서 접속이 가능하게 하려면 `--host 0.0.0.0`, 포트를 변경하려면 `--port xxxx`를 추가합니다.
->
-> --reload 옵션이 있으면 python source code가 변경되었을 때 다시 리로딩합니다.
-> 
-> 프로젝트 폴더 내 config.template.yml 이나 md 파일, csv 파일이 변경되어도 리로딩되지 않으므로 참고하세요.
-
-```shell
-uvicorn rebalancing.api:app --host 0.0.0.0 --port 8080 --reload
-```
-
-Re-balancing App 에 관한 내용은 App 실행시 상단 Description을 확인하세요.
-
-<br/>
+    > cmd.exe가 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
+    
+    ```shell
+    uvicorn rebalancing.api:app --reload
+    ```
+    
+    브라우저에서 `http://localhost:8000`로 접속하면 **Re-balancing App** 화면이 나옵니다.
+    
+    > fastapi 기본포트는 8000입니다.
+    >
+    > 타 컴퓨터에서 접속이 가능하게 하려면 `--host 0.0.0.0`, 포트를 변경하려면 `--port xxxx`를 추가합니다.
+    >
+    > --reload 옵션이 있으면 python source code가 변경되었을 때 다시 리로딩합니다.
+    > 
+    > 프로젝트 폴더 내 config.template.yml 이나 md 파일, csv 파일이 변경되어도 리로딩되지 않으므로 참고하세요.
+    
+    ```shell
+    uvicorn rebalancing.api:app --host 0.0.0.0 --port 8080 --reload
+    ```
+    
+    Re-balancing App 에 관한 내용은 App 실행시 상단 Description을 확인하세요.
+    
+    <br/>
 
 ## Custom API Control
 
@@ -359,7 +363,7 @@ class DomesticApi(Api):
         return current, minimum, maximum, opening, base
 ```
 
-API 내의 모든 함수는 set -> request_data -> get 순서를 따릅니다.
+API 내의 모든 함수는 `set -> request_data -> get` 순서를 따릅니다.
 
 * `self.set_data` 함수는 `self`를 return하도록 되어있어 `.`으로 이어서 Chain을 만들 수 있습니다.
 * set_data Chain 마지막에는 `request_data(service)`를 통해 모인 데이터를 
@@ -370,7 +374,7 @@ API 내의 모든 함수는 set -> request_data -> get 순서를 따릅니다.
 
 
 다음과 같이 Api를 상속받아서 새로운 Api class를 생성할 수 있습니다.
-set -> request -> get 의 순서만 지키면 커스텀 함수를 생성하는 것이 어렵지 않습니다.
+`set -> request_data -> get` 의 맥락만 지키면 커스텀 함수를 생성하는 것이 어렵지 않습니다.
 
 ```python
 class MyApi(DomesticApi):
@@ -396,12 +400,6 @@ class MyApi(DomesticApi):
 
 ---
 
-# Rebalancing
-
-- pyefriend를 활용하여 투자 리밸런싱을 진행하는 모듈입니다.
-
-- config.yml 에서 계정
-
 ## Process
 
 1. refresh: DB 주식 시세 최신화
@@ -409,8 +407,6 @@ class MyApi(DomesticApi):
 2. planning: 매수, 매도 수량 책정
 
 3. re-balance: 현재 수량과 비교하여 주문
-
-4. visualize: 
 
 ## ETC
 
