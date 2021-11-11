@@ -42,6 +42,7 @@ FileClass = File(None,
 async def insert_data_to_database(file: Optional[UploadFile] = FileClass):
     """
     # Description
+
     product, portfolio data 생성
     """
     if file is not None:
