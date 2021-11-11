@@ -7,7 +7,7 @@ from rebalancing.models.setting import Setting as SettingModel
 from .schema import SettingOrm, SettingUpdate
 
 r = APIRouter(prefix='/setting',
-              tags=['setting'])
+              tags=['v1/setting'])
 
 
 @r.get('/', response_model=List[SettingOrm])

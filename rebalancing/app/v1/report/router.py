@@ -9,7 +9,7 @@ from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput, ReportN
 
 
 r = APIRouter(prefix='/report',
-              tags=['report'])
+              tags=['v1/report'])
 
 
 @r.post('/', response_model=ReportOutput)
