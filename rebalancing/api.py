@@ -21,9 +21,9 @@ description = f"""
 
 **Contents**
 
-- [v1/setting](#/v1/Fsetting)
-- [v1/database](#/v1/database)
-- [v1/report](#/v1/report)
+- [v1-setting](#/v1-setting)
+- [v1-database](#/v1-database)
+- [v1-report](#/v1-report)
 
 
 """

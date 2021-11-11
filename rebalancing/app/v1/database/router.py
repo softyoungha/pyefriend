@@ -7,7 +7,7 @@ from fastapi import APIRouter, Request, Response, status, UploadFile, File
 from rebalancing.process.db import init_db, reset_db, init_data, insert_data
 
 r = APIRouter(prefix='/database',
-              tags=['v1/database'])
+              tags=['v1-database'])
 
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
