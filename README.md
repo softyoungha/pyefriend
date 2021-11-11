@@ -100,7 +100,7 @@ pyefriend, rebalancing 모듈 모두 다음의 조건에서 정상작동됩니�
 - Python 32bix **관리자** 모드 실행
 - efriend expert **관리자** 모드 후 로그인 완료(모의투자일 경우는 비밀번호만, 운영일 경우 공인인증서 입력 후 로그인까지 완료) 
 
-### pyefriend
+### Module: pyefriend
 
 pyefriend에서 High-level로 API를 활용하는 방법은 다음과 같습니다.
 
@@ -160,12 +160,12 @@ api = OverSeasApi(account='5005775101', password='password')
 함수 리스트는 다음과 같습니다.
 parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함께 확인할 수 있습니다.
 
-#### property
+#### Property
   - deposit
   - stocks
   - unit
 
-#### common functions
+#### Common functions
   - evaluate_amount
   - get_stock_name
   - get_stock_info
@@ -179,7 +179,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
   - get_kospi_histories
   - get_sp500_histories
 
-#### only OverseasApi
+#### Only OverseasApi
   - set_auth
   - currency(property)
 
@@ -188,11 +188,11 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 
 <br/>
 
-### rebalancing
+### Module: rebalancing
 
 1. rebalancing의 초기 설정을 위해서는 먼저 환경변수 설정을 해야합니다.
 
-```shell
+```cmd
 # 실행 경로
 set REBAL_HOME=.
 
@@ -299,11 +299,11 @@ optional arguments:
 
 #### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
 
-**rebalancing_example.ipynb**를 참고하세요.
+  **rebalancing_example.ipynb**를 참고하세요.
 
 #### FastAPI 실행 후 request
 
-다음의 커맨드로 FastAPI를 실행합니다.
+  다음의 커맨드로 FastAPI를 실행합니다.
 
 > cmd.exe가 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
 
