@@ -54,7 +54,7 @@ r = APIRouter(prefix='/auth',
               tags=['auth', ])
 
 # set login manager
-manager = LoginManager(tokenUrl="token")
+manager = LoginManager(tokenUrl="/auth/token")
 
 
 def get_user(username: str) -> Optional[UserInDB]:

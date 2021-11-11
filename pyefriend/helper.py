@@ -1,19 +1,16 @@
 """
 # Helper
 
-- QApplication 을 하나만 유지
+- API
 - api를 with절로 활용하거나, 단일 api를 불러오는 데에 용이
 """
 
-import sys
-from typing import Union, Optional
 from contextlib import contextmanager
+from typing import Union
 
 from .api import DomesticApi, OverSeasApi
-from .log import logger
 from .const import Target
-
-# [Section] Variables
+from .log import logger
 
 
 # [Section] Modules
@@ -30,13 +27,13 @@ def load_api(target: str,
     assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
 
     if target == Target.DOMESTIC:
-        return DomesticApi(target_account=account,
+        return DomesticApi(account=account,
                            password=password,
                            encrypted_password=encrypted_password,
                            logger=logger)
 
     elif target == Target.OVERSEAS:
-        return OverSeasApi(target_account=account,
+        return OverSeasApi(account=account,
                            password=password,
                            encrypted_password=encrypted_password,
                            logger=logger)
@@ -57,13 +54,13 @@ def api_context(target: str,
     try:
         # api
         if target == Target.DOMESTIC:
-            api = DomesticApi(target_account=account,
+            api = DomesticApi(account=account,
                               password=password,
                               encrypted_password=encrypted_password,
                               logger=logger)
 
         elif target == Target.OVERSEAS:
-            api = OverSeasApi(target_account=account,
+            api = OverSeasApi(account=account,
                               password=password,
                               encrypted_password=encrypted_password,
                               logger=logger)

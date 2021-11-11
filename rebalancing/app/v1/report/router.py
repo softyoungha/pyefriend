@@ -32,8 +32,8 @@ async def create_report(request: ReportInput, user=Depends(login_required)):
         context = {
             'report_name': report.report_name,
             'created_time': report.created_time,
-            'account': api.target_account,
-            'is_vts': api.conn.IsVTS(),
+            'account': api.account,
+            'is_vts': api.controller.IsVTS(),
         }
 
         # create report

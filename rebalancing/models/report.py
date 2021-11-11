@@ -6,7 +6,7 @@ from typing import Union, Dict, List
 from IPython.display import display, Markdown
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
-from pyefriend import load_api, encrypt_password
+from pyefriend import load_api, encrypt_password_by_efriend_expert
 from pyefriend.const import MarketCode, Target
 
 from rebalancing.exceptions import ReportNotFoundException
@@ -119,7 +119,7 @@ class Report(Base):
         if encrypted_password:
             self.encrypted_password = encrypted_password
         else:
-            self.encrypted_password = encrypt_password(password)
+            self.encrypted_password = encrypt_password_by_efriend_expert(password)
 
         # set report_name
         if prompt:

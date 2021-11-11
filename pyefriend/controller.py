@@ -24,8 +24,8 @@ def run_app():
     return app
 
 
-class Conn:
-    """ QAxWidget을 통해 Connection Instance 생성(Low-Level) """
+class Controller:
+    """ QAxWidget을 통해 Controller Instance 생성(Low-Level) """
     def __init__(self, logger=None):
         run_app()
         self.instance = QAxWidget(System.PROGID)
@@ -313,6 +313,3 @@ class Conn:
         return self.dynamic_call("IsVTS()")
 
 
-def encrypt_password(raw_password: str):
-    conn = Conn()
-    return conn.GetEncryptPassword(raw_password)

@@ -1,3 +1,14 @@
+"""
+# API Class
+
+:var controller: controller.py 내 Controller class instance를 단 하나만 생성(get_or_create_controller)
+
+# 주요 parameters
+
+:param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
+:param product_code: 종목 코드
+:param order_num: 주문번호
+"""
 from logging import Logger
 from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
@@ -5,28 +16,28 @@ import requests
 
 from .const import Service, MarketCode, Currency, ProductCode
 from .log import logger as pyefriend_logger
-from .connection import Conn
+from .controller import Controller
 from .exceptions import *
 
 # [Section] Variables
 
-conn: Optional[Conn] = None
+controller: Optional[Controller] = None
 
 
 # [Section] Modules
 
-def get_or_create_conn(logger=None, raise_error: bool = True):
-    global conn
+def get_or_create_controller(logger=None, raise_error: bool = True):
+    global controller
 
-    if conn is None:
-        conn = Conn(logger)
+    if controller is None:
+        controller = Controller(logger)
 
         def send_log_when_error():
-            return_code = conn.GetRtCode()
-            msg_code = conn.GetReqMsgCode()
+            return_code = controller.GetRtCode()
+            msg_code = controller.GetReqMsgCode()
 
             if return_code != '0':
-                msg = f'[{msg_code}] {conn.GetReqMessage()}'
+                msg = f'[{msg_code}] {controller.GetReqMessage()}'
 
                 if raise_error:
                     if msg_code == '40910000':
@@ -41,23 +52,20 @@ def get_or_create_conn(logger=None, raise_error: bool = True):
                 else:
                     logger.error(msg)
 
-        conn.set_receive_data_event_handler(send_log_when_error)
-        conn.set_receive_error_data_handler(send_log_when_error)
+        controller.set_receive_data_event_handler(send_log_when_error)
+        controller.set_receive_error_data_handler(send_log_when_error)
 
-    return conn
+    return controller
+
+
+def encrypt_password_by_efriend_expert(raw_password: str):
+    return get_or_create_controller().GetEncryptPassword(raw_password)
 
 
 class Api:
-    """
-    High Level API
-
-    :param market_code: 해외거래소코드(NASD / NYSE / AMEX 등 4글자 문자열)
-    :param product_code: 종목 코드
-    :param order_num: 주문번호
-    """
-
+    """ High Level API """
     def __init__(self,
-                 target_account: str,
+                 account: str,
                  password: str = None,
                  encrypted_password: str = None,
                  logger=None):
@@ -65,37 +73,37 @@ class Api:
             logger = pyefriend_logger
         self.logger: Logger = logger
 
-        self.target_account = target_account
+        self.account = account
         self._all_accounts = None
 
         assert password or encrypted_password, "password 혹은 암호화된 password 둘 중 하나는 입력해야 합니다."
 
         if encrypted_password is None:
-            self._encrypted_password = self.conn.GetEncryptPassword(password)
+            self._encrypted_password = self.controller.GetEncryptPassword(password)
 
         if not self.is_connected:
             raise NotConnectedException()
 
-        logger.info(f"계좌가 존재하는 지 확인합니다.: '{self.target_account}'")
+        logger.info(f"계좌가 존재하는 지 확인합니다.: '{self.account}'")
 
         if not self.is_account_exist:
             raise AccountNotExistsException()
 
-        if self.conn.IsVTS():
-            logger.info(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
+        if self.controller.IsVTS():
+            logger.info(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.account}'")
         else:
-            logger.warning(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.target_account}'")
+            logger.warning(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.account}'")
 
     @property
-    def conn(self):
-        """ connection load """
-        return get_or_create_conn(self.logger)
+    def controller(self):
+        """ controller load """
+        return get_or_create_controller(self.logger)
 
     @property
-    def account(self):
+    def splitted_account(self):
         """ 입력받은 계좌번호를 (종합계좌번호, 상품코드)로 파싱해서 반환 """
-        account_num = self.target_account[:8]  # 종합계좌번호 (계좌번호 앞 8자리)
-        product_code = self.target_account[8:]  # 계좌상품코드(종합계좌번호 뒷 부분에 붙는 번호)
+        account_num = self.account[:8]  # 종합계좌번호 (계좌번호 앞 8자리)
+        product_code = self.account[8:]  # 계좌상품코드(종합계좌번호 뒷 부분에 붙는 번호)
         return account_num, product_code
 
     @property
@@ -103,8 +111,8 @@ class Api:
         """ 모든 계좌 반환 """
         if self._all_accounts is None:
             self._all_accounts = [
-                self.conn.GetAccount(i)
-                for i in range(self.conn.GetAccountCount())
+                self.controller.GetAccount(i)
+                for i in range(self.controller.GetAccountCount())
             ]
 
         return self._all_accounts
@@ -121,8 +129,8 @@ class Api:
 
     @property
     def is_account_exist(self) -> bool:
-        """ target_account 존재여부 계산 """
-        return self.target_account in self.all_accounts
+        """ account 존재여부 계산 """
+        return self.account in self.all_accounts
 
     def set_data(self,
                  field_index: int,
@@ -130,9 +138,9 @@ class Api:
                  block_index: int = None):
         """ set data """
         if block_index is not None:
-            self.conn.SetSingleDataEx(block_index=block_index, field_index=field_index, value=value)
+            self.controller.SetSingleDataEx(block_index=block_index, field_index=field_index, value=value)
         else:
-            self.conn.SetSingleData(field_index, value)
+            self.controller.SetSingleData(field_index, value)
         return self
 
     def get_data(self,
@@ -160,7 +168,7 @@ class Api:
             data_list = []
 
             # 총 갯수
-            record_ct = self.conn.GetMultiRecordCount(block_index)
+            record_ct = self.controller.GetMultiRecordCount(block_index)
 
             for record_idx in range(record_ct):
                 skip = False
@@ -170,9 +178,9 @@ class Api:
                     index = column.get('index')
                     dtype = column.get('dtype', str)
                     pk = column.get('pk', False)
-                    value = self.conn.GetMultiData(block_index=block_index,
-                                                   record_index=record_idx,
-                                                   field_index=index)
+                    value = self.controller.GetMultiData(block_index=block_index,
+                                                         record_index=record_idx,
+                                                         field_index=index)
 
                     if pk and value == '':
                         # pk column의 값이 ''일 경우 break
@@ -185,7 +193,7 @@ class Api:
 
             return data_list
         else:
-            data = self.conn.GetSingleData(field_index, 0)
+            data = self.controller.GetSingleData(field_index, 0)
             if as_type:
                 return as_type(data)
             else:
@@ -193,7 +201,7 @@ class Api:
 
     def set_account_info(self):
         """ request 0, 1, 2에 계정 정보 입력 """
-        account_num, product_code = self.account
+        account_num, product_code = self.splitted_account
 
         return (
             self.set_data(0, account_num)
@@ -203,7 +211,7 @@ class Api:
 
     def request_data(self, service: str):
         """ Transaction 요청 """
-        self.conn.RequestData(service=service)
+        self.controller.RequestData(service=service)
         return self
 
     def get_kospi_histories(self, standard: str = 'D'):
@@ -378,7 +386,7 @@ class DomesticApi(Api):
         )
 
     def get_stock_name(self, product_code: str):
-        return self.conn.GetSingleDataStockMaster(product_code, 2)
+        return self.controller.GetSingleDataStockMaster(product_code, 2)
 
     def get_stock_info(self, product_code: str, market_code: str = None) -> Tuple[int, int, int, int, int]:
         # set
@@ -521,7 +529,7 @@ class OverSeasApi(Api):
         return 'USD'
 
     def set_auth(self, index: int = 0):
-        return self.set_data(index, self.conn.GetOverSeasStockSise())
+        return self.set_data(index, self.controller.GetOverSeasStockSise())
 
     @property
     def deposit(self) -> float:
@@ -575,7 +583,7 @@ class OverSeasApi(Api):
         )
 
         # get data
-        currency = self.conn.GetMultiData(3, 0, 4)
+        currency = self.controller.GetMultiData(3, 0, 4)
 
         # 값을 불러오지 못할 때가 있음
         if currency != '':

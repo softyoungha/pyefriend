@@ -18,7 +18,45 @@ from rebalancing.app.router import r as app_router
 title = 'Re-Balancing App'
 description = f"""
 ##### FastAPI PID: {os.getpid()}
-""" + open(os.path.join(BASE_DIR, 'DESCRIPTION.md'), 'utf-8').read()
+
+<details><summary>Click to Expand</summary>
+
+##### Author: Youngha Park
+
+## Description
+
+'리밸런싱 App'은 FastAPI의 unicorn으로 실행됩니다. 
+
+
+## Requirements
+
+단, 한국투자증권 efriend expert가 관리자 모드로 실행되고 있어야 하며  
+
+## **API Routers**
+
+- [auth](#/auth): API 로그인을 위한 JWT Token Router
+
+- [v1-database](#/v1-database): 데이터베이스 설정을 위한 API Router
+
+- [v1-setting](#/v1-setting): 'Setting' 테이블
+
+- [v1-report](#/v1-report): 리밸런싱 리포트
+
+## Getting Started
+
+리밸런싱 App은 Authoize
+
+
+# Links
+
+- [pyefriend Github](https://github.com/softyoungha/pyefriend)
+- [pyefriend PyPi](https://pypi.org/project/pyefriend/1.0/)
+- [Github Blog](https://softyoungha.github.io/)
+- [한국투자증권 Expert 표준 API Refrence Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)
+
+</details>
+
+""" # + open(os.path.join(BASE_DIR, 'DESCRIPTION.md'), 'r', encoding='utf-8').read()
 
 # create app
 app = FastAPI(title=title,
