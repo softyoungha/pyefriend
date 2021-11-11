@@ -1,9 +1,9 @@
 import os
 from typing import Optional, List
-from fastapi import APIRouter, Request, Response, status, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Request, Response, status, Depends
 
 from rebalancing.models.setting import Setting as SettingModel
+from rebalancing.app.auth import login_required
 from .schema import SettingOrm, SettingUpdate
 
 r = APIRouter(prefix='/setting',
@@ -11,14 +11,15 @@ r = APIRouter(prefix='/setting',
 
 
 @r.get('/', response_model=List[SettingOrm])
-async def get_settings():
+async def get_settings(user=Depends(login_required)):
     """### 세팅 가능한 값 전부 조회 """
     return [SettingOrm.from_orm(item) for item in SettingModel.list()]
 
 
 @r.post('/', status_code=status.HTTP_200_OK)
-async def initialize_settings(force: bool = False):
-    """### 세팅값 초기화
+async def initialize_settings(force: bool = False, user=Depends(login_required)):
+    """
+    ### 세팅값 초기화
     - force: True일 경우 기존 값 초기화
     """
     SettingModel.initialize(force=force)
@@ -27,8 +28,9 @@ async def initialize_settings(force: bool = False):
 
 
 @r.get('/{section}/{key}', response_model=SettingOrm)
-async def get_a_setting(section: str, key: str):
-    """### 세팅값 조회
+async def get_a_setting(section: str, key: str, user=Depends(login_required)):
+    """
+    ### 세팅값 조회
     - section: setting 테이블 내 조회할 section
     - key: section 내 조회할 key
     """
@@ -36,8 +38,12 @@ async def get_a_setting(section: str, key: str):
 
 
 @r.put('/{section}/{key}', status_code=status.HTTP_200_OK)
-async def change_setting(section: str, key: str, request: SettingUpdate):
-    """### 세팅값 수정
+async def change_setting(section: str,
+                         key: str,
+                         request: SettingUpdate,
+                         user=Depends(login_required)):
+    """
+    ### 세팅값 수정
     - section: setting 테이블 내 조회할 section
     - key: section 내 조회할 key
     """

@@ -70,7 +70,7 @@ class Api:
 
         assert password or encrypted_password, "password 혹은 암호화된 password 둘 중 하나는 입력해야 합니다."
 
-        if encrypted_password:
+        if encrypted_password is None:
             self._encrypted_password = self.conn.GetEncryptPassword(password)
 
         if not self.is_connected:

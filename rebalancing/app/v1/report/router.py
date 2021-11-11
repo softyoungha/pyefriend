@@ -1,10 +1,11 @@
 import os
 from typing import Optional, List
-from fastapi import APIRouter, Request, Response, status, HTTPException
+from fastapi import APIRouter, Request, Response, status, HTTPException, Depends
 from fastapi.responses import FileResponse
 
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
 from rebalancing.models.report import Status, Report
+from rebalancing.app.auth import login_required
 from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
 
 
@@ -13,7 +14,7 @@ r = APIRouter(prefix='/report',
 
 
 @r.post('/', response_model=ReportOutput)
-async def create_report(request: ReportInput):
+async def create_report(request: ReportInput, user=Depends(login_required)):
     """### pyefriend api 생성로 접속 테스트 후 성공시 report_name 생성 """
     try:
         # set report
@@ -54,8 +55,11 @@ async def create_report(request: ReportInput):
 
 
 @r.post('/{report_name}/prices', status_code=status.HTTP_200_OK)
-async def refresh_prices(report_name: str, created_time: Optional[str] = None):
-    """### DB 내 종목 가격 최신화('product' table)
+async def refresh_prices(report_name: str,
+                         created_time: Optional[str] = None,
+                         user=Depends(login_required)):
+    """
+    ### DB 내 종목 가격 최신화('product' table)
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
@@ -65,8 +69,11 @@ async def refresh_prices(report_name: str, created_time: Optional[str] = None):
 
 
 @r.get('/{report_name}/prices', response_model=List[PricesOutput])
-async def get_prices(report_name: str, created_time: Optional[str] = None):
-    """### DB 내 종목 가격 조회('product' table)
+async def get_prices(report_name: str,
+                     created_time: Optional[str] = None,
+                     user=Depends(login_required)):
+    """
+    ### DB 내 종목 가격 조회('product' table)
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
@@ -75,8 +82,11 @@ async def get_prices(report_name: str, created_time: Optional[str] = None):
 
 
 @r.post('/{report_name}/plan', status_code=status.HTTP_200_OK)
-async def make_plan(report_name: str, created_time: Optional[str] = None):
-    """### 최신화된 가격을 토대로 리밸런싱 플랜 생성
+async def make_plan(report_name: str,
+                    created_time: Optional[str] = None,
+                    user=Depends(login_required)):
+    """
+    ### 최신화된 가격을 토대로 리밸런싱 플랜 생성
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
@@ -89,8 +99,10 @@ async def make_plan(report_name: str, created_time: Optional[str] = None):
 @r.get('/{report_name}/plan', response_class=FileResponse)
 async def get_plan(report_name: str,
                    created_time: Optional[str] = None,
-                   summary: Optional[bool] = False):
-    """### 리밸런싱 플랜 조회
+                   summary: Optional[bool] = False,
+                   user=Depends(login_required)):
+    """
+    ### 리밸런싱 플랜 조회
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     - summary: True일 경우 요약정보, False일 경우 상세정보
@@ -114,8 +126,11 @@ async def get_plan(report_name: str,
 
 
 @r.put('/{report_name}/plan', status_code=status.HTTP_200_OK)
-async def adjust_plan(report_name: str, created_time: Optional[str] = None):
-    """### 최신화된 가격을 토대로 리밸런싱 플랜 생성
+async def adjust_plan(report_name: str,
+                      created_time: Optional[str] = None,
+                      user=Depends(login_required)):
+    """
+    ### 최신화된 가격을 토대로 리밸런싱 플랜 생성
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
@@ -128,8 +143,11 @@ async def adjust_plan(report_name: str, created_time: Optional[str] = None):
 
 
 @r.post('/{report_name}/execute', status_code=status.HTTP_200_OK)
-async def execute_plan(report_name: str, created_time: Optional[str] = None):
-    """### 플랜 실행
+async def execute_plan(report_name: str,
+                       created_time: Optional[str] = None,
+                       user=Depends(login_required)):
+    """
+    ### 플랜 실행
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """

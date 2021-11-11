@@ -23,5 +23,9 @@ fastapi==0.70.0
 uvicorn[standard]==0.15.0
 python-multipart==0.0.5
 
+# fastapi-login
+python-jose[cryptograph]==3.3.0
+passlib[bcrypt]==1.7.4
+
 # python 32bit only
 pywin32 >= 302; platform_system=="Windows"

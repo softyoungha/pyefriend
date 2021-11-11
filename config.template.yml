@@ -1,4 +1,5 @@
 core:
+
   # log format
   log_format: '[%(levelname)s] %(asctime)s - %(name)s/%(filename)s/%(funcName)s, %(lineno)s: %(message)s'
 
@@ -14,6 +15,20 @@ core:
   # 실제 계좌 비밀번호
   real_password: ''
 
+
+fastapi:
+
+  # fastapi 계정명
+  username: youngha.park
+
+  # fastapi 비밀번호 환경변수명(해당 환경변수에 password 저장)
+  password_env: REBAL_PASSWORD
+
+  # 비밀번호 암호화시 사용하는 SECRET_KEY
+  secret_key: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+
+  # access_token 만료 시간
+  access_token_expire_minutes: 30
 
 database:
   # sqlite일 경우 절대경로로 설정 가능

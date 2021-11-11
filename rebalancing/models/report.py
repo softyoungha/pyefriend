@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, Foreig
 from pyefriend import load_api, encrypt_password
 from pyefriend.const import MarketCode, Target
 
-from rebalancing.exceptions import ReportNotFound
+from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
 from rebalancing.config import REPORT_DIR
 from rebalancing.models import Product, Portfolio, ProductHistory, Setting
@@ -187,7 +187,7 @@ class Report(Base):
             return row.init()
         else:
             if raise_if_not_exists:
-                raise ReportNotFound()
+                raise ReportNotFoundException()
             else:
                 return None
 

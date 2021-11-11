@@ -10,35 +10,29 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 
-from rebalancing.models.setting import Setting
 from rebalancing.settings import BASE_DIR
-from rebalancing.app.router import r
+from rebalancing.app.auth import r as auth_router
+from rebalancing.app.router import r as app_router
 
 # rebalance app info
 title = 'Re-Balancing App'
 description = f"""
-### PID: {os.getpid()}
-
-**Contents**
-
-- [v1-setting](#/v1-setting)
-- [v1-database](#/v1-database)
-- [v1-report](#/v1-report)
-
-
-"""
+##### FastAPI PID: {os.getpid()}
+""" + open(os.path.join(BASE_DIR, 'DESCRIPTION.md'), 'utf-8').read()
 
 # create app
 app = FastAPI(title=title,
               description=description,
+              version='v1',
               debug=True,
               docs_url=None,
               redoc_url=None)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
+
 # docs
-@app.get("/docs", include_in_schema=False)
+@app.get("/", include_in_schema=False)
 async def custom_swagger_ui_html():
     return get_swagger_ui_html(
         openapi_url=app.openapi_url,
@@ -71,12 +65,5 @@ async def auth_exception_handler(request: Request, exc: RequestValidationError):
     print('exc.body: ', exc.body)
     return JSONResponse(content={'detail': msg}, status_code=status.HTTP_400_BAD_REQUEST)
 
-
-@app.get('/')
-async def get_accounts_in_configs(request: Request):
-    return {
-        'test_account': Setting.get_value('ACCOUNT', 'TEST_ACCOUNT'),
-        'real_account': Setting.get_value('ACCOUNT', 'REAL_ACCOUNT'),
-    }
-
-app.include_router(r)
+app.include_router(auth_router)
+app.include_router(app_router)
