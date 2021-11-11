@@ -192,88 +192,89 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 
 1. rebalancing의 초기 설정을 위해서는 먼저 환경변수 설정을 해야합니다.
 
-  ```cmd
-  # cmd terminal
-  # 실행 경로
-  set REBAL_HOME=.
-  
-  # config.yml 위치(입력하지 않을 경우 %REBAL_HOME%/config.yml 로 자동 설정)
-  set REBAL_CONF=./config.yml
-  
-  # FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
-  set REBAL_PASSWORD=password
-  ```
+    ```shell
+    # [cmd]
+    
+    # 실행 경로
+    set REBAL_HOME=.
+    
+    # config.yml 위치(입력하지 않을 경우 %REBAL_HOME%/config.yml 로 자동 설정)
+    set REBAL_CONF=./config.yml
+    
+    # FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
+    set REBAL_PASSWORD=password
+    ```
 
 2. REBAL_CONF 위치에 `config.template.yml`을 복사하여 설정값을 변경합니다.
 
-  config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
-  ```yaml
-  # .../config.yml (%REBAL_CONF%)
-  section:  
-    # key description
-    key: value
-    ...
-  ```
+    config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
+    ```yaml
+    # .../config.yml (%REBAL_CONF%)
+    section:  
+      # key description
+      key: value
+      ...
+    ```
 
 3. database를 생성합니다.
    
-  config.yml -> `database` section -> `sqlalchemy_conn_str` 에서
-  이미 생성되어 있는 다른 database connection을 설정할 수 있습니다.
-  혹은, sqlite3(config.template.yml) 경로를 사용자 경로에 맞춰 변경한 뒤 다음의 코드를 실행하면
-     
-  ```shell
-  # cmd terminal: run ipython
-  ipython
-  ```
-  ```python
-  # ipython 
-  from rebalancing.utils.db import init_db
-  
-  # database 생성
-  init_db()
-  ```
-  
-  `init_db` 함수 실행과 동시에 sqlite3 database 파일(ex. database.db)이 생성되며
-  rebalancing에서 사용하는 모든 테이블들이 생성됩니다.
-  
-  > rebalancing 내에서 사용하는 database 작업이 개인 사용 목적이므로 많은 세션을 요구하지 않고, 
-    잦은 transaction이 일어나지 않으므로 sqlite3만으로도 충분합니다.
+    config.yml -> `database` section -> `sqlalchemy_conn_str` 에서
+    이미 생성되어 있는 다른 database connection을 설정할 수 있습니다.
+    혹은, sqlite3(config.template.yml) 경로를 사용자 경로에 맞춰 변경한 뒤 다음의 코드를 실행하면
+       
+    ```shell
+    # cmd terminal: run ipython
+    ipython
+    ```
+    ```python
+    # ipython 
+    from rebalancing.utils.db import init_db
     
-  > database 내에 'setting' 테이블이 init_db 실행과 함께 값이 insert됩니다.
+    # database 생성
+    init_db()
+    ```
+    
+    `init_db` 함수 실행과 동시에 sqlite3 database 파일(ex. database.db)이 생성되며
+    rebalancing에서 사용하는 모든 테이블들이 생성됩니다.
+    
+    > rebalancing 내에서 사용하는 database 작업이 개인 사용 목적이므로 많은 세션을 요구하지 않고, 
+      잦은 transaction이 일어나지 않으므로 sqlite3만으로도 충분합니다.
+      
+    > database 내에 'setting' 테이블이 init_db 실행과 함께 값이 insert됩니다.
 
 4. db table 내에 data를 insert합니다.
 
-  ```python
-  # ipython
-  from rebalancing.utils.db import init_data
-  
-  # 초기 데이터 insert
-  init_data()
-  ```
-
-  생성되는 초기 데이터는 국민연금기관의 국내/해외 투자 포트폴리오를 기반으로 계산된 데이터입니다.
-  ([국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp))
-
-  - rebalancing/data/init_data_domestic.csv
-  - rebalancing/data/init_data_overseas.csv
-
-  weight 국민연금기관이 투자한 금액으로, 리밸런싱할 비율을 계산하는 값입니다.
+    ```python
+    # ipython
+    from rebalancing.utils.db import init_data
+    
+    # 초기 데이터 insert
+    init_data()
+    ```
+    
+    생성되는 초기 데이터는 국민연금기관의 국내/해외 투자 포트폴리오를 기반으로 계산된 데이터입니다.
+    ([국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp))
+    
+    - rebalancing/data/init_data_domestic.csv
+    - rebalancing/data/init_data_overseas.csv
+    
+    weight 국민연금기관이 투자한 금액으로, 리밸런싱할 비율을 계산하는 값입니다.
 
 5. 생성된 'portfolio' 테이블에서 포트폴리오에서 사용할 종목만 use_yn = 1 로 변경
 
-  가진 예산이 50만원일 때 모든 종목을 use_yn = 1로 하여도 개별 종목들이 비싸기 때문에
-  리밸런싱으로 계산할 수 없습니다.(엔씨소프트 주식 현재가 70만원)
-  따라서 예산에 감안해서 리밸런싱을 진행할 종목들을 선택해야 하고, 
-  예산도 어느정도 확보한 상태에서 분산투자가 가능합니다. 
-
-  > DBeaver와 같은 DB 접속 Tool을 사용하여 변경하는 것을 권장합니다.  
+    가진 예산이 50만원일 때 모든 종목을 use_yn = 1로 하여도 개별 종목들이 비싸기 때문에
+    리밸런싱으로 계산할 수 없습니다.(엔씨소프트 주식 현재가 70만원)
+    따라서 예산에 감안해서 리밸런싱을 진행할 종목들을 선택해야 하고, 
+    예산도 어느정도 확보한 상태에서 분산투자가 가능합니다. 
+    
+    > DBeaver와 같은 DB 접속 Tool을 사용하여 변경하는 것을 권장합니다.  
 
 6. 리밸런싱 실행
 
-  리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
+    리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
   
-  #### cmd에서 python 프로그램으로 실행
-  
+    ### cmd에서 python 프로그램으로 실행
+      
     `python -m rebalancing -h` 커맨드를 입력하면 다음과 같이 help 메시지가 출력됩니다.
     
     > cmd.exe가 역시 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
@@ -301,14 +302,14 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     
     ```
 
-  #### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
-
+    ### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
+    
     **rebalancing_example.ipynb**를 참고하세요.
 
-  #### FastAPI 실행 후 request
+    ### FastAPI 실행 후 request
 
     다음의 커맨드로 FastAPI를 실행합니다.
-
+    
     > cmd.exe가 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
     
     ```shell
@@ -330,8 +331,8 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     ```
     
     Re-balancing App 에 관한 내용은 App 실행시 상단 Description을 확인하세요.
-    
-    <br/>
+
+<br/>
 
 ## Custom API Control
 
