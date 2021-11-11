@@ -7,7 +7,7 @@ from pyefriend.exceptions import NotConnectedException, AccountNotExistsExceptio
 from rebalancing.models.report import Status, Report
 from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput
 
-r = APIRouter(prefix='/rebalance',
+r = APIRouter(prefix='/report',
               tags=['v1'])
 
 

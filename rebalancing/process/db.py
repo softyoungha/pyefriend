@@ -5,11 +5,14 @@ from sqlalchemy.orm import Session
 
 from rebalancing.settings import BASE_DIR, logger
 from rebalancing.models.base import metadata
-from rebalancing.models import Product, Portfolio
+from rebalancing.models import Product, Portfolio, Setting
 
 
 def init_db():
     metadata.create_all()
+    logger.info('create_all: Done')
+
+    Setting.initialize()
     logger.info('create_all: Done')
 
 

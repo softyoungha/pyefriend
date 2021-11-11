@@ -18,14 +18,3 @@ core:
 database:
   # sqlite일 경우 절대경로로 설정 가능
   sqlalchemy_conn_str: 'sqlite:///database.db'
-
-
-rebalance:
-  # 계좌 전체 금액 중 사용할 금액 %
-  limit: 90%
-
-  # limit 중 국내 주식 비율
-  domestic_percent: 19%
-
-  # limit 중 외국 주식 비율
-  overseas_percent: 30%

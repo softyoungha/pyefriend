@@ -11,8 +11,8 @@ from pyefriend.const import MarketCode, Target
 
 from rebalancing.exceptions import ReportNotFound
 from rebalancing.settings import IS_JUPYTER_KERNEL
-from rebalancing.config import Config, REPORT_DIR
-from rebalancing.models import Product, Portfolio, ProductHistory
+from rebalancing.config import REPORT_DIR
+from rebalancing.models import Product, Portfolio, ProductHistory, Setting
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
 from .base import Base, Length
@@ -70,8 +70,8 @@ class Report(Base):
         re-balancing 실행 후 자동 리포트 생성
 
         :param target:          'domestic', 'overseas'
-        :param test:            config.yml 내의 모의주문 계정 사용여부(account, password)
-        :param account:         config.yml에 있는 계좌가 아닌 입력된 계좌를 사용
+        :param test:            setting 테이블 내의 모의주문 계정 사용여부(account, password)
+        :param account:         setting 테이블 에 있는 계좌가 아닌 입력된 계좌를 사용
         :param password:        account를 직접 입력했을 경우 사용할 password
         :param created_time:   [%Y%m%d_%H_%M_%S, str] 입력될 경우 해당 시간에 계산된 rebalancing 결과를 바라봅니다.
                                 입력되지 않을 경우 Executor가 실행된 시간으로 저장합니다(report_path의 폴더구분으로 사용됩니다)
@@ -105,12 +105,12 @@ class Report(Base):
 
         elif test:
             # 모의주문 계정
-            account = Config.get('core', 'TEST_ACCOUNT')
-            password = Config.get('core', 'TEST_PASSWORD')
+            account = Setting.get_value('ACCOUNT', 'TEST_ACCOUNT')
+            password = Setting.get_value('ACCOUNT', 'TEST_PASSWORD')
         else:
             # 실제 계정
-            account = Config.get('core', 'REAL_ACCOUNT')
-            password = Config.get('core', 'REAL_PASSWORD')
+            account = Setting.get_value('ACCOUNT', 'REAL_ACCOUNT')
+            password = Setting.get_value('ACCOUNT', 'REAL_PASSWORD')
 
         # 계정 set
         self.account = account
@@ -355,7 +355,7 @@ class Report(Base):
         # plan result dataframe
         :keyword deposit:                   총 예수금
         :keyword total_amount:              총 예수금 + 포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합
-        :keyword available_total_amount:    전체 금액 중 사용할 금액(total_amount * [LIMIT percent in config.yml])
+        :keyword available_total_amount:    전체 금액 중 사용할 금액(total_amount * [AVAILABLE percent in setting table])
         :keyword asis_total_amount:         포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합
         :keyword planned_budge:             국내/해외 투자에 사용할 금액
         :keyword tobe_total_amount:         rebalancing 후 계산된 실제 전체 금액
@@ -375,15 +375,15 @@ class Report(Base):
         """
 
         # available_percent: 사용할 금액 %
-        available_percent = Config.get_percent('rebalance', 'LIMIT')
+        available_percent = Setting.get_value('AMOUNT_LIMIT', 'AVAILABLE', dtype=float)
 
         # percent: 국내/해외 주식 비율 %
         if self.is_domestic:
-            percent = Config.get_percent('rebalance', 'DOMESTIC_PERCENT')
+            percent = Setting.get_value('AMOUNT_LIMIT', 'DOMESTIC', dtype=float)
             numeric_type = int
 
         else:
-            percent = Config.get_percent('rebalance', 'OVERSEAS_PERCENT')
+            percent = Setting.get_value('AMOUNT_LIMIT', 'OVERSEAS', dtype=float)
             numeric_type = float
 
         # list all portfolio with use_yn = True

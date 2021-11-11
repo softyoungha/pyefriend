@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 
-from rebalancing.config import Config, get_config_yaml
+from rebalancing.models.setting import Setting
 from rebalancing.settings import BASE_DIR
 from rebalancing.app.router import r
 
@@ -65,11 +65,10 @@ async def auth_exception_handler(request: Request, exc: RequestValidationError):
 
 
 @app.get('/')
-async def refresh_config_and_get_accounts_in_configs(request: Request):
-    Config.conf = get_config_yaml()
+async def get_accounts_in_configs(request: Request):
     return {
-        'test_account': Config.get('core', 'TEST_ACCOUNT'),
-        'real_account': Config.get('core', 'REAL_ACCOUNT'),
+        'test_account': Setting.get_value('ACCOUNT', 'TEST_ACCOUNT'),
+        'real_account': Setting.get_value('ACCOUNT', 'REAL_ACCOUNT'),
     }
 
 app.include_router(r)

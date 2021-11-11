@@ -24,7 +24,6 @@ print(f"다음의 경로를 사용합니다.\n"
 
 def get_config_yaml() -> dict:
     # config
-    print()
     config_path = os.path.abspath(CONF_PATH)
 
     if os.path.exists(config_path):
