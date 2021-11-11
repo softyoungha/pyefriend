@@ -7,7 +7,7 @@ from getpass import getpass
 def argument_parser() -> ArgumentParser:
     from rebalancing.utils.const import Target
 
-    description = 'Rebalancing App 실행을 위해 '
+    description = 'Re-balancing 모듈 실행'
     parser = ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
     parser.add_argument('--target', '-t',
                         type=str,

@@ -276,7 +276,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 
     리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
   
-    ### cmd에서 python 프로그램으로 실행
+    ### 방법1: cmd에서 python 프로그램으로 실행
       
     `python -m rebalancing -h` 커맨드를 입력하면 다음과 같이 help 메시지가 출력됩니다.
     
@@ -286,7 +286,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     (venv) C:\...\rebalancing> python -m rebalancing -h
     usage: __main__.py [-h] --target {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
     
-    Rebalancing App 실행을 위해
+    Re-balancing 모듈 실행
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -305,11 +305,11 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     
     ```
 
-    ### jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
+    ### 방법2: jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
     
-    **rebalancing_example.ipynb**를 참고하세요.
+    rebalancing_example.ipynb를 참고하세요.
 
-    ### FastAPI 실행 후 request
+    ### 방법3: FastAPI 실행 후 request
 
     다음의 커맨드로 FastAPI를 실행합니다.
     
