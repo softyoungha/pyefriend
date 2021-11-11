@@ -23,13 +23,13 @@ rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대�
 
 
 **Table of contents**
-- [Warning](##warning)
-- [Requirements](##requirements)
-- [Getting started](##getting-started)
-- [Rebalancing](##rebalancing)
-- [Process](##process)
-- [ETC](##etc)
-- [Links](##links)
+- [Warning](#warning)
+- [Requirements](#requirements)
+- [Getting started](#getting-started)
+- [Rebalancing](#rebalancing)
+- [Process](#process)
+- [ETC](#etc)
+- [Links](#links)
 
 
 ## Warning
@@ -58,6 +58,10 @@ rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대�
 | numpy                | 1.21.4                    |
 | pandas               | 1.3.4                     |
 | sqlalchemy           | 1.4.26                    |
+| fastapi              | 0.70.0                    |
+| uvicorn[standard]    | 0.15.0                    |
+
+<br/>
 
 ## Installation
 
@@ -67,9 +71,10 @@ rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대�
 pip install pyefriend
 ```
 
-* 어느정도 안정화될 때까지는 github repo에서 pull 받아서 사용하길 권장합니다.(현재 수정이 잦습니다.)
+* 어느정도 안정화될 때까지는 github repo에서 pull 받아서 사용하길 권장합니다.    
+  (현재 수정이 잦습니다.)
 
-
+<br/>
 
 ## Getting started
 
@@ -164,6 +169,10 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 같은 함수명을 가지고 parameter명도 같지만 내부에서 요청하는 efriend Service는 다릅니다.
 직접 커스텀 서비스 요청을 만드는 방법은 [Custom API Control](#custom-api-control) Section을 참고하세요.
 
+<br/>
+
+### rebalancing
+
 
 ## Custom API Control
 
@@ -181,7 +190,7 @@ class DomesticApi(Api):
         (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
                 .set_data(1, product_code)  # 1: 종목코드
-                .request_data(Service.SCP)
+                .request_data(Service.SCP)  # Service.SCP = 'SCP' (상수)
         )
         
         # get
@@ -197,7 +206,7 @@ class DomesticApi(Api):
 
 API 내의 모든 함수는 set -> request_data -> get 순서를 따릅니다.
 
-* `self.set_data` 함수는 `self`를 return하기 때문에 계속해서 `.`으로 계속 이어서 적을 수 있습니다.
+* `self.set_data` 함수는 `self`를 return하도록 되어있어 `.`으로 이어서 Chain을 만들 수 있습니다.
 * set_data Chain 마지막에는 `request_data(service)`를 통해 모인 데이터를 
   efriend 내 특정 서비스로 전송합니다.
 * request_data 이후 Controller(Low-level)는 전송 결과 반환받은 데이터를 저장해놓은 상태이고,
