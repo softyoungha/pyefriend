@@ -18,6 +18,14 @@ from rebalancing.app.router import r
 title = 'Re-Balancing App'
 description = f"""
 ### PID: {os.getpid()}
+
+**Contents**
+
+- [v1/setting](#/v1/Fsetting)
+- [v1/database](#/v1/database)
+- [v1/report](#/v1/report)
+
+
 """
 
 # create app
