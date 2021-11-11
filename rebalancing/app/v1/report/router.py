@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
 from rebalancing.models.report import Status, Report
-from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput
+from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
 
 r = APIRouter(prefix='/report',
               tags=['report'])
@@ -53,7 +53,7 @@ async def create_report(request: ReportInput):
 
 
 @r.post('/{report_name}/prices', status_code=status.HTTP_201_CREATED)
-async def refresh_prices(report_name: str, created_time: Optional[str] = None):
+async def refresh_prices(report_name: ReportNameField, created_time: Optional[str] = CreatedTimeField):
     """ DB 내 종목 가격 최신화('product' table) """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
     report.refresh_prices()
@@ -61,14 +61,14 @@ async def refresh_prices(report_name: str, created_time: Optional[str] = None):
 
 
 @r.get('/{report_name}/prices', response_model=List[PricesOutput])
-async def get_prices(report_name: str, created_time: Optional[str] = None):
+async def get_prices(report_name: ReportNameField, created_time: Optional[str] = CreatedTimeField):
     """ DB 내 종목 가격 조회('product' table) """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
     return report.get_prices()
 
 
 @r.post('/{report_name}/plan', status_code=status.HTTP_201_CREATED)
-async def make_plan(report_name: str, created_time: Optional[str] = None):
+async def make_plan(report_name: ReportNameField, created_time: Optional[str] = CreatedTimeField):
     """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time)
@@ -77,8 +77,8 @@ async def make_plan(report_name: str, created_time: Optional[str] = None):
 
 
 @r.get('/{report_name}/plan', response_class=FileResponse)
-async def get_plan(report_name: str,
-                   created_time: Optional[str] = None,
+async def get_plan(report_name: ReportNameField,
+                   created_time: Optional[str] = CreatedTimeField,
                    summary: Optional[bool] = False):
     """
     ### 리밸런싱 플랜 조회
@@ -105,7 +105,7 @@ async def get_plan(report_name: str,
 
 
 @r.put('/{report_name}/plan', status_code=status.HTTP_201_CREATED)
-async def adjust_plan(report_name: str, created_time: Optional[str] = None):
+async def adjust_plan(report_name: ReportNameField, created_time: Optional[str] = CreatedTimeField):
     """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
@@ -116,7 +116,7 @@ async def adjust_plan(report_name: str, created_time: Optional[str] = None):
 
 
 @r.post('/{report_name}/execute', status_code=status.HTTP_201_CREATED)
-async def execute_plan(report_name: str, created_time: Optional[str] = None):
+async def execute_plan(report_name: ReportNameField, created_time: Optional[str] = CreatedTimeField):
     """ 플랜 """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,

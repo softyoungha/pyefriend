@@ -1,6 +1,14 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 
+ReportNameField = Field(...,
+                        title='리포트명',
+                        description='리포트 생성 기준')
+CreatedTimeField = Field(None,
+                         title='Report 실행시간',
+                         description='Report 생성시간(실행시간)',
+                         example='20211109_07_19_39')
+
 
 class ReportInput(BaseModel):
     target: str = Field(...,
@@ -19,20 +27,14 @@ class ReportInput(BaseModel):
                                     title='비밀번호',
                                     description='account를 직접 입력했을 경우 사용할 password',
                                     example='password')
-    created_time: Optional[str] = Field(None,
-                                        title='실행시간',
-                                        description='Test Connection에서 생성된 created_time 사용',
-                                        example='20211109_07_19_39')
+    created_time: Optional[str] = CreatedTimeField
 
 
 class ReportOutput(BaseModel):
-    report_name: str = Field(..., title='리포트명')
+    report_name: str = ReportNameField
     account: str = Field(..., title='테스트 성공시 사용될 계좌명')
     is_vts: bool = Field(..., title='모의투자여부')
-    created_time: str = Field(...,
-                              title='Report 실행시간',
-                              description='Report 생성시간(실행시간)',
-                              example='20211109_07_19_39')
+    created_time: str = CreatedTimeField
 
 
 class PricesOutput(BaseModel):
