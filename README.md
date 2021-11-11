@@ -193,8 +193,6 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 1. rebalancing의 초기 설정을 위해서는 먼저 환경변수 설정을 해야합니다.
 
     ```shell
-    # [cmd]
-    
     # 실행 경로
     set REBAL_HOME=.
     
@@ -204,7 +202,13 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     # FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
     set REBAL_PASSWORD=password
     ```
-
+    
+    > Windows cmd.exe에서는 `set`으로 해당 cmd 세션에 대해서 환경변수를 설정할 수 있습니다.
+    > 
+    > 새로운 cmd에서는 새롭게 설정해주어야 합니다.
+    > 
+    > 환경변수를 유지하고 싶다면 컴퓨터 환경변수로 등록하거나 Pycharm 세팅을 활용하시면 됩니다.   
+    
 2. REBAL_CONF 위치에 `config.template.yml`을 복사하여 설정값을 변경합니다.
 
     config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
@@ -245,7 +249,6 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 4. db table 내에 data를 insert합니다.
 
     ```python
-    # ipython
     from rebalancing.utils.db import init_data
     
     # 초기 데이터 insert
@@ -279,7 +282,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     
     > cmd.exe가 역시 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
     
-    ```shell
+    ```text
     (venv) C:\...\rebalancing> python -m rebalancing -h
     usage: __main__.py [-h] --target {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
     
