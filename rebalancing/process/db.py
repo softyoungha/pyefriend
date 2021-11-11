@@ -25,9 +25,8 @@ def reset_db():
     init_db()
 
 
-def load_data(data_path: str):
-    if not os.path.exists(data_path):
-        raise FileNotFoundError(data_path)
+def insert_data(products: List[Dict] = None, data_path: str = None):
+    assert products is not None or data_path is not None, "둘 중 하나는 None이 아니여야 합니다."
 
     # data type
     dtype = {
@@ -37,10 +36,25 @@ def load_data(data_path: str):
         'weight': float
     }
 
-    products: List[Dict] = (
-        pd.read_csv(data_path, sep=',', dtype=dtype)
-            .to_dict(orient='records')
-    )
+    if data_path:
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(data_path)
+
+        products: List[Dict] = (
+            pd.read_csv(data_path, sep=',', dtype=dtype)
+                .to_dict(orient='records')
+        )
+
+    else:
+        products = [
+            {
+                'market_code': dtype['market_code'](product['market_code']),
+                'product_name': dtype['product_name'](product['product_name']),
+                'product_code': dtype['product_code'](product['product_code']),
+                'weight': dtype['weight'](product['weight']),
+            }
+            for product in products
+        ]
 
     # initialize
     Product.insert([{'code': product.get('product_code'),
@@ -54,9 +68,9 @@ def load_data(data_path: str):
 
 def init_data():
     # domestic
-    load_data(os.path.join(BASE_DIR, 'data', 'init_data_domestic.csv'))
+    insert_data(data_path=os.path.join(BASE_DIR, 'data', 'init_data_domestic.csv'))
     logger.info('Domestic: successfully inserted')
 
     # domestic
-    load_data(os.path.join(BASE_DIR, 'data', 'init_data_overseas.csv'))
+    insert_data(data_path=os.path.join(BASE_DIR, 'data', 'init_data_overseas.csv'))
     logger.info('Overseas: successfully inserted')

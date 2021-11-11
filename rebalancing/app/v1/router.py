@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from .report.router import r as report_router
-from .database.router import r as database_router
 from .setting.router import r as setting_router
+from .database.router import r as database_router
+from .report.router import r as report_router
 
 
 r = APIRouter(prefix='/v1',
