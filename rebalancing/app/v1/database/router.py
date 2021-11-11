@@ -27,7 +27,7 @@ async def reset_database():
 
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
-async def initialize_data(upload: File):
+async def initialize_data():
     """ product, portfolio 초기화 """
     init_data()
 
