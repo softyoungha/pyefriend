@@ -5,7 +5,7 @@ import pandas as pd
 from fastapi import APIRouter, Request, Response, status, UploadFile, File, Depends
 
 from rebalancing.app.auth import login_required
-from rebalancing.process.db import init_db, reset_db, init_data, insert_data
+from rebalancing.utils.db import init_db, reset_db, init_data, insert_data
 
 r = APIRouter(prefix='/database',
               tags=['v1-database'])

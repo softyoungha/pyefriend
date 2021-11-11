@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from typing import Dict, List
-from sqlalchemy.orm import Session
 
 from rebalancing.settings import BASE_DIR, logger
 from rebalancing.models.base import metadata

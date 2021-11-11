@@ -1,6 +1,6 @@
 """
 RUN command in source:
-    uvicorn rebalancing.api:app --reload
+    uvicorn rebalancing.api:app --host 0.0.0.0 --port 8000 --reload
 """
 import os
 

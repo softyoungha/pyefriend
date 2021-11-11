@@ -62,11 +62,11 @@ def main():
 
     # create executor
     report = Report(target=target,
-                      account=account,
-                      password=password,
-                      created_time=created_time,
-                      prompt=False,
-                      test=test)
+                    account=account,
+                    password=password,
+                    created_time=created_time,
+                    prompt=False,
+                    test=test)
 
     # refresh
     if skip:
