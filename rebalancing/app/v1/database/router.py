@@ -12,8 +12,7 @@ r = APIRouter(prefix='/database',
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
 async def initialize_database():
-    """ database 초기화 """
-
+    """ database 내 모든 테이블들 생성(이미 존재하는 테이블은 Skip) """
     init_db()
 
     return Response('Success', status_code=status.HTTP_200_OK)
@@ -21,8 +20,7 @@ async def initialize_database():
 
 @r.post('/reset-db', status_code=status.HTTP_200_OK)
 async def reset_database():
-    """ database 초기화 """
-
+    """ database 내 모든 테이블들 삭제 후 재생성 """
     reset_db()
 
     return Response('Success', status_code=status.HTTP_200_OK)
@@ -30,8 +28,7 @@ async def reset_database():
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
 async def initialize_data(upload: File):
-    """ database 초기화 """
-
+    """ product, portfolio 초기화 """
     init_data()
 
     return Response('Success', status_code=status.HTTP_200_OK)
