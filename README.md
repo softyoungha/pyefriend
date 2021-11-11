@@ -4,19 +4,19 @@
 
 ## Description
 
-pyefriend는 한국투자증권 OpenAPI(`efriend Expert`)과 연동하여 
+pyefriend는 한국투자증권 OpenAPI(**efriend Expert**)과 연동하여 
 주식 가격 조회, 종목 매수/매도 등 가능하도록 구성한 High/Low-Level Python 패키지입니다.
 국내/해외 주식의 가격 종목 리스트 관리 및 조회를 할 수 있으며,
 추가적으로 입력한 계좌에 대한 리밸런싱 리포트를 자동 생성하여 Next plan을 결정할 수 있도록 도와줍니다.  
 
-패키지는 `pyefriend`와 `rebalancing` 두가지 모듈로 구성되어 있습니다.
+패키지는 **pyefriend**와 **rebalancing** 두가지 모듈로 구성되어 있습니다.
 pyefriend 모듈은 PyQt5 패키지를 사용하여 efriend Expert와 상호작용하여 종목 조회/매수/매도할 수 있으며,
-Low-level(`pyefriend/controller.py`), High-level(`pyefriend/api.py`) API를 제공합니다.
+Low-level(**pyefriend/controller.py**), High-level(**pyefriend/api.py**) API를 제공합니다.
 그리고 rebalancing 모듈에 대한 dependency를 가지고 있지 않기 때문에 별도의 설정 없이 단독으로 사용할 수 있습니다.
 
 rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대해 
 국내/해외 총 예수금, 종목별 시/종/저/고/기준가, KOSPI/SP&500 지수 등을 조회할 수 있고 
-이를 토대로 `리밸런싱(Re-balancing)` 포트폴리오, 플랜을 생성합니다. 
+이를 토대로 **리밸런싱(Re-balancing)** 포트폴리오, 플랜을 생성합니다. 
 리밸런싱에 대한 이론은 구글 검색을 참고하시기 바랍니다.
 
 * pyefriend 모듈은 [eFriendPy](https://github.com/pjueon/eFriendPy)를 참고하여 만든 코드를 재해석하여 구성하였습니다.
@@ -132,8 +132,8 @@ from pyefriend.api import OverSeasApi
 api = OverSeasApi(account='5005775101', password='password')
 ```
 
-> helper.py의 load_api 함수에서 `target` 입력값에 대한 분기를 통해 
-> 국내 주식 API(`DomesticApi`), 해외 주식 API(`OverSeasApi`)를 사용하도록 결정합니다.
+> helper.py의 load_api 함수에서 **target** 입력값에 대한 분기를 통해 
+> 국내 주식 API(**DomesticApi**), 해외 주식 API(**OverSeasApi**)를 사용하도록 결정합니다.
 
 함수 리스트는 다음과 같습니다.
 parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함께 확인할 수 있습니다.
