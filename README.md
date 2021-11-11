@@ -340,7 +340,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 ## Custom API Control
 
 efriend Service 리스트는 efriend Expert 프로그램 실행시 도움말에서 인터페이스 정의서를 확인하거나, 
-혹은 [Expert 표준 API Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)를 참고하세요.)
+혹은 [Expert 표준 API Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)를 참고하세요.
 
 다음은 국내 주식 정보를 조회하는 함수입니다.
 
