@@ -93,6 +93,6 @@ class Setting(Base):
     @provide_session
     def initialize(cls, force: bool = False, session: Session = None):
         items = [cls(section=section, key=key, value=value, comment=comment)
-                 for section, items in SETTING_LIST.items()
-                 for key, (value, comment) in items]
+                 for section, section_value in SETTING_LIST.items()
+                 for key, (value, comment) in section_value.items()]
         session.bulk_save_objects(items, update_changed_only=not force)
