@@ -84,15 +84,17 @@ async def get_prices(report_name: str,
 @r.post('/{report_name}/plan', status_code=status.HTTP_200_OK)
 async def make_plan(report_name: str,
                     created_time: Optional[str] = None,
+                    overall: bool = False,
                     user=Depends(login_required)):
     """
     ### 최신화된 가격을 토대로 리밸런싱 플랜 생성
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
+    - overall: 국내/해외 잔고 모두 계산할지 여부. 모의투자에서는 True 설정 불가능(default=False)
     """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time)
-    report.make_plan()
+    report.make_plan(overall=overall)
     return Response('Success', status_code=status.HTTP_200_OK)
 
 

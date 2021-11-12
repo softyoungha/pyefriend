@@ -28,3 +28,7 @@ class UnAuthorizedAccountException(Exception):
 
 class MarketClosingException(Exception):
     """ 장 종료 """
+
+
+class NotInVTSException(Exception):
+    """ 모의투자에서는 제공되지 않는 서비스 """

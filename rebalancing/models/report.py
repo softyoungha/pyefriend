@@ -371,10 +371,11 @@ class Report(Base):
                   index=True)
         print(f"# '{title}' Successfully saved in '{filepath}'")
 
-    def make_plan(self, overall: bool = True):
+    def make_plan(self, overall: bool = False):
         """
         최신화된 가격을 토대로 리밸런싱 플랜 생성
         이미 매수된 종목이면서 포트폴리오에 포함되지 않은 종목은 제외됩니다.
+        현재 모의투자에서는 해외 잔고를 확인할 수가 없으므로
 
         # plan result dataframe
         :keyword deposit:                   총 예수금

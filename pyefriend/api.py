@@ -46,6 +46,9 @@ def get_or_create_controller(logger=None, raise_error: bool = True):
                     elif msg_code == '40580000':
                         raise MarketClosingException(msg)
 
+                    elif msg_code == '90000000':
+                        raise NotInVTSException(msg)
+
                     else:
                         raise UnExpectedException(msg)
 
@@ -76,6 +79,7 @@ class Api:
 
         self.account = account
         self._all_accounts = None
+        self.last_service = None
 
         assert password or encrypted_password, "password 혹은 암호화된 password 둘 중 하나는 입력해야 합니다."
 
@@ -214,6 +218,7 @@ class Api:
 
     def request_data(self, service: str):
         """ Transaction 요청 """
+        self.last_service = service
         self.controller.RequestData(service=service)
         return self
 
@@ -277,7 +282,7 @@ class Api:
                 .get_data(multiple=True, columns=columns)
         )
 
-        return [dict(**stock, unit=self.unit) for stock in stocks]
+        return [dict(**stock, unit=Unit.KRW) for stock in stocks]
 
     @property
     def overseas_deposit(self) -> float:
@@ -293,7 +298,7 @@ class Api:
         )
 
         # filter USD
-        data = [item for item in data if item['currency_code'] == 'USD']
+        data = [item for item in data if item['currency_code'] == Unit.USD]
 
         if len(data) > 0:
             return float(data[0].get('available_amount', 0))
@@ -318,7 +323,7 @@ class Api:
                 .get_data(multiple=True, columns=columns)
         )
 
-        return [dict(**stock, unit=self.unit) for stock in stocks]
+        return [dict(**stock, unit=Unit.USD) for stock in stocks]
 
     def get_deposit(self, overall: bool = True) -> Union[int, float]:
         """ 예수금 전체 금액 """
@@ -339,7 +344,8 @@ class Api:
                 'product_name': str
                 'current': Union[int, float]
                 'count': Union[int, float]
-                'price': Union[int, float]
+                'price': Union[int, float],
+                'unit': 'KRW' or 'USD'
             },
             ...
         ]
