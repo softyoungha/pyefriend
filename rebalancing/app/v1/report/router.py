@@ -11,30 +11,24 @@ from .schema import ReportInput, ReportOutput, CreateReportOutput, PricesOutput,
 
 
 r = APIRouter(prefix='/report',
-              tags=['v1-report'])
+              tags=['report'])
 
 
 @r.post('/', response_model=CreateReportOutput)
 async def create_report(request: ReportInput, user=Depends(login_required)):
     """### pyefriend api 생성로 접속 테스트 후 성공시 report_name 생성 """
     try:
+        context = request.dict()
+
         # set report
-        report: Report = Report(target=request.target,
-                                account=request.account,
-                                password=request.password,
-                                created_time=request.created_time,
-                                prompt=False)
+        report: Report = Report(**context, prompt=False)
 
         # create api
         api = report.api
 
         # get context
-        context = {
-            'report_name': report.report_name,
-            'created_time': report.created_time,
-            'account': api.account,
-            'is_vts': api.controller.IsVTS(),
-        }
+        context.update(account=api.account,
+                       is_vts=api.controller.IsVTS())
 
         # create report
         report.save(delete_if_exists=True)

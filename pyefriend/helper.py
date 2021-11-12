@@ -15,7 +15,7 @@ from .log import logger
 
 # [Section] Modules
 
-def load_api(target: str,
+def load_api(target: Target,
              account: str,
              password: str = None,
              encrypted_password: str = None,
@@ -40,7 +40,7 @@ def load_api(target: str,
 
 
 @contextmanager
-def api_context(target: str,
+def api_context(target: Target,
                 account: str,
                 password: str = None,
                 encrypted_password: str = None,
@@ -87,7 +87,8 @@ def domestic_context(account: str,
 
 def overseas_context(account: str,
                      password: str = None,
-                     encrypted_password: str = None, logger=None) -> OverSeasApi:
+                     encrypted_password: str = None,
+                     logger=None) -> OverSeasApi:
     return api_context(target=Target.OVERSEAS,
                        account=account,
                        password=password,

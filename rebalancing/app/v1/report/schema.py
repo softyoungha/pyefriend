@@ -1,30 +1,28 @@
 from typing import Optional
 from pydantic import BaseModel, Field
-from rebalancing.utils.const import OrderType
-
+from rebalancing.utils.const import OrderType, Target
 
 ReportNameField = Field(...,
                         title='리포트명',
                         description='리포트 생성 기준')
 CreatedTimeField = Field(None,
                          title='Report 실행시간',
-                         description='Report 생성시간(실행시간)',
-                         example='20211109_07_19_39')
+                         description='Report 생성시간(실행시간)')
 
 
 class ReportInput(BaseModel):
-    target: str = Field(...,
-                        title='타겟장',
-                        description="국내/해외 여부('domestic', 'overseas')",
-                        example='domestic')
+    target: Target = Field(...,
+                           title='타겟장',
+                           description="국내/해외 여부('domestic', 'overseas')",
+                           example=Target.DOMESTIC)
     account: Optional[str] = Field(None,
                                    title='계좌명',
                                    description='config.yml에 있는 계좌가 아닌 입력된 계좌를 사용',
                                    example='5005775101')
-    password: Optional[str] = Field(None,
-                                    title='비밀번호',
-                                    description='account를 직접 입력했을 경우 사용할 password',
-                                    example='password')
+    password: str = Field(...,
+                          title='비밀번호',
+                          description='account를 직접 입력했을 경우 사용할 password',
+                          example='password')
     created_time: Optional[str] = CreatedTimeField
 
 

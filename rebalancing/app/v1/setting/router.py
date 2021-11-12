@@ -7,7 +7,7 @@ from rebalancing.app.auth import login_required
 from .schema import SettingOrm, SettingUpdate
 
 r = APIRouter(prefix='/setting',
-              tags=['v1-setting'])
+              tags=['setting'])
 
 
 @r.get('/', response_model=List[SettingOrm])
@@ -52,6 +52,3 @@ async def change_setting(section: str,
                         value=request.value)
 
     return Response('Success', status_code=status.HTTP_200_OK)
-
-
-

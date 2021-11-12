@@ -1,10 +1,13 @@
+from enum import Enum
+
+
 class System:
     """ 시스템 정보 """
     CSLID = '08E39D09-206D-43D1-AC78-D1AE3635A4E9'
     PROGID = 'ITGExpertCtl.ITGExpertCtlCtrl.1'
 
 
-class Target:
+class Target(str, Enum):
     """ 타겟 """
     DOMESTIC = 'domestic'  # 국내
     OVERSEAS = 'overseas'  # 해외(미국)
@@ -40,7 +43,7 @@ class Service:
     PFX06910000 = 'PFX06910000'  # 해외증시 일주월별 조회
 
 
-class MarketCode:
+class MarketCode(str, Enum):
     # 한국증시
     KRX = 'KRX'
 
@@ -74,8 +77,6 @@ class ProductCode:
     # S&P 500
     SPX = 'SPX'
 
-
-
     # 시장분류코드: 'J'
     SAMSUNG = '005930'
     APPLE = 'AAPL'  # NASD
@@ -87,6 +88,6 @@ class Currency:
     BASE = 1186.50  # 2021-11-06 기준
 
 
-class Unit:
+class Unit(str, Enum):
     KRW = 'KRW'
     USD = 'USD'

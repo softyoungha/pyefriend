@@ -8,7 +8,7 @@ from rebalancing.app.auth import login_required
 from rebalancing.utils.db import init_db, reset_db, init_data, insert_data
 
 r = APIRouter(prefix='/database',
-              tags=['v1-database'])
+              tags=['database'])
 
 
 @r.post('/init-db', status_code=status.HTTP_200_OK)
