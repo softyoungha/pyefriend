@@ -242,7 +242,7 @@ class Api:
             if currency != '':
                 return float(currency)
 
-        except UnExpectedException as e:
+        except Exception as e:
             self.logger.warning(f'{e.__class__.__name__}: {str(e)}')
             pass
 

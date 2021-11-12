@@ -68,9 +68,12 @@ class Controller:
 
         # 데코레이터
         def decorated_handler():
+            # 에러 초기화
+            self._error = None
             try:
                 handler()
             except Exception as e:
+                # 에러 발생시 전달
                 self._error = e
             self.clear_event_loop()
 
