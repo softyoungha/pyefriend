@@ -25,12 +25,9 @@ description = f"""
 
 ## Description
 
-'리밸런싱 App'은 FastAPI의 unicorn으로 실행됩니다. 
+'리밸런싱 App'은 FastAPI unicorn으로 실행됩니다.
 
 
-## Requirements
-
-단, 한국투자증권 efriend expert가 관리자 모드로 실행되고 있어야 하며  
 
 ## **API Routers**
 

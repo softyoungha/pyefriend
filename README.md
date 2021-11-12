@@ -333,7 +333,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     uvicorn rebalancing.api:app --host 0.0.0.0 --port 8080 --reload
     ```
     
-    Re-balancing App 에 관한 내용은 App 실행시 상단 Description을 확인하세요.
+    Re-balancing App 에 관한 내용은 App 실행시 상단 Description, 혹은 rebalancing/DESCRIPTION.md를 확인하세요.
 
 <br/>
 

@@ -35,9 +35,9 @@ class Status:
 
 class How:
     """ 매수/매도시 가격 결정 방법 """
-    MARKET = 'market'   # 시장가격에 매수/패도
-    N_DIFF = 'n_diff'   # 호가 단위 x n 원 아래에서 매수/ 위에서 매도
-    REGRESSION = 'regression'   # linear regression
+    MARKET = 'market'  # 시장가격에 매수/패도
+    N_DIFF = 'n_diff'  # 호가 단위 x n 원 아래에서 매수/ 위에서 매도
+    REGRESSION = 'regression'  # linear regression
 
 
 class Report(Base):
@@ -80,7 +80,7 @@ class Report(Base):
         super().__init__(**kwargs)
 
         # initialize
-        self.init()
+        self._init()
 
         # set created_time
         if created_time:
@@ -131,7 +131,7 @@ class Report(Base):
         else:
             self.report_name = self.account
 
-        display_only_jupyter(f'##### 다음 경로에 report가 저장됩니다. \n{self.report_path}')
+        display_only_jupyter(f'##### 다음 경로에 report가 저장됩니다. \n{self.report_dir}')
 
         # set status
         self.status = status
@@ -139,18 +139,21 @@ class Report(Base):
     def __repr__(self):
         return f"<Report(code='{self.report_name}')>"
 
-    def init(self):
-        self._report_path = None
+    def _init(self):
+        """ logger, api, report_dir 초기화 """
+        self._report_dir = None
         self._logger = None
         self._api = None
         return self
 
     @provide_session
     def delete(self, session=None):
+        """ 삭제 """
         session.delete(self)
 
     @provide_session
     def save(self, delete_if_exists: bool = False, session=None):
+        """ 저장 """
         if delete_if_exists:
             report = Report.get(report_name=self.report_name,
                                 created_time=self.created_time,
@@ -169,6 +172,13 @@ class Report(Base):
             statuses: List[str] = None,
             raise_if_not_exists: bool = True,
             session=None):
+        """
+        테이블 내 report_name 조회
+        created_time=None일 경우 report_name 기준 마지막으로 생성된 report 검색
+
+        :param statuses: 필터링 조건이 되는 상태 리스트
+        :param raise_if_not_exists: 존재하지 않을 경우 error raise
+        """
         query = session.query(cls).filter(cls.report_name == report_name)
 
         if statuses:
@@ -181,10 +191,10 @@ class Report(Base):
                     .order_by(cls.created_time.desc())
             )
 
-        row = query.first()
+        row: Report = query.first()
 
         if row:
-            return row.init()
+            return row._init()
         else:
             if raise_if_not_exists:
                 raise ReportNotFoundException()
@@ -193,11 +203,14 @@ class Report(Base):
 
     @provide_session
     def update_status(self, status: str, session=None):
-        report = session.query(Report).filter(Report.id==self.id).first()
+        """ report status 업데이트 """
+        report = session.query(Report).filter(Report.id == self.id).first()
         report.status = status
+        return self
 
     @property
     def api(self):
+        """ get or create api """
         if self._api is None:
             self._api = load_api(target=self.target,
                                  account=self.account,
@@ -207,15 +220,18 @@ class Report(Base):
 
     @property
     def is_domestic(self):
+        """ 국내/해외 여부 """
         return self.target == Target.DOMESTIC
 
     @property
     def unit(self):
+        """ KRW/USD 단위 """
         return self.api.unit
 
     @property
-    def report_path(self):
-        if not self._report_path:
+    def report_dir(self):
+        """ report 저장 디렉토리 """
+        if not self._report_dir:
             # get
             report_dir = REPORT_DIR
 
@@ -226,43 +242,49 @@ class Report(Base):
             report_dir = os.path.abspath(report_dir)
 
             # join
-            report_path = os.path.join(report_dir, self.report_name, f'{self.target}_{self.created_time}')
+            report_dir = os.path.join(report_dir, self.report_name, f'{self.target}_{self.created_time}')
 
             # create tree
-            os.makedirs(report_path, exist_ok=True)
+            os.makedirs(report_dir, exist_ok=True)
 
             # set
-            self._report_path = report_path
+            self._report_dir = report_dir
 
-        return self._report_path
+        return self._report_dir
 
     def path(self, file_name: str):
-        return os.path.join(self.report_path, file_name)
+        return os.path.join(self.report_dir, file_name)
 
     @property
     def summary_path(self):
+        """ report summary 저장 경로 """
         return self.path('summary.csv')
 
     @property
     def plan_path(self):
+        """ report 리밸런싱 plan 저장 경로 """
         return self.path('plan.csv')
 
     @property
     def name(self):
+        """ report instance 명칭(logger_name, api file response 파일명으로 사용) """
         return f'{self.target}_{self.report_name}_{self.created_time}'
 
     @property
     def logger(self):
+        """ get or create logger """
         if not self._logger:
             self._logger = get_logger(name=self.name, path=self.path('log.txt'))
         return self._logger
 
     def remove_logger(self):
+        """ logger handler 제거 """
         while self.logger.hasHandlers():
             self.logger.removeHandler(self.logger.handlers[0])
 
     @provide_session
     def refresh_prices(self, session=None):
+        """ DB 내 종목 가격 최신화('product' table) """
         if self.is_domestic:
             products = Product.list(MarketCode.KRX, session=session)
 
@@ -322,7 +344,8 @@ class Report(Base):
         return self
 
     def get_prices(self) -> List[Dict]:
-        
+        """ DB 내 종목 가격 조회('product' table) """
+
         # 사용하는 포트폴리오 종목 리스트
         used_product_names = [
             portfolio.product_name
@@ -350,6 +373,7 @@ class Report(Base):
 
     def make_plan(self):
         """
+        최신화된 가격을 토대로 리밸런싱 플랜 생성
         이미 매수된 종목이면서 포트폴리오에 포함되지 않은 종목은 제외됩니다.
 
         # plan result dataframe
@@ -370,8 +394,6 @@ class Report(Base):
         :keyword tobe_count:                [리밸런싱 후] 최종 매수 수량
         :keyword tobe_amount:               [리밸런싱 후] 현재가 기준 최종 매수된 후 전체 금액
         :keyword difference:                TOBE - ASIS 수량 차이
-
-        :return:
         """
 
         # available_percent: 사용할 금액 %
@@ -510,9 +532,11 @@ class Report(Base):
         return self
 
     def adjust_plan(self):
+        """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
         return self
 
     def execute_plan(self, how: str = How.MARKET):
+        """ 리밸런싱 플랜 실행 """
         dtype = {
             'market_code': str,
             'product_name': str,
@@ -520,7 +544,10 @@ class Report(Base):
             'weight': float
         }
 
-        df = pd.read_csv(self.plan_path, sep=',', dtype=dtype)
+        plan_df = pd.read_csv(self.plan_path, sep=',', dtype=dtype)
+
+
 
         self.update_status(Status.EXECUTED)
+
         return self

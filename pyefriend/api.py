@@ -78,8 +78,10 @@ class Api:
 
         assert password or encrypted_password, "password 혹은 암호화된 password 둘 중 하나는 입력해야 합니다."
 
-        if encrypted_password is None:
-            self._encrypted_password = self.controller.GetEncryptPassword(password)
+        if encrypted_password:
+            self._encrypted_password = encrypted_password
+        else:
+            self._encrypted_password = encrypt_password_by_efriend_expert(password)
 
         if not self.is_connected:
             raise NotConnectedException()
@@ -96,8 +98,8 @@ class Api:
 
     @property
     def controller(self):
-        """ controller load """
-        return get_or_create_controller(self.logger)
+        """ get or create controller """
+        return get_or_create_controller(logger=self.logger)
 
     @property
     def splitted_account(self):

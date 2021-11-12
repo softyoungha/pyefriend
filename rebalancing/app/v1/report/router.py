@@ -134,6 +134,7 @@ async def adjust_plan(report_name: str,
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
+
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
@@ -147,7 +148,7 @@ async def execute_plan(report_name: str,
                        created_time: Optional[str] = None,
                        user=Depends(login_required)):
     """
-    ### 플랜 실행
+    ### 리밸런싱 플랜 실행
     - report_name: ~/reprt/ POST를 통해 생성된 리포트명
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
