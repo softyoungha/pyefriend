@@ -85,3 +85,8 @@ class Currency:
     """ 환율 정보 """
     URL = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
     BASE = 1186.50  # 2021-11-06 기준
+
+
+class Unit:
+    KRW = 'KRW'
+    USD = 'USD'

@@ -7,7 +7,7 @@ from IPython.display import display, Markdown
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
 from pyefriend import load_api, encrypt_password_by_efriend_expert
-from pyefriend.const import MarketCode, Target
+from pyefriend.const import MarketCode, Target, Unit
 
 from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
@@ -371,7 +371,7 @@ class Report(Base):
                   index=True)
         print(f"# '{title}' Successfully saved in '{filepath}'")
 
-    def make_plan(self):
+    def make_plan(self, overall: bool = True):
         """
         최신화된 가격을 토대로 리밸런싱 플랜 생성
         이미 매수된 종목이면서 포트폴리오에 포함되지 않은 종목은 제외됩니다.
@@ -395,18 +395,27 @@ class Report(Base):
         :keyword tobe_amount:               [리밸런싱 후] 현재가 기준 최종 매수된 후 전체 금액
         :keyword difference:                TOBE - ASIS 수량 차이
         """
+        # unit(overall=True일 경우 원단위)
+        u = Unit.KRW if overall else self.unit
+
+        # 숫자 타입(overall=True일 경우 float, 그 외 국내 조회일 경우에만 int)
+        num_type = float if overall or not self.is_domestic else int
+
+        # get currency
+        currency = self.api.currency
 
         # available_percent: 사용할 금액 %
-        available_percent = Setting.get_value('AMOUNT_LIMIT', 'AVAILABLE', dtype=float)
+        available_percent = Setting.get_value('REBALANCE', 'AVAILABLE_LIMIT', dtype=float)
+
+        # additional_amount: 전체 금액 합산시 추가할 금액
+        additional_amount = Setting.get_value('REBALANCE', 'ADDITIONAL_AMOUNT', dtype=float)
 
         # percent: 국내/해외 주식 비율 %
         if self.is_domestic:
-            percent = Setting.get_value('AMOUNT_LIMIT', 'DOMESTIC', dtype=float)
-            numeric_type = int
+            percent = Setting.get_value('REBALANCE', 'DOMESTIC_LIMIT', dtype=float)
 
         else:
-            percent = Setting.get_value('AMOUNT_LIMIT', 'OVERSEAS', dtype=float)
-            numeric_type = float
+            percent = Setting.get_value('REBALANCE', 'OVERSEAS_LIMIT', dtype=float)
 
         # list all portfolio with use_yn = True
         portfolios = Portfolio.list(is_domestic=self.is_domestic, only_y=True)
@@ -415,12 +424,19 @@ class Report(Base):
         product_codes_in_portfolio = [product_code
                                       for product_code, _, _, _, _ in portfolios]
 
-        # 현재 주식 금액: 예수금, 주식들, 전체 금액
-        deposit, stocks, total_amount = self.api.evaluate_amount(product_codes_in_portfolio)
-        self.logger.info(f"{'deposit':>25}{deposit:>15,} {self.unit} "
-                         f"(총 예수금)")
+        # 현재 주식 금액: 예수금, 주식들, 계좌 내 전체 금액
+        deposit, stocks, account_amount = self.api.evaluate_amount(product_codes_in_portfolio,
+                                                                   overall=overall,
+                                                                   currency=currency)
+
+        # 타계좌 금액
+        total_amount = additional_amount + account_amount
+
+        self.logger.info(f"{'deposit':>25}{deposit:>15,.2f} {u} (총 예수금)")
         self.logger.debug(f"{'stocks':>25}(현재 매수한 주식 리스트)\n{stocks} ")
-        self.logger.info(f"{'total_amount':>25}{total_amount:>15,} {self.unit} "
+        self.logger.info(f"{'account_amount':>25}{account_amount:>15,.2f} {u} "
+                         f"(총 예수금 + 포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합)")
+        self.logger.info(f"{'total_amount':>25}{total_amount:>15,.2f} {u} "
                          f"(총 예수금 + 포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합)")
 
         # stocks: list -> dict
@@ -428,13 +444,11 @@ class Report(Base):
 
         # available_total_amount: 전체 금액 중 사용할 금액
         available_total_amount = total_amount * available_percent
-        self.logger.info(f"{'available_total_amount':>25}{int(available_total_amount):>15,} {self.unit} "
-                         f"(전체 금액 중 사용할 금액)")
+        self.logger.info(f"{'available_total_amount':>25}{available_total_amount:>15,.2f} {u} (전체 금액 중 사용할 금액)")
 
         # planned_budge: 국내/해외 투자에 사용할 금액
         planned_budge = available_total_amount * percent
-        self.logger.info(f"{'planned_budge':>25}{int(planned_budge):>15,} {self.unit} "
-                         f"(투자에 사용할 금액)")
+        self.logger.info(f"{'planned_budge':>25}{planned_budge:>15,.2f} {u} (투자에 사용할 금액)")
 
         # total_weights: 전체 weight
         total_weights = sum([weight for _, _, _, weight, _ in portfolios])
@@ -448,39 +462,44 @@ class Report(Base):
             # get stock
             stock = stocks.get(product_code, {})
 
+            # stock unit('KRW'/'USD')
+            is_usd = stock['unit'] == Unit.USD
+
+            # 다음 조건을 만족하면 환율 곱해서 계산
+            condition = overall and is_usd
+
             # calculate
             asis_count = stock.get('count', 0)
-            asis_amount = stock.get('price', 0)
+            asis_amount = stock.get('price', 0) * currency if condition else stock.get('price', 0)
             planned_rate = weight / total_weights
-            planned_amount = planned_budge * planned_rate
+            planned_amount = planned_budge * planned_rate * currency if condition else planned_budge * planned_rate
             tobe_count = round(planned_amount / current)
-            tobe_amount = numeric_type(current * tobe_count)
+            tobe_amount = current * tobe_count * currency if condition else current * tobe_count
             difference = int(tobe_count - asis_count)
 
             # append
             plan_index.append(product_code)
             plan_data.append(
                 dict(product_name=product_name,
-                     current=numeric_type(current),
+                     unit=u,
+                     current=num_type(current),
                      weight=weight,
                      quote_unit=quote_unit,
                      asis_count=asis_count,
-                     asis_amount=asis_amount,
+                     asis_amount=num_type(asis_amount),
                      planned_rate=planned_rate,
-                     planned_amount=numeric_type(planned_amount),
+                     planned_amount=num_type(planned_amount),
                      tobe_count=tobe_count,
-                     tobe_amount=tobe_amount,
+                     tobe_amount=num_type(tobe_amount),
                      difference=difference)
             )
 
             asis_total_amount += asis_amount
 
         tobe_total_amount = sum([portfoilo.get('tobe_amount') for portfoilo in plan_data])
-        self.logger.info(f"{'asis_total_amount':>25}{asis_total_amount:>15,} {self.unit} "
-                         f"(리밸런싱 전 전체 금액)")
-        self.logger.info(f"{'tobe_total_amount':>25}{tobe_total_amount:>15,} {self.unit} "
-                         f"(리밸런싱 후 전체 금액)")
-        self.logger.info(f"{'리밸런싱 후 감소 금액':>25}: {(numeric_type(planned_budge) - tobe_total_amount):>15,} {self.unit} ")
+        self.logger.info(f"{'asis_total_amount':>25}{asis_total_amount:>15,.2f} {u} (리밸런싱 전 전체 금액)")
+        self.logger.info(f"{'tobe_total_amount':>25}{tobe_total_amount:>15,.2f} {u} (리밸런싱 후 전체 금액)")
+        self.logger.info(f"{'리밸런싱 후 감소 금액':>25}: {planned_budge - tobe_total_amount:>15,.2f} {u} ")
 
         # 결과 집계
         results = {}

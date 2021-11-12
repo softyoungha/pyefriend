@@ -13,10 +13,12 @@ SETTING_LIST = {
         'TEST_ACCOUNT': (Config.get('core', 'TEST_ACCOUNT'), '모의투자 계좌번호'),
         'REAL_ACCOUNT': (Config.get('core', 'REAL_ACCOUNT'), '실제투자 계좌번호'),
     },
-    'AMOUNT_LIMIT': {
-        'AVAILABLE': (0.9, r'계좌 전체 금액 중 사용할 금액 비율'),
-        'DOMESTIC': (0.19, r'available 중 국내 주식 비율'),
-        'OVERSEAS': (0.27, r'available 중 외국 주식 비율'),
+    'REBALANCE': {
+        'AVAILABLE_LIMIT': (0.9, r'계좌 전체 금액 중 사용할 금액 비율'),
+        'DOMESTIC_LIMIT': (0.19, r'AVAILABLE_LIMIT 중 국내 주식 비율'),
+        'OVERSEAS_LIMIT': (0.27, r'AVAILABLE_LIMIT 중 외국 주식 비율'),
+        'ADDITIONAL_AMOUNT': (0.0, r'계좌 전체 금액 계산시 추가할 금액(타 계좌에 존재하는 자본금)'),
+        'OVERALL': (True, f'True일 경우 국내/해외 통합하여 전체 금액 계산, False일 경우 국내/해외 별도로 전체 금액 계산')
     },
 }
 

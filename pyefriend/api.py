@@ -14,7 +14,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency, ProductCode
+from .const import Service, MarketCode, Currency, ProductCode, Target, Unit
 from .log import logger as pyefriend_logger
 from .controller import Controller
 from .exceptions import *
@@ -64,6 +64,7 @@ def encrypt_password_by_efriend_expert(raw_password: str):
 
 class Api:
     """ High Level API """
+
     def __init__(self,
                  account: str,
                  password: str = None,
@@ -216,6 +217,171 @@ class Api:
         self.controller.RequestData(service=service)
         return self
 
+    @property
+    def currency(self) -> float:
+        """
+        1 달러 -> 원으로 환전할때의 현재 기준 예상환율을 반환
+        예상환율은 최초고시 환율로 매일 08:15시경에 당일 환율이 제공됨
+        """
+        (
+            self.set_account_info()  # 계정 정보
+                .set_data(3, '512')  # 미국: 512
+                .request_data(Service.OS_OS3004R)
+        )
+
+        # get data
+        currency = self.controller.GetMultiData(3, 0, 4)
+
+        # 값을 불러오지 못할 때가 있음
+        if currency != '':
+            return float(currency)
+
+        try:
+            # requests 모듈로 타 사이트에서 로드해옴
+            response = requests.get(Currency.URL)
+            data = response.json()
+            return data[0]['basePrice']
+
+        except Exception as e:
+            self.logger.error('환율 정보를 불러오는 데 실패하였습니다.'
+                              '설정된 환율을 사용합니다.')
+            return Currency.BASE
+
+    @property
+    def domestic_deposit(self) -> int:
+        return int(
+            self.set_account_info()  # 계정 정보
+                .set_data(5, '01')  # 01: 시장가로 계산
+                .request_data(Service.SCAP)
+                .get_data(0)  # 0: 주문가능현금
+        )
+
+    @property
+    def domestic_stocks(self) -> List[Dict]:
+        columns = [
+            dict(index=0, key='product_code', pk=True),
+            dict(index=1, key='product_name'),
+            dict(index=11, key='current', dtype=int),
+            dict(index=7, key='count', dtype=int),
+            dict(index=12, key='price', dtype=int),
+        ]
+
+        stocks = (
+            self.set_account_info()  # 계정 정보
+                .request_data(Service.SATPS)  # request
+                .get_data(multiple=True, columns=columns)
+        )
+
+        return [dict(**stock, unit=self.unit) for stock in stocks]
+
+    @property
+    def overseas_deposit(self) -> float:
+        columns = [
+            dict(index=0, key='currency_code'),
+            dict(index=4, key='available_amount'),
+        ]
+
+        data = (
+            self.set_account_info()  # 계정 정보
+                .request_data(Service.OS_US_DNCL)
+                .get_data(multiple=True, columns=columns)
+        )
+
+        # filter USD
+        data = [item for item in data if item['currency_code'] == 'USD']
+
+        if len(data) > 0:
+            return float(data[0].get('available_amount', 0))
+
+        else:
+            return 0.0
+
+    @property
+    def overseas_stocks(self) -> List[Dict]:
+        columns = [
+            dict(index=14, key='market_code', pk=True),
+            dict(index=3, key='product_code', pk=True),
+            dict(index=4, key='product_name', dtype=str),
+            dict(index=12, key='current', dtype=float),
+            dict(index=8, key='count', dtype=int),
+            dict(index=11, key='price', dtype=float),
+        ]
+
+        stocks = (
+            self.set_account_info()  # 계정 정보
+                .request_data(Service.OS_US_CBLC)
+                .get_data(multiple=True, columns=columns)
+        )
+
+        return [dict(**stock, unit=self.unit) for stock in stocks]
+
+    def get_deposit(self, overall: bool = True) -> Union[int, float]:
+        """ 예수금 전체 금액 """
+        if overall:
+            return self.domestic_deposit + self.overseas_deposit
+
+        if self.is_domestic:
+            return self.domestic_deposit
+        else:
+            return self.overseas_deposit
+
+    def get_stocks(self, overall: bool = True) -> List[Dict]:
+        """
+        현재 보유한 주식 리스트 반환
+        :return: [
+            {
+                'product_code': str
+                'product_name': str
+                'current': Union[int, float]
+                'count': Union[int, float]
+                'price': Union[int, float]
+            },
+            ...
+        ]
+        """
+        if overall:
+            return self.domestic_stocks + self.overseas_stocks
+
+        if self.is_domestic:
+            return self.domestic_stocks
+        else:
+            return self.overseas_stocks
+
+    def evaluate_amount(self,
+                        product_codes: List[str] = None,
+                        overall: bool = True,
+                        currency: float = None):
+        """
+        전체 금액 반환(deposit + stocks 전체 금액)
+        :param product_codes: 포함된 종목 코드들에 대해서만 금액 계산(포함되지 않은 종목들은 예산에서 제외)
+        :param overall: 국내/해외 합산 여부
+        :param currency: 환율
+        """
+        deposit = self.get_deposit(overall=overall)
+        stocks = self.get_stocks(overall=overall)
+
+        if product_codes is not None:
+            stocks = [
+                stock
+                for stock in stocks
+                if stock['product_code'] in product_codes
+            ]
+
+        if overall:
+            if currency is None:
+                currency = self.currency
+
+            # 환율 계산
+            amount_stock = sum([stock['price'] * currency if stock['unit'] == Unit.USD else stock['price']
+                                for stock in stocks])
+
+        else:
+            amount_stock = sum([stock['price'] for stock in stocks])
+
+        # sum
+        total_amount = deposit + amount_stock
+        return deposit, stocks, total_amount
+
     def get_kospi_histories(self, standard: str = 'D'):
         columns = [
             dict(index=0, key='standard_date', pk=True),
@@ -261,43 +427,12 @@ class Api:
         )
 
     @property
-    def deposit(self) -> Union[int, float]:
-        """ 예수금 전체 금액 """
+    def unit(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
     @property
-    def stocks(self) -> List[Dict]:
-        """
-        현재 보유한 주식 리스트 반환
-        :return: [
-            {
-            'product_code': str
-            'product_name': str
-            'current': int
-            'count': int
-            'price': int
-            },
-            ...
-        ]
-        """
+    def is_domestic(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
-
-    def evaluate_amount(self, product_codes: List[str] = None):
-        """
-        전체 금액 반환(deposit + stocks 전체 금액)
-        :param product_codes: 포함된 종목 코드들에 대해서만 금액 계산(포함되지 않은 종목들은 예산에서 제외)
-        """
-        deposit = self.deposit
-        stocks = self.stocks
-
-        if product_codes is not None:
-            stocks = [stock
-                      for stock in self.stocks
-                      if stock['product_code'] in product_codes]
-
-        # sum
-        total_amount = self.deposit + sum([stock['price'] for stock in stocks])
-        return deposit, stocks, total_amount
 
     def get_stock_name(self, product_code: str):
         """ 종목명 반환 """
@@ -359,33 +494,14 @@ class Api:
 
 
 class DomesticApi(Api):
+
+    @property
+    def is_domestic(self):
+        return Target.DOMESTIC
+
     @property
     def unit(self):
-        return 'KRW'
-
-    @property
-    def deposit(self) -> int:
-        return int(
-            self.set_account_info()  # 계정 정보
-                .set_data(5, '01')  # 01: 시장가로 계산
-                .request_data(Service.SCAP)
-                .get_data(0)  # 0: 주문가능현금
-        )
-
-    @property
-    def stocks(self) -> List[Dict]:
-        columns = [
-            dict(index=0, key='product_code', pk=True),
-            dict(index=1, key='product_name'),
-            dict(index=11, key='current', dtype=int),
-            dict(index=7, key='count', dtype=int),
-            dict(index=12, key='price', dtype=int),
-        ]
-        return (
-            self.set_account_info()  # 계정 정보
-                .request_data(Service.SATPS)  # request
-                .get_data(multiple=True, columns=columns)
-        )
+        return Unit.KRW
 
     def get_stock_name(self, product_code: str):
         return self.controller.GetSingleDataStockMaster(product_code, 2)
@@ -526,81 +642,17 @@ class DomesticApi(Api):
 
 
 class OverSeasApi(Api):
+
+    @property
+    def is_domestic(self):
+        return Target.OVERSEAS
+
     @property
     def unit(self):
-        return 'USD'
+        return Unit.USD
 
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
-
-    @property
-    def deposit(self) -> float:
-        columns = [
-            dict(index=0, key='currency_code'),
-            dict(index=4, key='available_amount'),
-        ]
-
-        data = (
-            self.set_account_info()  # 계정 정보
-                .request_data(Service.OS_US_DNCL)
-                .get_data(multiple=True, columns=columns)
-        )
-
-        # filter USD
-        data = [item for item in data if item['currency_code'] == 'USD']
-
-        if len(data) > 0:
-            return float(data[0].get('available_amount', 0))
-
-        else:
-            return 0.0
-
-    @property
-    def stocks(self) -> List[Dict]:
-        columns = [
-            dict(index=14, key='market_code', pk=True),
-            dict(index=3, key='product_code', pk=True),
-            dict(index=4, key='product_name', dtype=str),
-            dict(index=12, key='current', dtype=float),
-            dict(index=8, key='count', dtype=int),
-            dict(index=11, key='price', dtype=float),
-        ]
-
-        return (
-            self.set_account_info()  # 계정 정보
-                .request_data(Service.OS_US_CBLC)
-                .get_data(multiple=True, columns=columns)
-        )
-
-    @property
-    def currency(self):
-        """
-        1 달러 -> 원으로 환전할때의 현재 기준 예상환율을 반환
-        예상환율은 최초고시 환율로 매일 08:15시경에 당일 환율이 제공됨
-        """
-        (
-            self.set_account_info()  # 계정 정보
-                .set_data(3, '512')  # 미국: 512
-                .request_data(Service.OS_OS3004R)
-        )
-
-        # get data
-        currency = self.controller.GetMultiData(3, 0, 4)
-
-        # 값을 불러오지 못할 때가 있음
-        if currency != '':
-            return float(currency)
-
-        try:
-            # requests 모듈로 타 사이트에서 로드해옴
-            response = requests.get(Currency.URL)
-            data = response.json()
-            return data[0]['basePrice']
-
-        except Exception as e:
-            self.logger.error('환율 정보를 불러오는 데 실패하였습니다.'
-                              '설정된 환율을 사용합니다.')
-            return Currency.BASE
 
     def get_stock_info(self,
                        product_code: str,
