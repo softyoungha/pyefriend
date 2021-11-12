@@ -12,7 +12,7 @@ from pyefriend.const import MarketCode, Target, Unit
 
 from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
-from rebalancing.config import REPORT_DIR
+from rebalancing.config import Config, HOME_PATH
 from rebalancing.utils.const import How
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
@@ -222,7 +222,7 @@ class Report(Base):
         """ report 저장 디렉토리 """
         if not self._report_dir:
             # get
-            report_dir = REPORT_DIR
+            report_dir = os.path.join(HOME_PATH, Config.get('core', 'REPORT_DIR', default='report'))
 
             # expand ~ -> HOME path
             report_dir = os.path.expanduser(report_dir)

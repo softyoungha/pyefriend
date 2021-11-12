@@ -14,12 +14,10 @@ assert HOME_PATH is not None, "환경변수 'REBAL_HOME'를 설정해야합니�
 if CONF_PATH is None:
     CONF_PATH = os.path.join(HOME_PATH, 'config.yml')
 
-REPORT_DIR = os.path.join(HOME_PATH, 'report')
 
 print(f"다음의 경로를 사용합니다.\n"
       f"- HOME_PATH='{HOME_PATH}'\n"
-      f"- CONF_PATH='{CONF_PATH}'\n"
-      f"- REPORT_DIR='{REPORT_DIR}")
+      f"- CONF_PATH='{CONF_PATH}'")
 
 
 def get_config_yaml() -> dict:

@@ -5,6 +5,9 @@ core:
   # 계좌명('-' 없이)초기 설정시 사용되며 db 구성 이후 update로 설정 가능.
   account: ''
 
+  # 리포트 저장 위치(REBAL_HOME에 대한 상대경로)
+  report_dir: 'report/test'
+
 
 fastapi:
   # fastapi 계정명
