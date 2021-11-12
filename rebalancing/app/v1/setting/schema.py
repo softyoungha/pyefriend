@@ -14,7 +14,7 @@ class SettingOrm(BaseModel):
                          example='ACCOUNT')
     key: str = Field(True,
                      title='키',
-                     example='TEST_ACCOUNT')
+                     example='ACCOUNT')
     value: Optional[str] = Field(None,
                                  title='값',
                                  example='5005775101')

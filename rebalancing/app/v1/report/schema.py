@@ -15,10 +15,6 @@ class ReportInput(BaseModel):
                         title='타겟장',
                         description="국내/해외 여부('domestic', 'overseas')",
                         example='domestic')
-    test: Optional[bool] = Field(True,
-                                 title='모의투자테스트',
-                                 description='config.yml 내의 모의주문 계정 사용여부',
-                                 example=True)
     account: Optional[str] = Field(None,
                                    title='계좌명',
                                    description='config.yml에 있는 계좌가 아닌 입력된 계좌를 사용',

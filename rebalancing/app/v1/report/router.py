@@ -20,7 +20,6 @@ async def create_report(request: ReportInput, user=Depends(login_required)):
     try:
         # set report
         report: Report = Report(target=request.target,
-                                test=request.test,
                                 account=request.account,
                                 password=request.password,
                                 created_time=request.created_time,

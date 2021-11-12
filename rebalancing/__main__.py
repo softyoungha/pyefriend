@@ -19,9 +19,6 @@ def argument_parser() -> ArgumentParser:
                         type=str,
                         help="Report 생성이력(YYYYmmdd_HH_MM_SS format)",
                         default=None)
-    parser.add_argument('--test',
-                        action="store_true",
-                        help="테스트 계정 사용여부")
     parser.add_argument('--account', '-a',
                         type=str,
                         help="계좌명('-' 제외), 입력하지 않을 경우 config.yml에서 사용",
@@ -49,7 +46,6 @@ def main():
     target: str = parsed_args.target
     created_time: Optional[str] = parsed_args.created_time
     account: Optional[str] = parsed_args.account
-    test: bool = parsed_args.test
     skip: bool = parsed_args.skip_refresh
 
     if parsed_args.password:
@@ -65,8 +61,7 @@ def main():
                     account=account,
                     password=password,
                     created_time=created_time,
-                    prompt=False,
-                    test=test)
+                    prompt=False)
 
     # refresh
     if skip:

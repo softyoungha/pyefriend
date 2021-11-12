@@ -280,6 +280,9 @@ class Controller:
         """
         return self.dynamic_call("GetAccount(int)", account_index)
 
+    def GetAccountBrcode(self, account: str) -> str:
+        return self.dynamic_call('GetAccountBrcode(QString)', account)
+
     def GetEncryptPassword(self, raw_password) -> str:
         """
         암호화 처리된 비밀번호를 반환합니다.

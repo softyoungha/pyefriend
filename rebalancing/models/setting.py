@@ -10,8 +10,7 @@ from .base import Base, Length
 # section - key - default value
 SETTING_LIST = {
     'ACCOUNT': {
-        'TEST_ACCOUNT': (Config.get('core', 'TEST_ACCOUNT'), '모의투자 계좌번호'),
-        'REAL_ACCOUNT': (Config.get('core', 'REAL_ACCOUNT'), '실제투자 계좌번호'),
+        'ACCOUNT': (Config.get('core', 'ACCOUNT'), '계좌번호'),
     },
     'REBALANCE': {
         'AVAILABLE_LIMIT': (0.9, r'계좌 전체 금액 중 사용할 금액 비율'),

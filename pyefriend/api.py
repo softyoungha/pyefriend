@@ -327,8 +327,6 @@ class Api:
 
     def get_deposit(self, overall: bool = True) -> Union[int, float]:
         """ 예수금 전체 금액 """
-        print(self.domestic_deposit)
-        print(self.overseas_deposit)
         if overall:
             return self.domestic_deposit + self.overseas_deposit
 

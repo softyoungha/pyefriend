@@ -53,7 +53,6 @@ class Report(Base):
 
     def __init__(self,
                  target: str,
-                 test: bool = True,
                  account: str = None,
                  password: str = None,
                  encrypted_password: str = None,
@@ -65,7 +64,6 @@ class Report(Base):
         re-balancing 실행 후 자동 리포트 생성
 
         :param target:          'domestic', 'overseas'
-        :param test:            setting 테이블 내의 모의주문 계정 사용여부(account, password)
         :param account:         setting 테이블 에 있는 계좌가 아닌 입력된 계좌를 사용
         :param password:        account를 직접 입력했을 경우 사용할 password
         :param created_time:   [%Y%m%d_%H_%M_%S, str] 입력될 경우 해당 시간에 계산된 rebalancing 결과를 바라봅니다.
@@ -98,14 +96,10 @@ class Report(Base):
         if account:
             assert password is not None, "account가 입력되면 password도 입력되어야 합니다."
 
-        elif test:
-            # 모의주문 계정
-            account = Setting.get_value('ACCOUNT', 'TEST_ACCOUNT')
-            password = Setting.get_value('ACCOUNT', 'TEST_PASSWORD')
         else:
             # 실제 계정
-            account = Setting.get_value('ACCOUNT', 'REAL_ACCOUNT')
-            password = Setting.get_value('ACCOUNT', 'REAL_PASSWORD')
+            account = Setting.get_value('ACCOUNT', 'ACCOUNT')
+            password = Setting.get_value('ACCOUNT', 'PASSWORD')
 
         # 계정 set
         self.account = account

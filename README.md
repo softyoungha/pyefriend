@@ -295,7 +295,6 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
                             overseas: 해외 투자 선택
       --created CREATED, -c CREATED
                             Report 생성이력(YYYYmmdd_HH_MM_SS format)
-      --test                테스트 계정 사용여부
       --account ACCOUNT, -a ACCOUNT
                             계좌명('-' 제외), 입력하지 않을 경우 config.yml에서 사용
       --password, -p        계좌 매수/매도시 입력 비밀번호
