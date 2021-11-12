@@ -2,11 +2,8 @@ core:
   # log format
   log_format: '[%(levelname)s] %(asctime)s - %(name)s/%(filename)s/%(funcName)s, %(lineno)s: %(message)s'
 
-  # 계좌명('-' 없이)
+  # 계좌명('-' 없이)초기 설정시 사용되며 db 구성 이후 update로 설정 가능.
   account: ''
-
-  # 계좌 비밀번호
-  password: ''
 
 
 fastapi:

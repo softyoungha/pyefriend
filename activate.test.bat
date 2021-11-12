@@ -5,6 +5,7 @@
 
 :: set Environment variables
 set REBAL_HOME=.
+set REBAL_CONF=./config.test.yml
 set REBAL_PASSWORD=password
 
 :: Activate Python
