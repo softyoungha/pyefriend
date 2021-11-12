@@ -11,7 +11,7 @@ def init_db():
     metadata.create_all()
     logger.info('create_all: Done')
 
-    Setting.initialize()
+    Setting.initialize(first=True)
     logger.info('create_all: Done')
 
 
