@@ -327,6 +327,8 @@ class Api:
 
     def get_deposit(self, overall: bool = True) -> Union[int, float]:
         """ 예수금 전체 금액 """
+        print(self.domestic_deposit)
+        print(self.overseas_deposit)
         if overall:
             return self.domestic_deposit + self.overseas_deposit
 
@@ -567,7 +569,7 @@ class DomesticApi(Api):
                 .set_data(3, product_code)
                 .set_data(4, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
                 .set_data(5, str(count))  # 주문수량
-                .set_data(6, str(price))  # 주문단가
+                .set_data(6, str(int(price)))  # 주문단가
                 .request_data(Service.SCABO)
                 .get_data(1)  # 1: 주문번호
         )
@@ -584,7 +586,7 @@ class DomesticApi(Api):
                 .set_data(4, '01')  # 매도유형(고정값)
                 .set_data(5, '01' if price <= 0 else '00')  # 00: 지정가 / 01: 시장가
                 .set_data(6, str(count))  # 주문수량
-                .set_data(7, str(price))  # 주문단가
+                .set_data(7, str(int(price)))  # 주문단가
                 .request_data(Service.SCAAO)
                 .get_data(1)  # 1: 주문번호
         )
@@ -726,7 +728,7 @@ class OverSeasApi(Api):
     def buy_stock(self,
                   product_code: str,
                   count: int,
-                  price: int = 0,
+                  price: float = 0,
                   market_code: str = None,
                   **kwargs) -> str:
         return (
@@ -744,7 +746,7 @@ class OverSeasApi(Api):
     def sell_stock(self,
                    product_code: str,
                    count: int,
-                   price: int = 0,
+                   price: float = 0,
                    market_code: str = None,
                    **kwargs) -> str:
         return (
@@ -752,7 +754,7 @@ class OverSeasApi(Api):
                 .set_data(3, market_code)
                 .set_data(4, product_code)
                 .set_data(5, str(count))
-                .set_data(6, str(price))
+                .set_data(6, f"{price:.2f}")
                 .set_data(9, '0')  # 주문서버구분코드, 0으로 입력
                 .set_data(10, '00')  # 주문구분, 00: 지정가
                 .request_data(Service.OS_US_SEL)  # 미국매도 주문

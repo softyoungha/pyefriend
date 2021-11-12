@@ -13,9 +13,10 @@ from pyefriend.const import MarketCode, Target, Unit
 from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
 from rebalancing.config import REPORT_DIR
-from rebalancing.models import Product, Portfolio, ProductHistory, Setting
+from rebalancing.utils.const import How
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
+from rebalancing.models import Product, Portfolio, ProductHistory, Setting
 from .base import Base, Length
 
 
@@ -32,13 +33,6 @@ class Status:
     CREATED = 'CREATED'
     PLANNING = 'PLANNING'
     EXECUTED = 'EXECUTED'
-
-
-class How:
-    """ 매수/매도시 가격 결정 방법 """
-    MARKET = 'market'  # 시장가격에 매수/패도
-    N_DIFF = 'n_diff'  # 호가 단위 x n 원 아래에서 매수/ 위에서 매도
-    REGRESSION = 'regression'  # linear regression
 
 
 class Report(Base):
@@ -440,7 +434,7 @@ class Report(Base):
         self.logger.info(f"{'deposit':>25}{deposit:>15,.2f} {u} (총 예수금)")
         self.logger.debug(f"{'stocks':>25}(현재 매수한 주식 리스트)\n{stocks} ")
         self.logger.info(f"{'account_amount':>25}{account_amount:>15,.2f} {u} "
-                         f"(총 예수금 + 포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합)")
+                         f"(추가로 더할 금액)")
         self.logger.info(f"{'total_amount':>25}{total_amount:>15,.2f} {u} "
                          f"(총 예수금 + 포트폴리오 포함 & 매수된 종목들의 평가 금액 전체 합)")
 
@@ -547,6 +541,7 @@ class Report(Base):
         elif how == How.N_DIFF:
             # 매수시에는 (현재가) - quote_unit * n_diff 에서 매수(-)
             # 매도시에는 (현재가) + quote_unit * n_diff 에서 매도(+)
+            print(portfolio)
             sign = -1 if portfolio['difference'] > 0 else 1
             return portfolio['current'] + portfolio['quote_unit'] * n_diff * sign
 
@@ -593,9 +588,12 @@ class Report(Base):
             params.update(count=abs(difference))
 
             # price: 계산
-            params.update(price=self._calculate_appropriate_price(portfolio=params, how=how, n_diff=n_diff))
+            price = self._calculate_appropriate_price(portfolio=dict(**params,
+                                                                     difference=difference),
+                                                      how=how,
+                                                      n_diff=n_diff)
+            params.update(price=price)
 
-            print(params)
             if difference > 0:
                 order_num: str = self.api.buy_stock(**params)
 

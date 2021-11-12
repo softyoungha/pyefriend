@@ -18,7 +18,6 @@ SETTING_LIST = {
         'DOMESTIC_LIMIT': (0.19, r'AVAILABLE_LIMIT 중 국내 주식 비율'),
         'OVERSEAS_LIMIT': (0.27, r'AVAILABLE_LIMIT 중 외국 주식 비율'),
         'ADDITIONAL_AMOUNT': (0.0, r'계좌 전체 금액 계산시 추가할 금액(타 계좌에 존재하는 자본금)'),
-        'OVERALL': (True, f'True일 경우 국내/해외 통합하여 전체 금액 계산, False일 경우 국내/해외 별도로 전체 금액 계산')
     },
 }
 
@@ -110,3 +109,17 @@ class Setting(Base):
         else:
             # update
             session.bulk_update_mappings(cls, items)
+
+    @staticmethod
+    def validate():
+        available_limit = Setting.get_value('REBALANCE', 'AVAILABLE_LIMIT', dtype=float)
+        domestic_limit = Setting.get_value('REBALANCE', 'DOMESTIC_LIMIT', dtype=float)
+        overseas_limit = Setting.get_value('REBALANCE', 'OVERSEAS_LIMIT', dtype=float)
+
+        assert 0 < available_limit <= 1.
+
+        assert 0 <= domestic_limit <= 1.
+
+        assert 0 <= overseas_limit <= 1.
+
+        assert domestic_limit + overseas_limit < 1

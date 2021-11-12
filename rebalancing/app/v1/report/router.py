@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request, Response, status, HTTPException, Depends
 from fastapi.responses import FileResponse
 
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
+from rebalancing.utils.const import How
 from rebalancing.models.report import Status, Report
 from rebalancing.app.auth import login_required
 from .schema import ReportInput, ReportOutput, CreateReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
@@ -157,6 +158,8 @@ async def adjust_plan(report_name: str,
 @r.post('/{report_name}/execute', response_model=ReportOutput)
 async def execute_plan(report_name: str,
                        created_time: Optional[str] = None,
+                       how: How = How.MARKET,
+                       n_diff: int = 10,
                        user=Depends(login_required)):
     """
     ### 리밸런싱 플랜 실행
@@ -166,7 +169,7 @@ async def execute_plan(report_name: str,
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
-    report.execute_plan()
+    report.execute_plan(how=how, n_diff=n_diff)
 
     return {
         'report_name': report.report_name,
