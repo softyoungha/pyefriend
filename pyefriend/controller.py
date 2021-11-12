@@ -54,15 +54,16 @@ class Controller:
         time.sleep(0.01)
 
         self.logger.debug('Start Event Loop')
+        self._event_loop = QEventLoop()  # 이벤트루프 할당
+        self._event_loop.exec_()  # 이벤트루프 실행
 
+        # get Error
         if self._error is not None:
             # event loop 내에서 에러 생겼을 경우 error 받아옴
             error = self._error
             self._error = None
             raise error
 
-        self._event_loop = QEventLoop()  # 이벤트루프 할당
-        self._event_loop.exec_()  # 이벤트루프 실행
         return self
 
     def _set_event_handler(self, event, handler):
