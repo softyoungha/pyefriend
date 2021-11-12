@@ -17,12 +17,12 @@ async def get_settings(user=Depends(login_required)):
 
 
 @r.post('/', status_code=status.HTTP_200_OK)
-async def initialize_settings(force: bool = False, user=Depends(login_required)):
+async def initialize_settings(user=Depends(login_required)):
     """
     ### 세팅값 초기화
     - force: True일 경우 기존 값 초기화
     """
-    SettingModel.initialize(force=force)
+    SettingModel.initialize(first=False)
 
     return Response('Success', status_code=status.HTTP_200_OK)
 
