@@ -7,7 +7,7 @@ from pyefriend.exceptions import NotConnectedException, AccountNotExistsExceptio
 from rebalancing.utils.const import How
 from rebalancing.models.report import Status, Report
 from rebalancing.app.auth import login_required
-from .schema import ReportInput, ReportOutput, CreateReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
+from .schema import ReportInput, ReportOutput, CreateReportOutput, PricesOutput, ExecuteReportOutput
 
 
 r = APIRouter(prefix='/report',
@@ -60,7 +60,7 @@ async def refresh_prices(report_name: str,
                          user=Depends(login_required)):
     """
     ### DB 내 종목 가격 최신화('product' table)
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
@@ -77,7 +77,7 @@ async def get_prices(report_name: str,
                      user=Depends(login_required)):
     """
     ### DB 내 종목 가격 조회('product' table)
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
@@ -91,7 +91,7 @@ async def make_plan(report_name: str,
                     user=Depends(login_required)):
     """
     ### 최신화된 가격을 토대로 리밸런싱 플랜 생성
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     - overall: 국내/해외 잔고 모두 계산할지 여부. 모의투자에서는 True 설정 불가능(default=False)
     """
@@ -111,7 +111,7 @@ async def get_plan(report_name: str,
                    user=Depends(login_required)):
     """
     ### 리밸런싱 플랜 조회
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     - summary: True일 경우 요약정보, False일 경우 상세정보
     """
@@ -139,7 +139,7 @@ async def adjust_plan(report_name: str,
                       user=Depends(login_required)):
     """
     ### 최신화된 가격을 토대로 리밸런싱 플랜 생성
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
 
@@ -154,23 +154,36 @@ async def adjust_plan(report_name: str,
     }
 
 
-@r.post('/{report_name}/execute', response_model=ReportOutput)
+@r.post('/{report_name}/execute', response_model=List[ExecuteReportOutput])
 async def execute_plan(report_name: str,
                        created_time: Optional[str] = None,
                        how: How = How.MARKET,
-                       n_diff: int = 10,
+                       n_diff: int = 3,
                        user=Depends(login_required)):
     """
     ### 리밸런싱 플랜 실행
-    - report_name: ~/reprt/ POST를 통해 생성된 리포트명
+    - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
     """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
-    report.execute_plan(how=how, n_diff=n_diff)
 
-    return {
-        'report_name': report.report_name,
-        'created_time': report.created_time
-    }
+    return report.execute_plan(how=how, n_diff=n_diff)
+
+
+@r.post('/{report_name}/execute', response_model=List[ExecuteReportOutput])
+async def get_order_status(report_name: str,
+                           created_time: Optional[str] = None,
+                           user=Depends(login_required)):
+    """
+    ### 리밸런싱 체결 상황 조회
+    - report_name: ~/report/ POST를 통해 생성된 리포트
+    - created_time: None일 경우 가장 최신 날짜를 가져옴
+    """
+    report: Report = Report.get(report_name=report_name,
+                                created_time=created_time,
+                                statuses=[Status.EXECUTED])
+
+    return report.get_order_status()
+

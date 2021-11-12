@@ -1,5 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field
+from rebalancing.utils.const import OrderType
+
 
 ReportNameField = Field(...,
                         title='리포트명',
@@ -47,5 +49,18 @@ class PricesOutput(BaseModel):
     base: float = Field(..., title='종가')
 
 
-class PlanOutput(BaseModel):
-    pass
+class OrderBase(BaseModel):
+    product_code: str = Field(..., title='종목코드')
+    market_code: str = Field(..., title='거래소(KRX: 한국거래소/NASD/NYSE/AMEX')
+    count: str = Field(..., title='매도/매수 수량')
+    order_num: str = Field(..., title='주문번호')
+    order_type: OrderType = Field(..., title='매도/매수 구분')
+
+
+class ExecuteReportOutput(OrderBase):
+    quote_unit: str = Field(..., title='호가단위')
+    price: str = Field(..., title='매도/매수 가격')
+
+
+class GetOrderOutput(OrderBase):
+    process: Optional[str] = Field(..., title='주문 상태')

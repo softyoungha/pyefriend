@@ -13,7 +13,7 @@ from pyefriend.const import MarketCode, Target, Unit
 from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
 from rebalancing.config import Config, HOME_PATH
-from rebalancing.utils.const import How
+from rebalancing.utils.const import How, OrderType
 from rebalancing.utils.log import get_logger
 from rebalancing.utils.orm_helper import provide_session
 from rebalancing.models import Product, Portfolio, ProductHistory, Setting
@@ -527,7 +527,7 @@ class Report(Base):
         """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
         return self
 
-    def _calculate_appropriate_price(self, portfolio: dict, how: str = How.MARKET, n_diff: int = 10):
+    def _calculate_appropriate_price(self, portfolio: dict, how: str = How.MARKET, n_diff: int = 3):
         if how == How.MARKET:
             # 시장가에 판매
             return 0
@@ -547,7 +547,7 @@ class Report(Base):
 
         return 0
 
-    def execute_plan(self, how: str = How.MARKET, n_diff: int = 10) -> List[str]:
+    def execute_plan(self, how: str = How.MARKET, n_diff: int = 3) -> List[str]:
         """ 리밸런싱 플랜 실행 """
         dtype = {
             'product_code': str,
@@ -590,9 +590,11 @@ class Report(Base):
 
             if difference > 0:
                 order_num: str = self.api.buy_stock(**params)
+                params['order_type'] = OrderType.BUY
 
             else:
                 order_num: str = self.api.buy_stock(**params)
+                params['order_type'] = OrderType.SELL
 
             params['order_num'] = order_num
 
@@ -612,6 +614,7 @@ class Report(Base):
             'market_code': str,
             'count': int,
             'order_num': str,
+            'order_type': str,
         }
 
         if os.path.exists(self.order_path):
@@ -638,14 +641,14 @@ class Report(Base):
             # 거래소 코드마다 조회
             processed_orders = [
                 order_result.get('order_num')
-                                for market_code in market_codes
-                                for order_result in self.api.get_processed_orders(start_date=created_date,
-                                                                                  market_code=market_code)
+                for market_code in market_codes
+                for order_result in self.api.get_processed_orders(start_date=created_date,
+                                                                  market_code=market_code)
             ]
             unprocessed_orders = [
                 order_result.get('order_num')
-                                for market_code in market_codes
-                                for order_result in self.api.get_unprocessed_orders(market_code=market_code)
+                for market_code in market_codes
+                for order_result in self.api.get_unprocessed_orders(market_code=market_code)
             ]
 
         for report_order in report_orders:
@@ -704,5 +707,3 @@ class Report(Base):
             time.sleep(retry_delay)
 
         return orders
-
-

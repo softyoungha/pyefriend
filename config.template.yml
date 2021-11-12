@@ -10,6 +10,7 @@ core:
 
 
 fastapi:
+
   # fastapi 계정명
   username: youngha.park
 

@@ -9,6 +9,11 @@ class How(str, Enum):
     REGRESSION = 'regression'  # linear regression
 
 
+class OrderType(str, Enum):
+    BUY = '매수'
+    SELL = '매도'
+
+
 __all__ = [
     'System',
     'Target',
@@ -18,6 +23,7 @@ __all__ = [
     'Currency',
     'Unit',
     'How',
+    'OrderType',
 ]
 
 
