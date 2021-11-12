@@ -98,14 +98,15 @@ class Setting(Base):
 
     @classmethod
     @provide_session
-    def initialize(cls, force: bool = False, session: Session = None):
-        items = [cls(section=section, key=key, value=value, comment=comment)
+    def initialize(cls, first: bool = False, session: Session = None):
+        items = [dict(section=section, key=key, value=value, comment=comment)
                  for section, section_value in SETTING_LIST.items()
                  for key, (value, comment) in section_value.items()]
 
-        if force:
-            cls.truncate()
-            session.bulk_save_objects(items, update_changed_only=not force)
+        if first:
+            # save
+            session.bulk_save_objects([cls(**item) for item in items])
 
         else:
+            # update
             session.bulk_update_mappings(cls, items)
