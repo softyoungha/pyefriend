@@ -223,18 +223,23 @@ class Api:
         1 달러 -> 원으로 환전할때의 현재 기준 예상환율을 반환
         예상환율은 최초고시 환율로 매일 08:15시경에 당일 환율이 제공됨
         """
-        (
-            self.set_account_info()  # 계정 정보
-                .set_data(3, '512')  # 미국: 512
-                .request_data(Service.OS_OS3004R)
-        )
+        try:
+            (
+                self.set_account_info()  # 계정 정보
+                    .set_data(3, '512')  # 미국: 512
+                    .request_data(Service.OS_OS3004R)
+            )
 
-        # get data
-        currency = self.controller.GetMultiData(3, 0, 4)
+            # get data
+            currency = self.controller.GetMultiData(3, 0, 4)
 
-        # 값을 불러오지 못할 때가 있음
-        if currency != '':
-            return float(currency)
+            # 값을 불러오지 못할 때가 있음
+            if currency != '':
+                return float(currency)
+
+        except UnExpectedException as e:
+            self.logger.warning(f'{e.__class__.__name__}: {str(e)}')
+            pass
 
         try:
             # requests 모듈로 타 사이트에서 로드해옴
@@ -243,8 +248,8 @@ class Api:
             return data[0]['basePrice']
 
         except Exception as e:
-            self.logger.error('환율 정보를 불러오는 데 실패하였습니다.'
-                              '설정된 환율을 사용합니다.')
+            self.logger.warning('환율 정보를 불러오는 데 실패하였습니다.'
+                                '설정된 환율을 사용합니다.')
             return Currency.BASE
 
     @property

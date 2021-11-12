@@ -27,7 +27,6 @@ def load_api(target: str,
     assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
 
     if target == Target.DOMESTIC:
-        print('encrypted_password', encrypted_password)
         return DomesticApi(account=account,
                            password=password,
                            encrypted_password=encrypted_password,
