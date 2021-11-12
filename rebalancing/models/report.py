@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import pandas as pd
 import logging
@@ -266,6 +267,11 @@ class Report(Base):
         return self.path('plan.csv')
 
     @property
+    def order_path(self):
+        """ report 리밸런싱 plan 저장 경로 """
+        return self.path('order.txt')
+
+    @property
     def name(self):
         """ report instance 명칭(logger_name, api file response 파일명으로 사용) """
         return f'{self.target}_{self.report_name}_{self.created_time}'
@@ -285,11 +291,7 @@ class Report(Base):
     @provide_session
     def refresh_prices(self, session=None):
         """ DB 내 종목 가격 최신화('product' table) """
-        if self.is_domestic:
-            products = Product.list(MarketCode.KRX, session=session)
-
-        else:
-            products = Product.list(only_oversea=True, session=session)
+        products = Product.list(is_domestic=self.is_domestic, session=session)
 
         # update 'Product'
         self.logger.info('종목 리스트를 최신화합니다.')
@@ -419,11 +421,13 @@ class Report(Base):
             percent = Setting.get_value('REBALANCE', 'OVERSEAS_LIMIT', dtype=float)
 
         # list all portfolio with use_yn = True
-        portfolios = Portfolio.list(is_domestic=self.is_domestic, only_y=True)
+        portfolios = Portfolio.list(is_domestic=self.is_domestic, only_y=True, as_tuple=True)
 
         # product_codes_in_portfolio: 포트폴리오에 포함된 product_code
-        product_codes_in_portfolio = [product_code
-                                      for product_code, _, _, _, _ in portfolios]
+        product_codes_in_portfolio = [portfolio[0] for portfolio in portfolios]
+
+        # total_weights: 전체 weight(5번째 -> 4)
+        total_weights = sum([portfolio[4] for portfolio in portfolios])
 
         # 현재 주식 금액: 예수금, 주식들, 계좌 내 전체 금액
         deposit, stocks, account_amount = self.api.evaluate_amount(product_codes_in_portfolio,
@@ -451,49 +455,50 @@ class Report(Base):
         planned_budge = available_total_amount * percent
         self.logger.info(f"{'planned_budge':>25}{planned_budge:>15,.2f} {u} (투자에 사용할 금액)")
 
-        # total_weights: 전체 weight
-        total_weights = sum([weight for _, _, _, weight, _ in portfolios])
-
         # init list & sum
         plan_index = []
         plan_data = []
         asis_total_amount = 0
 
-        for product_code, product_name, current, weight, quote_unit in portfolios:
+        for product_code, product_name, market_code, current, weight, quote_unit, unit in portfolios:
+
+            # create empty row
+            row = {}
+
             # get stock
             stock = stocks.get(product_code, {})
 
-            # stock unit('KRW'/'USD')
-            is_usd = stock['unit'] == Unit.USD
-
-            # 다음 조건을 만족하면 환율 곱해서 계산
-            condition = overall and is_usd
+            # 다음 조건을 만족하면 환율 곱해서 계산: overall(전체금액 합산시 단위가 USD인 경우)
+            if overall and unit == Unit.USD:
+                row.update(us_current=current)
+                current = current * currency
 
             # calculate
             asis_count = stock.get('count', 0)
-            asis_amount = stock.get('price', 0) * currency if condition else stock.get('price', 0)
+            asis_amount = stock.get('price', 0)
             planned_rate = weight / total_weights
-            planned_amount = planned_budge * planned_rate * currency if condition else planned_budge * planned_rate
+            planned_amount = planned_budge * planned_rate
             tobe_count = round(planned_amount / current)
-            tobe_amount = current * tobe_count * currency if condition else current * tobe_count
+            tobe_amount = current * tobe_count
             difference = int(tobe_count - asis_count)
+
+            row.update(market_code=market_code,
+                       product_name=product_name,
+                       unit=u,
+                       current=num_type(current),
+                       weight=weight,
+                       quote_unit=quote_unit,
+                       asis_count=asis_count,
+                       asis_amount=num_type(asis_amount),
+                       planned_rate=planned_rate,
+                       planned_amount=num_type(planned_amount),
+                       tobe_count=tobe_count,
+                       tobe_amount=num_type(tobe_amount),
+                       difference=difference)
 
             # append
             plan_index.append(product_code)
-            plan_data.append(
-                dict(product_name=product_name,
-                     unit=u,
-                     current=num_type(current),
-                     weight=weight,
-                     quote_unit=quote_unit,
-                     asis_count=asis_count,
-                     asis_amount=num_type(asis_amount),
-                     planned_rate=planned_rate,
-                     planned_amount=num_type(planned_amount),
-                     tobe_count=tobe_count,
-                     tobe_amount=num_type(tobe_amount),
-                     difference=difference)
-            )
+            plan_data.append(row)
 
             asis_total_amount += asis_amount
 
@@ -514,7 +519,7 @@ class Report(Base):
         # result dataframe
         df_results = pd.DataFrame([results], index=[self.created_time])
         self._print_log_save(df=df_results,
-                             index_name='결과생성일자',
+                             index_name='created_time',
                              title='Rebalance Result',
                              filepath=self.summary_path)
 
@@ -525,28 +530,7 @@ class Report(Base):
                              title='Rebalance Detail',
                              filepath=self.plan_path)
 
-        if not self.is_domestic:
-            # 환율 계산
-            currency = self.api.currency
-
-            # result dataframe(WON)
-            df_results_won = df_results.copy()
-            for column in results.keys():
-                df_results_won[column] = [int(value * currency) for value in df_results_won[column]]
-            self._print_log_save(df=df_results_won,
-                                 index_name='결과생성일자',
-                                 title='Rebalance Result(WON)',
-                                 filepath='summary_won.csv')
-
-            # plan dataframe(WON)
-            df_plan_won = df_plan.copy()
-            for column in ['current', 'asis_amount', 'planned_amount', 'tobe_amount']:
-                df_plan_won[column] = [int(value * currency) for value in df_plan_won[column]]
-            self._print_log_save(df=df_plan_won,
-                                 index_name='결과생성일자',
-                                 title='Rebalance Detail(WON)',
-                                 filepath='plan_won.csv')
-
+        # 상태 변경 -> PLANNING
         self.update_status(Status.PLANNING)
 
         return self
@@ -555,19 +539,178 @@ class Report(Base):
         """ 최신화된 가격을 토대로 리밸런싱 플랜 생성 """
         return self
 
-    def execute_plan(self, how: str = How.MARKET):
+    def _calculate_appropriate_price(self, portfolio: dict, how: str = How.MARKET, n_diff: int = 10):
+        if how == How.MARKET:
+            # 시장가에 판매
+            return 0
+
+        elif how == How.N_DIFF:
+            # 매수시에는 (현재가) - quote_unit * n_diff 에서 매수(-)
+            # 매도시에는 (현재가) + quote_unit * n_diff 에서 매도(+)
+            sign = -1 if portfolio['difference'] > 0 else 1
+            return portfolio['current'] + portfolio['quote_unit'] * n_diff * sign
+
+        elif how == How.REGRESSION:
+            # TBD
+            return 0
+        else:
+            pass
+
+        return 0
+
+    def execute_plan(self, how: str = How.MARKET, n_diff: int = 10) -> List[str]:
         """ 리밸런싱 플랜 실행 """
         dtype = {
-            'market_code': str,
-            'product_name': str,
             'product_code': str,
-            'weight': float
+            'market_code': str,
+            'difference': int,
+            'current': float,
+            'quote_unit': float,
         }
 
-        plan_df = pd.read_csv(self.plan_path, sep=',', dtype=dtype)
+        planned_portfoilos = (
+            pd.read_csv(self.plan_path,
+                        sep=',',
+                        dtype=dtype,
+                        usecols=list(dtype.keys()))
+                .to_dict(orient='records')
+        )
 
+        # create empty orders
+        orders = []
 
+        for portfolio in planned_portfoilos:
 
+            params = portfolio.copy()
+
+            # 매수/매도 값 계산difference
+            difference: int = params.pop('difference')
+
+            if difference == 0:
+                continue
+
+            # count: 양수
+            params.update(count=abs(difference))
+
+            # price: 계산
+            params.update(price=self._calculate_appropriate_price(portfolio=params, how=how, n_diff=n_diff))
+
+            print(params)
+            if difference > 0:
+                order_num: str = self.api.buy_stock(**params)
+
+            else:
+                order_num: str = self.api.buy_stock(**params)
+
+            params['order_num'] = order_num
+
+            orders.append(params)
+
+        # save order data
+        pd.DataFrame(orders).to_csv(self.order_path, sep=',', index=False)
+
+        # 상태 변경 -> EXECUTED
         self.update_status(Status.EXECUTED)
 
-        return self
+        return orders
+
+    def get_order_status(self) -> List[Dict]:
+        dtype = {
+            'product_code': str,
+            'market_code': str,
+            'count': int,
+            'order_num': str,
+        }
+
+        if os.path.exists(self.order_path):
+            report_orders = pd.read_csv(self.order_path, sep=',', dtype=dtype).to_dict(orient='records')
+        else:
+            raise ReportNotFoundException(f'Report의 order_path에 파일이 없습니다: {self.order_path}')
+
+        created_date = datetime.strptime(self.created_time, '%Y%m%d_%H_%M_%S').strftime('%Y%m%d')
+
+        if self.is_domestic:
+            processed_orders = [
+                order_result.get('order_num')
+                for order_result in self.api.get_processed_orders(start_date=created_date)
+            ]
+            unprocessed_orders = [
+                order_result.get('order_num')
+                for order_result in self.api.get_unprocessed_orders()
+            ]
+
+        else:
+            # 거래소 코드 리스트
+            market_codes = [order['market_code'] for order in report_orders]
+
+            # 거래소 코드마다 조회
+            processed_orders = [
+                order_result.get('order_num')
+                                for market_code in market_codes
+                                for order_result in self.api.get_processed_orders(start_date=created_date,
+                                                                                  market_code=market_code)
+            ]
+            unprocessed_orders = [
+                order_result.get('order_num')
+                                for market_code in market_codes
+                                for order_result in self.api.get_unprocessed_orders(market_code=market_code)
+            ]
+
+        for report_order in report_orders:
+            order_num = report_order['order_num']
+
+            # 상태 업데이트(체결/미체결)
+            if order_num in processed_orders:
+                report_order.update('process', True)
+            elif order_num in unprocessed_orders:
+                report_order.update('process', False)
+            else:
+                report_order.update('process', None)
+
+        return report_orders
+
+    def wait_for_all_orders_to_be_processed(self,
+                                            timeout: int = None,
+                                            retries: int = None,
+                                            retry_delay: int = 60) -> List[Dict]:
+        """
+        order_path에 위치한 주문 리스트가 모두 체결될때까지 기다림
+
+        :param timeout: 초과시 TimeoutError 발생(분).
+        :param retries: 재시도 횟수 제한
+        :param retry_delay: while문 재실행시 delay(초)
+        :return: 주문 리스트
+        """
+        start_time = datetime.now()
+        count = 0
+
+        while True:
+            count += 1
+
+            # 처음 실행부터 걸린 시간(분)
+            elapsed_minutes = (datetime.now() - start_time).seconds / 60
+
+            if elapsed_minutes > timeout * 60:
+                raise TimeoutError(f'설정된 Timeout을 초과하였습니다.: {timeout}s')
+
+            orders = self.get_order_status()
+
+            # get orders
+            order_processes = [order
+                               for order in orders
+                               if not order['process']]
+
+            # all processes True -> break
+            if len(order_processes) == 0:
+                break
+
+            if retries:
+                if count > retries:
+                    return orders
+
+            # sleep
+            time.sleep(retry_delay)
+
+        return orders
+
+

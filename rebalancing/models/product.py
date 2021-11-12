@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, Foreig
 from sqlalchemy.orm import relationship, backref, Session
 
 from rebalancing.utils.orm_helper import provide_session
-from rebalancing.utils.const import MarketCode
+from rebalancing.utils.const import MarketCode, Unit
 from .base import Base, Length
 
 
@@ -29,6 +29,10 @@ class Product(Base):
 
     def __repr__(self):
         return f"<Product(code='{self.code}', name='{self.name}')>"
+
+    @property
+    def unit(self):
+        return Unit.KRW if self.market_code == MarketCode.KRX else Unit.USD
 
     @property
     def as_dict(self):

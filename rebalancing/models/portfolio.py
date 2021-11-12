@@ -42,6 +42,10 @@ class Portfolio(Base):
     def quote_unit(self):
         return self.product.quote_unit
 
+    @property
+    def unit(self):
+        return self.product.unit
+
     @classmethod
     @provide_session
     def update(cls, data: List[Dict], session: Session = None):
@@ -75,9 +79,11 @@ class Portfolio(Base):
             return [
                 (item.product_code,
                  item.product_name,
+                 item.market_code,
                  item.current,
                  item.weight,
-                 item.quote_unit)
+                 item.quote_unit,
+                 item.unit)
                 for item in query.all()
             ]
         else:

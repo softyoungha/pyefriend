@@ -556,7 +556,12 @@ class DomesticApi(Api):
                 .get_data(multiple=True, columns=columns)
         )
 
-    def buy_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
+    def buy_stock(self,
+                  product_code: str,
+                  count: int,
+                  price: int = 0,
+                  market_code: str = None,
+                  **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
                 .set_data(3, product_code)
@@ -567,7 +572,12 @@ class DomesticApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def sell_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
+    def sell_stock(self,
+                   product_code: str,
+                   count: int,
+                   price: int = 0,
+                   market_code: str = None,
+                   **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
                 .set_data(3, product_code)
@@ -586,11 +596,11 @@ class DomesticApi(Api):
             start_date = today
 
         columns = [
-            dict(index=1, key='주문번호', pk=True),
-            dict(index=2, key='원주문번호'),
-            dict(index=4, key='상품번호'),
-            dict(index=13, key='매수매도구분코드명'),
-            dict(index=7, key='주문수량'),
+            dict(index=1, key='order_num', pk=True),
+            dict(index=2, key='orgin_order_num'),
+            dict(index=7, key='product_code'),
+            dict(index=6, key='매수매도구분코드명'),
+            dict(index=9, key='count'),
         ]
 
         return (
@@ -606,12 +616,12 @@ class DomesticApi(Api):
 
     def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         columns = [
-            dict(index=0, key='주문일자', pk=True),
-            dict(index=2, key='주문번호'),
-            dict(index=3, key='원주문번호'),
-            dict(index=7, key='상품번호'),
-            dict(index=6, key='매수매도구분코드명'),
-            dict(index=9, key='주문수량'),
+            dict(index=0, key='order_date', pk=True),
+            dict(index=1, key='order_num'),
+            dict(index=2, key='orgin_order_num'),
+            dict(index=4, key='product_code'),
+            dict(index=13, key='매수매도구분코드명'),
+            dict(index=7, key='count'),
         ]
 
         return (
@@ -717,7 +727,8 @@ class OverSeasApi(Api):
                   product_code: str,
                   count: int,
                   price: int = 0,
-                  market_code: str = None) -> str:
+                  market_code: str = None,
+                  **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -734,7 +745,8 @@ class OverSeasApi(Api):
                    product_code: str,
                    count: int,
                    price: int = 0,
-                   market_code: str = None) -> str:
+                   market_code: str = None,
+                   **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
                 .set_data(3, market_code)
@@ -747,21 +759,19 @@ class OverSeasApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def get_processed_orders(self,
-                             start_date: str = None,
-                             market_code: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
             start_date = today
 
         columns = [
-            dict(index=0, key="주문일자"),
-            dict(index=2, key="주문번호"),
-            dict(index=3, key="원주문번호"),
-            dict(index=12, key="상품번호"),
-            dict(index=10, key="주문수량"),
-            dict(index=13, key="체결단가"),
+            dict(index=0, key="order_date"),
+            dict(index=2, key="order_num"),
+            dict(index=3, key="origin_order_num"),
+            dict(index=12, key="product_code"),
+            dict(index=10, key="count"),
+            dict(index=13, key="price"),
         ]
 
         return (
@@ -777,11 +787,11 @@ class OverSeasApi(Api):
 
     def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         columns = [
-            dict(index=0, key="주문일자"),
-            dict(index=2, key="주문번호"),
-            dict(index=3, key="원주문번호"),
-            dict(index=5, key="상품번호"),
-            dict(index=17, key="주문수량"),
+            dict(index=0, key="order_date"),
+            dict(index=2, key="order_num"),
+            dict(index=3, key="origin_order_num"),
+            dict(index=5, key="product_code"),
+            dict(index=17, key="count"),
         ]
 
         return (

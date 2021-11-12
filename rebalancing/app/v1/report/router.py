@@ -6,14 +6,14 @@ from fastapi.responses import FileResponse
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
 from rebalancing.models.report import Status, Report
 from rebalancing.app.auth import login_required
-from .schema import ReportInput, ReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
+from .schema import ReportInput, ReportOutput, CreateReportOutput, PricesOutput, PlanOutput, ReportNameField, CreatedTimeField
 
 
 r = APIRouter(prefix='/report',
               tags=['v1-report'])
 
 
-@r.post('/', response_model=ReportOutput)
+@r.post('/', response_model=CreateReportOutput)
 async def create_report(request: ReportInput, user=Depends(login_required)):
     """### pyefriend api 생성로 접속 테스트 후 성공시 report_name 생성 """
     try:
@@ -54,7 +54,7 @@ async def create_report(request: ReportInput, user=Depends(login_required)):
                             detail=f'{e.__class__.__name__}: \n{str(e)}')
 
 
-@r.post('/{report_name}/prices', status_code=status.HTTP_200_OK)
+@r.post('/{report_name}/prices', response_model=ReportOutput)
 async def refresh_prices(report_name: str,
                          created_time: Optional[str] = None,
                          user=Depends(login_required)):
@@ -65,7 +65,10 @@ async def refresh_prices(report_name: str,
     """
     report: Report = Report.get(report_name=report_name, created_time=created_time)
     report.refresh_prices()
-    return Response('Success', status_code=status.HTTP_200_OK)
+    return {
+        'report_name': report.report_name,
+        'created_time': report.created_time
+    }
 
 
 @r.get('/{report_name}/prices', response_model=List[PricesOutput])
@@ -81,7 +84,7 @@ async def get_prices(report_name: str,
     return report.get_prices()
 
 
-@r.post('/{report_name}/plan', status_code=status.HTTP_200_OK)
+@r.post('/{report_name}/plan', response_model=ReportOutput)
 async def make_plan(report_name: str,
                     created_time: Optional[str] = None,
                     overall: bool = False,
@@ -95,7 +98,10 @@ async def make_plan(report_name: str,
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time)
     report.make_plan(overall=overall)
-    return Response('Success', status_code=status.HTTP_200_OK)
+    return {
+        'report_name': report.report_name,
+        'created_time': report.created_time
+    }
 
 
 @r.get('/{report_name}/plan', response_class=FileResponse)
@@ -127,7 +133,7 @@ async def get_plan(report_name: str,
     return response
 
 
-@r.put('/{report_name}/plan', status_code=status.HTTP_200_OK)
+@r.put('/{report_name}/plan', response_model=ReportOutput)
 async def adjust_plan(report_name: str,
                       created_time: Optional[str] = None,
                       user=Depends(login_required)):
@@ -142,10 +148,13 @@ async def adjust_plan(report_name: str,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
     report.adjust_plan()
 
-    return Response('Success', status_code=status.HTTP_200_OK)
+    return {
+        'report_name': report.report_name,
+        'created_time': report.created_time
+    }
 
 
-@r.post('/{report_name}/execute', status_code=status.HTTP_200_OK)
+@r.post('/{report_name}/execute', response_model=ReportOutput)
 async def execute_plan(report_name: str,
                        created_time: Optional[str] = None,
                        user=Depends(login_required)):
@@ -159,4 +168,7 @@ async def execute_plan(report_name: str,
                                 statuses=[Status.PLANNING, Status.EXECUTED])
     report.execute_plan()
 
-    return Response('Success', status_code=status.HTTP_200_OK)
+    return {
+        'report_name': report.report_name,
+        'created_time': report.created_time
+    }

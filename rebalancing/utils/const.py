@@ -7,4 +7,5 @@ __all__ = [
     'MarketCode',
     'ProductCode',
     'Currency',
+    'Unit',
 ]

@@ -32,9 +32,12 @@ class ReportInput(BaseModel):
 
 class ReportOutput(BaseModel):
     report_name: str = ReportNameField
+    created_time: str = CreatedTimeField
+
+
+class CreateReportOutput(ReportOutput):
     account: str = Field(..., title='테스트 성공시 사용될 계좌명')
     is_vts: bool = Field(..., title='모의투자여부')
-    created_time: str = CreatedTimeField
 
 
 class PricesOutput(BaseModel):
