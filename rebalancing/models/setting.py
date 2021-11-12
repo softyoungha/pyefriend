@@ -93,8 +93,19 @@ class Setting(Base):
 
     @classmethod
     @provide_session
+    def truncate(cls, session: Session = None):
+        session.query(cls).delete()
+
+    @classmethod
+    @provide_session
     def initialize(cls, force: bool = False, session: Session = None):
         items = [cls(section=section, key=key, value=value, comment=comment)
                  for section, section_value in SETTING_LIST.items()
                  for key, (value, comment) in section_value.items()]
-        session.bulk_save_objects(items, update_changed_only=not force)
+
+        if force:
+            cls.truncate()
+            session.bulk_save_objects(items, update_changed_only=not force)
+
+        else:
+            session.bulk_update_mappings(cls, items)
