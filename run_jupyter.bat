@@ -1,5 +1,6 @@
 @echo off
 
-:: [주의] 관리자모드로 실행한 cmd.exe에서 venv를 활성화시킨 후 사용하세요
+:: [Warning] activate venv(python 32-bit) in cmd with administrator mode
+
 :: Run jupyter notebook
 jupyter notebook
