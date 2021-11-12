@@ -508,7 +508,7 @@ class DomesticApi(Api):
 
     @property
     def is_domestic(self):
-        return Target.DOMESTIC
+        return True
 
     @property
     def unit(self):
@@ -656,7 +656,7 @@ class OverSeasApi(Api):
 
     @property
     def is_domestic(self):
-        return Target.OVERSEAS
+        return False
 
     @property
     def unit(self):
