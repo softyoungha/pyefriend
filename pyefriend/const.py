@@ -7,7 +7,7 @@ class System:
     PROGID = 'ITGExpertCtl.ITGExpertCtlCtrl.1'
 
 
-class Target(str, Enum):
+class Market(str, Enum):
     """ 타겟 """
     DOMESTIC = 'domestic'  # 국내
     OVERSEAS = 'overseas'  # 해외(미국)
@@ -91,3 +91,9 @@ class Currency:
 class Unit(str, Enum):
     KRW = 'KRW'
     USD = 'USD'
+
+
+class DWM(str, Enum):
+    D = 'D'  # 날짜 기준
+    W = 'W'  # 주 기준
+    M = 'M'  # 월 기준

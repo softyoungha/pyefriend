@@ -111,10 +111,10 @@ from pyefriend import load_api
 # or from pyefriend.helper import load_api
 
 """ api instance 생성 """
-# target: 'domestic'(국내)/'overseas'(해외)
+# market: 'domestic'(국내)/'overseas'(해외)
 # account: efriend Expert 로그인한 계정 내에 존재하는 계좌
 # password: 한국투자증권 매수/매도시 입력 비밀번호
-api = load_api(target='domestic',   
+api = load_api(market='domestic',   
                account='5005775101',
                password='password')
 
@@ -154,7 +154,7 @@ from pyefriend.api import OverSeasApi
 api = OverSeasApi(account='5005775101', password='password')
 ```
 
-> helper.py의 load_api 함수에서 **target** 입력값에 대한 분기를 통해 
+> helper.py의 load_api 함수에서 **market** 입력값에 대한 분기를 통해 
 > 국내 주식 API(**DomesticApi**), 해외 주식 API(**OverSeasApi**)를 사용하도록 결정합니다.
 
 함수 리스트는 다음과 같습니다.
@@ -284,13 +284,13 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
     
     ```text
     (venv) C:\...\rebalancing> python -m rebalancing -h
-    usage: __main__.py [-h] --target {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
+    usage: __main__.py [-h] --market {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
     
     Re-balancing 모듈 실행
     
     optional arguments:
       -h, --help            show this help message and exit
-      --target {domestic,overseas}, -t {domestic,overseas}
+      --market {domestic,overseas}, -t {domestic,overseas}
                             domestic: 국내 투자 선택
                             overseas: 해외 투자 선택
       --created CREATED, -c CREATED

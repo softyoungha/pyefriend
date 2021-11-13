@@ -8,7 +8,7 @@ from IPython.display import display, Markdown
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 
 from pyefriend import load_api, encrypt_password_by_efriend_expert
-from pyefriend.const import MarketCode, Target, Unit
+from pyefriend.const import MarketCode, Market, Unit
 
 from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
@@ -42,17 +42,17 @@ class Report(Base):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     report_name = Column(String(Length.ID), comment='리포트명')
     created_time = Column(String(Length.TYPE), comment='Report 생성일자')
-    target = Column(String(Length.TYPE), comment="국내/해외 여부('domestic', 'overseas')")
+    market = Column(String(Length.TYPE), comment="국내/해외 여부('domestic', 'overseas')")
     account = Column(String(Length.ID), comment='계좌명')
     encrypted_password = Column(String(Length.DESC), comment='암호화된 비밀번호')
     status = Column(String(Length.TYPE), default=Status.CREATED, comment='상태')
 
     __table_args__ = (
-        Index('idx_report', target, report_name, created_time, unique=True),
+        Index('idx_report', market, report_name, created_time, unique=True),
     )
 
     def __init__(self,
-                 target: str,
+                 market: Market,
                  account: str = None,
                  password: str = None,
                  encrypted_password: str = None,
@@ -63,7 +63,7 @@ class Report(Base):
         """
         re-balancing 실행 후 자동 리포트 생성
 
-        :param target:          'domestic', 'overseas'
+        :param market:          'domestic', 'overseas'
         :param account:         setting 테이블 에 있는 계좌가 아닌 입력된 계좌를 사용
         :param password:        account를 직접 입력했을 경우 사용할 password
         :param created_time:   [%Y%m%d_%H_%M_%S, str] 입력될 경우 해당 시간에 계산된 rebalancing 결과를 바라봅니다.
@@ -88,9 +88,9 @@ class Report(Base):
         else:
             self.created_time = datetime.now().strftime('%Y%m%d_%H_%M_%S')
 
-        # set target
-        assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
-        self.target = target
+        # set market
+        assert market in (Market.DOMESTIC, Market.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
+        self.market: Market = market
 
         # set account & encrypted_password
         if account:
@@ -201,7 +201,7 @@ class Report(Base):
     def api(self):
         """ get or create api """
         if self._api is None:
-            self._api = load_api(target=self.target,
+            self._api = load_api(market=self.market,
                                  account=self.account,
                                  encrypted_password=self.encrypted_password,
                                  logger=self.logger)
@@ -210,7 +210,7 @@ class Report(Base):
     @property
     def is_domestic(self):
         """ 국내/해외 여부 """
-        return self.target == Target.DOMESTIC
+        return self.market == Market.DOMESTIC
 
     @property
     def unit(self):
@@ -231,7 +231,7 @@ class Report(Base):
             report_dir = os.path.abspath(report_dir)
 
             # join
-            report_dir = os.path.join(report_dir, self.report_name, f'{self.target}_{self.created_time}')
+            report_dir = os.path.join(report_dir, self.report_name, f'{self.market}_{self.created_time}')
 
             # create tree
             os.makedirs(report_dir, exist_ok=True)
@@ -262,7 +262,7 @@ class Report(Base):
     @property
     def name(self):
         """ report instance 명칭(logger_name, api file response 파일명으로 사용) """
-        return f'{self.target}_{self.report_name}_{self.created_time}'
+        return f'{self.market}_{self.report_name}_{self.created_time}'
 
     @property
     def logger(self):

@@ -16,7 +16,7 @@ class OrderType(str, Enum):
 
 __all__ = [
     'System',
-    'Target',
+    'Market',
     'Service',
     'MarketCode',
     'ProductCode',
@@ -24,6 +24,7 @@ __all__ = [
     'Unit',
     'How',
     'OrderType',
+    'DWM',
 ]
 
 

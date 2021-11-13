@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field
-from rebalancing.utils.const import OrderType, Target
+from rebalancing.utils.const import OrderType, Market
 
 ReportNameField = Field(...,
                         title='리포트명',
@@ -11,10 +11,10 @@ CreatedTimeField = Field(None,
 
 
 class ReportInput(BaseModel):
-    target: Target = Field(...,
+    market: Market = Field(...,
                            title='타겟장',
                            description="국내/해외 여부('domestic', 'overseas')",
-                           example=Target.DOMESTIC)
+                           example=Market.DOMESTIC)
     account: Optional[str] = Field(None,
                                    title='계좌명',
                                    description='config.yml에 있는 계좌가 아닌 입력된 계좌를 사용',

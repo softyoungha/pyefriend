@@ -14,7 +14,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency, ProductCode, Target, Unit
+from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit
 from .log import logger as pyefriend_logger
 from .controller import Controller
 from .exceptions import *
@@ -163,7 +163,7 @@ class Api:
         :param columns: example)
                 [
             {"key": "주문일자", "index": 0, 'dtype': str},
-            {"key": "주문번호", "index": 2, 'dtype': str, 'pk': True},
+            {"key": "주문번호", "index": 2, 'dtype': str, 'not_null': True},
             ...
         ]
         :param block_index: output이 multi block인 경우 block input를 선택해서 선택해주어야함.
@@ -184,12 +184,12 @@ class Api:
                     key = column.get('key')
                     index = column.get('index')
                     dtype = column.get('dtype', str)
-                    pk = column.get('pk', False)
+                    not_null = column.get('not_null', False)
                     value = self.controller.GetMultiData(block_index=block_index,
                                                          record_index=record_idx,
                                                          field_index=index)
 
-                    if pk and value == '':
+                    if not_null and value == '':
                         # pk column의 값이 ''일 경우 break
                         break
 
@@ -269,7 +269,7 @@ class Api:
     @property
     def domestic_stocks(self) -> List[Dict]:
         columns = [
-            dict(index=0, key='product_code', pk=True),
+            dict(index=0, key='product_code', not_null=True),
             dict(index=1, key='product_name'),
             dict(index=11, key='current', dtype=int),
             dict(index=7, key='count', dtype=int),
@@ -309,8 +309,8 @@ class Api:
     @property
     def overseas_stocks(self) -> List[Dict]:
         columns = [
-            dict(index=14, key='market_code', pk=True),
-            dict(index=3, key='product_code', pk=True),
+            dict(index=14, key='market_code', not_null=True),
+            dict(index=3, key='product_code', not_null=True),
             dict(index=4, key='product_name', dtype=str),
             dict(index=12, key='current', dtype=float),
             dict(index=8, key='count', dtype=int),
@@ -393,9 +393,9 @@ class Api:
         total_amount = deposit + amount_stock
         return deposit, stocks, total_amount
 
-    def get_kospi_histories(self, standard: str = 'D'):
+    def get_kospi_histories(self, standard: str = DWM.D):
         columns = [
-            dict(index=0, key='standard_date', pk=True),
+            dict(index=0, key='standard_date', not_null=True),
             dict(index=3, key='minimum', dtype=float),
             dict(index=2, key='maximum', dtype=float),
             dict(index=1, key='opening', dtype=float),
@@ -412,16 +412,16 @@ class Api:
                 .get_data(multiple=True, columns=columns)
         )
 
-    def get_sp500_histories(self, standard: str = 'D'):
-        if standard == 'D':
+    def get_sp500_histories(self, standard: str = DWM.D):
+        if standard == DWM.D:
             standard = '0'
-        elif standard == 'W':
+        elif standard == DWM.W:
             standard = '1'
-        elif standard == 'M':
+        elif standard == DWM.M:
             standard = '2'
 
         columns = [
-            dict(index=0, key='standard_date', pk=True),
+            dict(index=0, key='standard_date', not_null=True),
             dict(index=7, key='minimum', dtype=float),
             dict(index=6, key='maximum', dtype=float),
             dict(index=5, key='opening', dtype=float),
@@ -456,7 +456,7 @@ class Api:
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_histories(self, product_code: str, standard: str = 'W', market_code: str = None) -> List[Dict]:
+    def get_stock_histories(self, product_code: str, standard: str = DWM.W, market_code: str = None) -> List[Dict]:
         """
         일자별 상세 정보 로드
         :param standard: D: 일/ W: 주/ M: 월
@@ -536,11 +536,11 @@ class DomesticApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            standard: str = 'D',
+                            standard: str = DWM.D,
                             market_code: str = None) -> List[Dict]:
 
         columns = [
-            dict(index=0, key='standard_date', pk=True),
+            dict(index=0, key='standard_date', not_null=True),
             dict(index=3, key='minimum', dtype=int),
             dict(index=2, key='maximum', dtype=int),
             dict(index=1, key='opening', dtype=int),
@@ -596,11 +596,13 @@ class DomesticApi(Api):
             start_date = today
 
         columns = [
-            dict(index=1, key='order_num', pk=True),
-            dict(index=2, key='orgin_order_num'),
+            dict(index=0, key='order_date'),
+            dict(index=1, key='order_num', not_null=True),
+            dict(index=2, key='origin_order_num'),
             dict(index=7, key='product_code'),
-            dict(index=6, key='매수매도구분코드명'),
+            dict(index=6, key='order_type'),
             dict(index=9, key='count'),
+            dict(index=15, key='price'),
         ]
 
         return (
@@ -616,12 +618,12 @@ class DomesticApi(Api):
 
     def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         columns = [
-            dict(index=0, key='order_date', pk=True),
+            dict(index=0, key='order_date', not_null=True),
             dict(index=1, key='order_num'),
-            dict(index=2, key='orgin_order_num'),
+            dict(index=2, key='origin_order_num'),
             dict(index=4, key='product_code'),
-            dict(index=13, key='매수매도구분코드명'),
             dict(index=7, key='count'),
+            dict(index=13, key='order_type')
         ]
 
         return (
@@ -696,17 +698,17 @@ class OverSeasApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            standard: str = 'D',
+                            standard: str = DWM.D,
                             market_code: str = None) -> List[Dict]:
-        if standard == 'D':
+        if standard == DWM.D:
             standard = '0'
-        elif standard == 'W':
+        elif standard == DWM.W:
             standard = '1'
-        elif standard == 'M':
+        elif standard == DWM.M:
             standard = '2'
 
         columns = [
-            dict(index=0, key='standard_date', pk=True),
+            dict(index=0, key='standard_date', not_null=True),
             dict(index=7, key='minimum', dtype=float),
             dict(index=6, key='maximum', dtype=float),
             dict(index=5, key='opening', dtype=float),
@@ -766,12 +768,13 @@ class OverSeasApi(Api):
             start_date = today
 
         columns = [
-            dict(index=0, key="order_date"),
-            dict(index=2, key="order_num"),
-            dict(index=3, key="origin_order_num"),
-            dict(index=12, key="product_code"),
-            dict(index=10, key="count"),
-            dict(index=13, key="price"),
+            dict(index=0, key='order_date'),
+            dict(index=2, key='order_num'),
+            dict(index=3, key='origin_order_num'),
+            dict(index=12, key='product_code'),
+            dict(index=5, key='order_type'),
+            dict(index=10, key='count'),
+            dict(index=13, key='price'),
         ]
 
         return (
@@ -787,11 +790,12 @@ class OverSeasApi(Api):
 
     def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
         columns = [
-            dict(index=0, key="order_date"),
-            dict(index=2, key="order_num"),
-            dict(index=3, key="origin_order_num"),
-            dict(index=5, key="product_code"),
-            dict(index=17, key="count"),
+            dict(index=0, key='order_date'),
+            dict(index=2, key='order_num'),
+            dict(index=3, key='origin_order_num'),
+            dict(index=5, key='product_code'),
+            dict(index=17, key='count'),
+            dict(index=7, key='order_type'),
         ]
 
         return (

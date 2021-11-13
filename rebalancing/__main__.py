@@ -5,15 +5,15 @@ from getpass import getpass
 
 
 def argument_parser() -> ArgumentParser:
-    from rebalancing.utils.const import Target
+    from rebalancing.utils.const import Market
 
     description = 'Re-balancing 모듈 실행'
     parser = ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
-    parser.add_argument('--target', '-t',
+    parser.add_argument('--market', '-t',
                         type=str,
                         help='domestic: 국내 투자 선택\n'
                              'overseas: 해외 투자 선택',
-                        choices=[Target.DOMESTIC, Target.OVERSEAS],
+                        choices=[Market.DOMESTIC, Market.OVERSEAS],
                         required=True)
     parser.add_argument('--created', '-c',
                         type=str,
@@ -43,7 +43,7 @@ def main():
     parsed_args = parser.parse_args()
 
     # set
-    target: str = parsed_args.target
+    market: str = parsed_args.market
     created_time: Optional[str] = parsed_args.created_time
     account: Optional[str] = parsed_args.account
     skip: bool = parsed_args.skip_refresh
@@ -57,7 +57,7 @@ def main():
     from rebalancing.models import Report
 
     # create executor
-    report = Report(target=target,
+    report = Report(market=market,
                     account=account,
                     password=password,
                     created_time=created_time,

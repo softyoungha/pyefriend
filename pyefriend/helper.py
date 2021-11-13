@@ -9,30 +9,30 @@ from contextlib import contextmanager
 from typing import Union
 
 from .api import DomesticApi, OverSeasApi
-from .const import Target
+from .const import Market
 from .log import logger
 
 
 # [Section] Modules
 
-def load_api(target: Target,
+def load_api(market: Market,
              account: str,
              password: str = None,
              encrypted_password: str = None,
              logger=None) -> Union[DomesticApi, OverSeasApi]:
     """
     api 로드
-    :param target: 'domestic' / 'overseas'
+    :param market: 'domestic' / 'overseas'
     """
-    assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
+    assert market in (Market.DOMESTIC, Market.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
 
-    if target == Target.DOMESTIC:
+    if market == Market.DOMESTIC:
         return DomesticApi(account=account,
                            password=password,
                            encrypted_password=encrypted_password,
                            logger=logger)
 
-    elif target == Target.OVERSEAS:
+    elif market == Market.OVERSEAS:
         return OverSeasApi(account=account,
                            password=password,
                            encrypted_password=encrypted_password,
@@ -40,26 +40,26 @@ def load_api(target: Target,
 
 
 @contextmanager
-def api_context(target: Target,
+def api_context(market: Market,
                 account: str,
                 password: str = None,
                 encrypted_password: str = None,
                 logger=logger) -> Union[DomesticApi, OverSeasApi]:
     """
     api 생성
-    :param target: 'domestic' / 'overseas'
+    :param market: 'domestic' / 'overseas'
     """
-    assert target in (Target.DOMESTIC, Target.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
+    assert market in (Market.DOMESTIC, Market.OVERSEAS), "target은 'domestic', 'overseas' 둘 중 하나만 입력 가능합니다."
 
     try:
         # api
-        if target == Target.DOMESTIC:
+        if market == Market.DOMESTIC:
             api = DomesticApi(account=account,
                               password=password,
                               encrypted_password=encrypted_password,
                               logger=logger)
 
-        elif target == Target.OVERSEAS:
+        elif market == Market.OVERSEAS:
             api = OverSeasApi(account=account,
                               password=password,
                               encrypted_password=encrypted_password,
@@ -78,7 +78,7 @@ def domestic_context(account: str,
                      password: str = None,
                      encrypted_password: str = None,
                      logger=None) -> DomesticApi:
-    return api_context(target=Target.DOMESTIC,
+    return api_context(market=Market.DOMESTIC,
                        account=account,
                        password=password,
                        encrypted_password=encrypted_password,
@@ -89,7 +89,7 @@ def overseas_context(account: str,
                      password: str = None,
                      encrypted_password: str = None,
                      logger=None) -> OverSeasApi:
-    return api_context(target=Target.OVERSEAS,
+    return api_context(market=Market.OVERSEAS,
                        account=account,
                        password=password,
                        encrypted_password=encrypted_password,
