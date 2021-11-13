@@ -46,9 +46,7 @@ async def evaluate_amount(request: LoginInput,
                           user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     deposit, stocks, total_amount = api.evaluate_amount(overall=overall, currency=False)
-
     return {
         'deposit': deposit,
         'stocks': stocks,
@@ -62,7 +60,6 @@ async def evaluate_amount(request: LoginInput,
                           user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return {
         'deposit': api.get_deposit(overall=overall)
     }
@@ -74,7 +71,6 @@ async def evaluate_amount(request: LoginInput,
                           user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.get_stocks(overall=overall)
 
 
@@ -82,7 +78,6 @@ async def evaluate_amount(request: LoginInput,
 async def get_currency(request: LoginInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return {
         'currency': api.currency
     }
@@ -94,7 +89,6 @@ async def get_kospi_histories(request: LoginInput,
                               user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.get_kospi_histories(standard=standard)
 
 
@@ -104,7 +98,6 @@ async def get_kospi_histories(request: LoginInput,
                               user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.get_sp500_histories(standard=standard)
 
 
@@ -112,7 +105,6 @@ async def get_kospi_histories(request: LoginInput,
 async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     order_num = api.buy_stock(product_code=request.product_code,
                               count=request.count,
                               price=request.price,
@@ -127,7 +119,6 @@ async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
 async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     order_num = api.sell_stock(product_code=request.product_code,
                                count=request.count,
                                price=request.price,
@@ -142,7 +133,6 @@ async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
 async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.get_processed_orders(start_date=request.start_date,
                                     market_code=request.market_code)
 
@@ -151,7 +141,6 @@ async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login
 async def get_unprocessed_orders(request: UnProcessedOrdersInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.get_unprocessed_orders(market_code=request.market_code)
 
 
@@ -159,7 +148,6 @@ async def get_unprocessed_orders(request: UnProcessedOrdersInput, user=Depends(l
 async def cancel_order(request: CancelInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.cancel_order(order_num=request.order_num,
                             count=request.count,
                             product_code=request.product_code,
@@ -170,7 +158,6 @@ async def cancel_order(request: CancelInput, user=Depends(login_required)):
 async def cancel_order(request: CancelInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.cancel_order(order_num=request.order_num,
                             count=request.count,
                             product_code=request.product_code,
@@ -181,5 +168,4 @@ async def cancel_order(request: CancelInput, user=Depends(login_required)):
 async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_required)):
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-
     return api.cancel_all_unprocessed_orders(market_code=request.market_code)

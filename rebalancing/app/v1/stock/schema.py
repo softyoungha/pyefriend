@@ -63,7 +63,7 @@ class ProductHistory(BaseModel):
     volume: int = Field(..., title='체결량')
 
 
-class BuyOrSellInput(BaseModel):
+class BuyOrSellInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
     market_code: Optional[Market] = MarketField
     count: int = Field(..., title='매수/매도수량')
@@ -74,7 +74,7 @@ class OrderNum(BaseModel):
     order_num: str = Field(..., title='주문번호')
 
 
-class UnProcessedOrdersInput(BaseModel):
+class UnProcessedOrdersInput(LoginInput):
     market_code: Optional[Market] = MarketField
 
 
@@ -94,11 +94,11 @@ class ProcessedOrdersOutput(UnProcessedOrdersOutput):
     price: str = Field(..., title='체결금액')
 
 
-class CancelInput(OrderNum):
+class CancelInput(LoginInput, OrderNum):
     count: int = Field(..., title='주문수량')
     market_code: Optional[Market] = MarketField
     product_code: Optional[str] = Field(None, title='종목코드')
 
 
-class CancelAllInput(BaseModel):
+class CancelAllInput(LoginInput):
     market_code: Optional[Market] = MarketField
