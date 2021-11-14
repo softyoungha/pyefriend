@@ -9,6 +9,7 @@
 :param product_code: 종목 코드
 :param order_num: 주문번호
 """
+import pandas as pd
 from logging import Logger
 from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
@@ -445,18 +446,18 @@ class Api:
     def is_domestic(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_name(self, product_code: str):
+    def get_stock_name(self, product_code: str, **kwargs):
         """ 종목명 반환 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_info(self, product_code: str, market_code: str = None):
+    def get_stock_info(self, product_code: str, **kwargs):
         """
         입력한 종목의 현재가, 최저가, 최고가, 시가, 전일종가 로드
         :return 현재가, 최저가, 최고가, 시가, 전일종가 (Tuple)
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_histories(self, product_code: str, standard: str = DWM.W, market_code: str = None) -> List[Dict]:
+    def get_stock_histories(self, product_code: str, standard: str = DWM.W, **kwargs) -> List[Dict]:
         """
         일자별 상세 정보 로드
         :param standard: D: 일/ W: 주/ M: 월
@@ -473,25 +474,25 @@ class Api:
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def buy_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
+    def buy_stock(self, product_code: str, count: int, price: int = 0, **kwargs) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 시장가로 매수
         :return 주문번호
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def sell_stock(self, product_code: str, count: int, price: int = 0, market_code: str = None) -> str:
+    def sell_stock(self, product_code: str, count: int, price: int = 0, **kwargs) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 매도
         :return 주문번호
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, **kwargs) -> List[Dict]:
         """ start_date 이후의 체결된 주문 리스트 반환 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
+    def get_unprocessed_orders(self, **kwargs) -> List[Dict]:
         """ 미체결된 주문 리스트 반환 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
@@ -499,7 +500,7 @@ class Api:
         """ 주문 취소 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
+    def cancel_all_unprocessed_orders(self, **kwargs) -> List[str]:
         """ 미체결된 모든 리스트 취소 """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
@@ -514,10 +515,10 @@ class DomesticApi(Api):
     def unit(self):
         return Unit.KRW
 
-    def get_stock_name(self, product_code: str):
+    def get_stock_name(self, product_code: str, **kwargs):
         return self.controller.GetSingleDataStockMaster(product_code, 2)
 
-    def get_stock_info(self, product_code: str, market_code: str = None) -> Tuple[int, int, int, int, int]:
+    def get_stock_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
         # set
         (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
@@ -537,7 +538,7 @@ class DomesticApi(Api):
     def get_stock_histories(self,
                             product_code: str,
                             standard: str = DWM.D,
-                            market_code: str = None) -> List[Dict]:
+                            **kwargs) -> List[Dict]:
 
         columns = [
             dict(index=0, key='standard_date', not_null=True),
@@ -560,7 +561,6 @@ class DomesticApi(Api):
                   product_code: str,
                   count: int,
                   price: int = 0,
-                  market_code: str = None,
                   **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
@@ -576,7 +576,6 @@ class DomesticApi(Api):
                    product_code: str,
                    count: int,
                    price: int = 0,
-                   market_code: str = None,
                    **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
@@ -589,7 +588,7 @@ class DomesticApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, **kwargs) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
@@ -616,7 +615,7 @@ class DomesticApi(Api):
                 .get_data(multiple=True, columns=columns)
         )
 
-    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
+    def get_unprocessed_orders(self, **kwargs) -> List[Dict]:
         columns = [
             dict(index=0, key='order_date', not_null=True),
             dict(index=1, key='order_num'),
@@ -637,7 +636,7 @@ class DomesticApi(Api):
                      order_num: str,
                      count: int,
                      product_code: str = None,
-                     market_code: str = None) -> str:
+                     **kwargs) -> str:
         return (
             self.set_account_info()  # 계정 정보
                 .set_data(4, order_num)
@@ -648,7 +647,7 @@ class DomesticApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
+    def cancel_all_unprocessed_orders(self, **kwargs) -> List[str]:
         unprocessed_orders = self.get_unprocessed_orders()
 
         results = []
@@ -662,6 +661,77 @@ class DomesticApi(Api):
             results.append(result)
 
         return results
+
+    def get_screenshot(self, product_code: str, **kwargs):
+        """ 종목 현재시간 기준 매수/매도호가 정보 """
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, product_code)
+                .request_data(Service.SCPH)
+        )
+
+        columns = [
+            dict(index=0, key='accepted_time'),
+            dict(index=61, key='total_ask_count', type=int),
+            dict(index=62, key='total_bid_count', type=int),
+            dict(index=63, key='total_ask_count_icdc', type=int),
+            dict(index=64, key='total_bid_count_icdc', type=int),
+            *[dict(index=i, key=f'ask_price_{order}', type=int) for order, i in enumerate(range(1, 11))],
+            *[dict(index=i, key=f'bid_price_{order}', type=int) for order, i in enumerate(range(11, 21))],
+            *[dict(index=i, key=f'ask_count_{order}', type=int) for order, i in enumerate(range(21, 31))],
+            *[dict(index=i, key=f'bid_count_{order}', type=int) for order, i in enumerate(range(31, 41))],
+            *[dict(index=i, key=f'ask_count_icdc_{order}', type=int) for order, i in enumerate(range(41, 51))],
+            *[dict(index=i, key=f'bid_count_icdc_{order}', type=int) for order, i in enumerate(range(51, 61))],
+        ]
+        data = self.get_data(multiple=True, columns=columns)[0]
+        return {
+            'accepted_time': data['accepted_time'],
+            'total_ask_count': data['total_ask_count'],
+            'total_bid_count': data['total_bid_count'],
+            'total_ask_count_icdc': data['total_ask_count_icdc'],
+            'total_bid_count_icdc': data['total_bid_count_icdc'],
+            'asks': [
+                {
+                    'price': data[f'ask_price_{order}'],
+                    'count': data[f'ask_count_{order}'],
+                    'icdc': data[f'ask_count_icdc_{order}']
+                }
+                for order in range(10)
+            ],
+            'bids': [
+                {
+                    'price': data[f'bid_price_{order}'],
+                    'count': data[f'bid_count_{order}'],
+                    'icdc': data[f'bid_count_icdc_{order}']
+                }
+                for order in range(10)
+            ]
+        }
+
+    def get_chart(self, product_code: str, interval: int = 60, **kwargs):
+        """ interval별 현/시/고/체결량 제공 """
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, product_code)
+                .set_data(2, str(interval))
+                .request_data(Service.PST01010300)
+        )
+
+        columns = [
+            dict(index=0, key='executed_date', not_null=True),
+            dict(index=1, key='executed_time', not_null=True),
+            dict(index=2, key='current', type=int),
+            dict(index=4, key='minimum', type=int),
+            dict(index=5, key='maximum', type=int),
+            dict(index=3, key='opening', type=int),
+            dict(index=7, key='volume', type=int),
+            dict(index=6, key='total_volume', type=int),
+
+        ]
+        data = self.get_data(multiple=True, columns=columns)
+        return data
 
 
 class OverSeasApi(Api):
@@ -679,7 +749,8 @@ class OverSeasApi(Api):
 
     def get_stock_info(self,
                        product_code: str,
-                       market_code: str = None) -> Tuple[float, float, float, float, float]:
+                       market_code: str = None,
+                       **kwargs) -> Tuple[float, float, float, float, float]:
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
@@ -699,7 +770,8 @@ class OverSeasApi(Api):
     def get_stock_histories(self,
                             product_code: str,
                             standard: str = DWM.D,
-                            market_code: str = None) -> List[Dict]:
+                            market_code: str = None,
+                            **kwargs) -> List[Dict]:
         if standard == DWM.D:
             standard = '0'
         elif standard == DWM.W:
@@ -761,7 +833,7 @@ class OverSeasApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def get_processed_orders(self, start_date: str = None, market_code: str = None) -> List[Dict]:
+    def get_processed_orders(self, start_date: str = None, market_code: str = None, **kwargs) -> List[Dict]:
         today = datetime.today().strftime('%Y%m%d')
 
         if start_date is None:
@@ -788,7 +860,7 @@ class OverSeasApi(Api):
                 .get_data(multiple=True, columns=columns)
         )
 
-    def get_unprocessed_orders(self, market_code: str = None) -> List[Dict]:
+    def get_unprocessed_orders(self, market_code: str = None, **kwargs) -> List[Dict]:
         columns = [
             dict(index=0, key='order_date'),
             dict(index=2, key='order_num'),
@@ -821,7 +893,7 @@ class OverSeasApi(Api):
                 .get_data(1)  # 1: 주문번호
         )
 
-    def cancel_all_unprocessed_orders(self, market_code: str = None) -> List[str]:
+    def cancel_all_unprocessed_orders(self, market_code: str = None, **kwargs) -> List[str]:
         unprocessed_orders = self.get_unprocessed_orders(market_code=market_code)
 
         results = []

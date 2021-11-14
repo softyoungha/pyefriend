@@ -102,3 +102,30 @@ class CancelInput(LoginInput, OrderNum):
 
 class CancelAllInput(LoginInput):
     market_code: Optional[Market] = MarketField
+
+
+class GetChartOutput(BaseModel):
+    executed_date: str = Field(..., title='체결일자(YYYYmmdd)')
+    executed_time: str = Field(..., title='체결시간(HHMMSS)')
+    current: int = Field(..., title='현재가')
+    minimum: int = Field(..., title='저가')
+    maximum: int = Field(..., title='고가')
+    opening: int = Field(..., title='시가')
+    volume: int = Field(..., title='체결량')
+    total_volume: int = Field(..., title='누적 체결량')
+
+
+class AskBid(BaseModel):
+    price: int = Field(..., title='매수/매도 가격')
+    count: int = Field(..., title='매수/매도 잔량')
+    icdc: int = Field(..., title='매수/매도 잔량 증감(increase or decrease)')
+
+
+class GetScreenShot(BaseModel):
+    accepted_time: str = Field(..., title='호가 접수시간')
+    total_ask_count: int = Field(..., title='총 매도호가 잔량')
+    total_bid_count: int = Field(..., title='총 매수호가 잔량')
+    total_ask_count_icdc: int = Field(..., title='총 매도호가 잔량 증감')
+    total_bid_count_icdc: int = Field(..., title='총 매수호가 잔량 증감')
+    asks: List[AskBid] = Field(..., title='매도호가 정보 리스트')
+    bids: List[AskBid] = Field(..., title='매수호가 정보 리스트')

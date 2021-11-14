@@ -42,8 +42,9 @@ async def test_api(request: LoginInput, user=Depends(login_required)):
 
 @r.post('/account', response_model=Amount)
 async def evaluate_total_amount(request: LoginInput,
-                                overall: bool = False,
+                                overall: bool = True,
                                 user=Depends(login_required)):
+    """### 계좌 전체 금액  """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     deposit, stocks, total_amount = api.evaluate_amount(overall=overall, currency=False)
@@ -58,6 +59,7 @@ async def evaluate_total_amount(request: LoginInput,
 async def get_deposit_amount(request: LoginInput,
                              overall: bool = False,
                              user=Depends(login_required)):
+    """### 예수금 전체 금액 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return {
@@ -69,6 +71,7 @@ async def get_deposit_amount(request: LoginInput,
 async def get_stocks_list(request: LoginInput,
                           overall: bool = False,
                           user=Depends(login_required)):
+    """### 현재 보유한 주식 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_stocks(overall=overall)
@@ -76,6 +79,7 @@ async def get_stocks_list(request: LoginInput,
 
 @r.post('/info/currency', response_model=Currency)
 async def get_currency(request: LoginInput, user=Depends(login_required)):
+    """ 1 달러 -> 원으로 환전할때의 현재 기준 예상환율을 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return {
@@ -87,6 +91,7 @@ async def get_currency(request: LoginInput, user=Depends(login_required)):
 async def get_kospi_histories(request: LoginInput,
                               standard: DWM = DWM.D,
                               user=Depends(login_required)):
+    """ kospi 히스토리 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_kospi_histories(standard=standard)
@@ -96,6 +101,7 @@ async def get_kospi_histories(request: LoginInput,
 async def get_sp500_histories(request: LoginInput,
                               standard: DWM = DWM.D,
                               user=Depends(login_required)):
+    """ SP&500 히스토리 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_sp500_histories(standard=standard)
@@ -103,6 +109,7 @@ async def get_sp500_histories(request: LoginInput,
 
 @r.post('/trade/buy', response_model=OrderNum)
 async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
+    """### 설정한 price보다 낮으면 product_code의 종목 시장가로 매수 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     order_num = api.buy_stock(product_code=request.product_code,
@@ -117,6 +124,7 @@ async def buy_stock(request: BuyOrSellInput, user=Depends(login_required)):
 
 @r.post('/trade/sell', response_model=OrderNum)
 async def sell_stock(request: BuyOrSellInput, user=Depends(login_required)):
+    """### 설정한 price보다 낮으면 product_code의 종목 매도 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     order_num = api.sell_stock(product_code=request.product_code,
@@ -131,6 +139,7 @@ async def sell_stock(request: BuyOrSellInput, user=Depends(login_required)):
 
 @r.post('/order/processed', response_model=List[ProcessedOrdersOutput])
 async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login_required)):
+    """### start_date 이후의 체결된 주문 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_processed_orders(start_date=request.start_date,
@@ -139,6 +148,7 @@ async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login
 
 @r.post('/order/unprocessed', response_model=List[UnProcessedOrdersOutput])
 async def get_unprocessed_orders(request: UnProcessedOrdersInput, user=Depends(login_required)):
+    """### 미체결된 주문 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_unprocessed_orders(market_code=request.market_code)
@@ -146,6 +156,7 @@ async def get_unprocessed_orders(request: UnProcessedOrdersInput, user=Depends(l
 
 @r.post('/order/cancel', response_model=OrderNum)
 async def cancel_order(request: CancelInput, user=Depends(login_required)):
+    """### 주문 취소 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.cancel_order(order_num=request.order_num,
@@ -156,6 +167,36 @@ async def cancel_order(request: CancelInput, user=Depends(login_required)):
 
 @r.post('/order/cancel-all', response_model=List[str])
 async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_required)):
+    """### 미체결된 모든 리스트 취소 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.cancel_all_unprocessed_orders(market_code=request.market_code)
+
+
+@r.post('/product/{product_code}', response_model=List[GetChartOutput])
+async def get_chart(request: LoginInput,
+                    product_code: str,
+                    interval: int = None,
+                    user=Depends(login_required)):
+    """### interval별 종목의 현/시/고/체결량 제공  """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.get_chart(product_code=product_code, interval=interval)
+
+
+@r.post('/product/{product_code}/screenshot', response_model=GetScreenShot)
+async def get_screenshot(request: LoginInput,
+                         product_code: str,
+                         user=Depends(login_required)):
+    """### 종목 현재시간 기준 매수/매도호가 정보  """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.get_screenshot(product_code=product_code)
