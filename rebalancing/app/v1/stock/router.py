@@ -173,10 +173,8 @@ async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_r
     return api.cancel_all_unprocessed_orders(market_code=request.market_code)
 
 
-@r.post('/product/{product_code}', response_model=List[GetChartOutput])
-async def get_chart(request: LoginInput,
-                    product_code: str,
-                    interval: int = None,
+@r.post('/product/chart', response_model=List[GetChartOutput])
+async def get_chart(request: GetChartInput,
                     user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
@@ -185,12 +183,12 @@ async def get_chart(request: LoginInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_chart(product_code=product_code, interval=interval)
+    return api.get_chart(product_code=request.product_code,
+                         interval=request.interval)
 
 
-@r.post('/product/{product_code}/screenshot', response_model=GetScreenShot)
-async def get_screenshot(request: LoginInput,
-                         product_code: str,
+@r.post('/product/screenshot', response_model=GetScreenShotOutput)
+async def get_screenshot(request: GetScreenShotInput,
                          user=Depends(login_required)):
     """### 종목 현재시간 기준 매수/매도호가 정보  """
     if request.market != Market.DOMESTIC:
@@ -199,4 +197,4 @@ async def get_screenshot(request: LoginInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_screenshot(product_code=product_code)
+    return api.get_screenshot(product_code=request.product_code)

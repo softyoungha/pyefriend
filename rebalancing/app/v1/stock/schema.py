@@ -104,6 +104,11 @@ class CancelAllInput(LoginInput):
     market_code: Optional[str] = MarketField
 
 
+class GetChartInput(LoginInput):
+    product_code: str = Field(..., title='종목코드')
+    interval: int = Field(60, title='차트 단위')
+
+
 class GetChartOutput(BaseModel):
     executed_date: str = Field(..., title='체결일자(YYYYmmdd)')
     executed_time: str = Field(..., title='체결시간(HHMMSS)')
@@ -115,13 +120,17 @@ class GetChartOutput(BaseModel):
     total_volume: int = Field(..., title='누적 체결량')
 
 
+class GetScreenShotInput(LoginInput):
+    product_code: str = Field(..., title='종목코드')
+
+
 class AskBid(BaseModel):
     price: int = Field(..., title='매수/매도 가격')
     count: int = Field(..., title='매수/매도 잔량')
     icdc: int = Field(..., title='매수/매도 잔량 증감(increase or decrease)')
 
 
-class GetScreenShot(BaseModel):
+class GetScreenShotOutput(BaseModel):
     accepted_time: str = Field(..., title='호가 접수시간')
     total_ask_count: int = Field(..., title='총 매도호가 잔량')
     total_bid_count: int = Field(..., title='총 매수호가 잔량')
