@@ -48,20 +48,13 @@ async def evaluate_total_amount(request: LoginInput,
                                 overall: bool = True,
                                 user=Depends(login_required)):
     """### 계좌 전체 금액  """
-    print(request.dict(include={'market', 'account', 'password'}))
-
-    # # create api
-    # api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    # deposit, stocks, total_amount = api.evaluate_amount(overall=overall, currency=False)
-    # return {
-    #     'deposit': deposit,
-    #     'stocks': stocks,
-    #     'total_amount': total_amount
-    # }
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    deposit, stocks, total_amount = api.evaluate_amount(overall=overall, currency=False)
     return {
-        'deposit': 0,
-        'stocks': [],
-        'total_amount': 0
+        'deposit': deposit,
+        'stocks': stocks,
+        'total_amount': total_amount
     }
 
 
