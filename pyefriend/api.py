@@ -63,7 +63,6 @@ def get_or_create_controller(logger=None, raise_error: bool = True):
 
 
 def encrypt_password_by_efriend_expert(raw_password: str):
-    print(raw_password)
     return get_or_create_controller().GetEncryptPassword(raw_password)
 
 

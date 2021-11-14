@@ -17,16 +17,13 @@ async def test_api(request: LoginInput, user=Depends(login_required)):
     """### API 테스트 """
     try:
         context = request.dict()
-        print(request.account)
-        print(request.password)
-        print(context)
 
-        # # create api
-        # api = load_api(**context)
-        #
-        # # get context
-        # context.update(account=api.account,
-        #                is_vts=api.controller.IsVTS())
+        # create api
+        api = load_api(**context)
+
+        # get context
+        context.update(account=api.account,
+                       is_vts=api.controller.IsVTS())
 
         return context
 
