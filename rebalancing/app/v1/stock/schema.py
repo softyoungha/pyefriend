@@ -94,7 +94,7 @@ class ProcessedOrdersOutput(UnProcessedOrdersOutput):
     price: str = Field(..., title='체결금액')
 
 
-class CancelInput(LoginInput, OrderNum):
+class CancelInput(OrderNum, LoginInput):
     count: int = Field(..., title='주문수량')
     market_code: Optional[str] = MarketField
     product_code: Optional[str] = Field(None, title='종목코드')
