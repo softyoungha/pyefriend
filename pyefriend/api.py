@@ -661,7 +661,7 @@ class DomesticApi(Api):
 
         return results
 
-    def get_screenshot(self, product_code: str, **kwargs):
+    def get_spread(self, product_code: str, **kwargs):
         """ 종목 현재시간 기준 매수/매도호가 정보 """
         (
             self

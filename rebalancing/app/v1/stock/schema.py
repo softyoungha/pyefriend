@@ -120,7 +120,7 @@ class GetChartOutput(BaseModel):
     total_volume: int = Field(..., title='누적 체결량')
 
 
-class GetScreenShotInput(LoginInput):
+class GetSpreadInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
 
 
@@ -130,7 +130,7 @@ class AskBid(BaseModel):
     icdc: int = Field(..., title='매수/매도 잔량 증감(increase or decrease)')
 
 
-class GetScreenShotOutput(BaseModel):
+class GetSpreadOutput(BaseModel):
     accepted_time: str = Field(..., title='호가 접수시간')
     total_ask_count: int = Field(..., title='총 매도호가 잔량')
     total_bid_count: int = Field(..., title='총 매수호가 잔량')

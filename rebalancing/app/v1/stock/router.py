@@ -187,9 +187,9 @@ async def get_chart(request: GetChartInput,
                          interval=request.interval)
 
 
-@r.post('/product/screenshot', response_model=GetScreenShotOutput)
-async def get_screenshot(request: GetScreenShotInput,
-                         user=Depends(login_required)):
+@r.post('/product/spread', response_model=GetSpreadOutput)
+async def get_spread(request: GetSpreadInput,
+                     user=Depends(login_required)):
     """### 종목 현재시간 기준 매수/매도호가 정보  """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -197,4 +197,4 @@ async def get_screenshot(request: GetScreenShotInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_screenshot(product_code=request.product_code)
+    return api.get_spread(product_code=request.product_code)
