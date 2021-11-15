@@ -605,6 +605,9 @@ class DomesticApi(Api):
             dict(index=6, key='order_type_name'),
             dict(index=9, key='count'),
             dict(index=15, key='price'),
+            dict(index=12, key='executed_count'),
+            dict(index=15, key='executed_amount'),
+            dict(index=14, key='is_cancel'),
         ]
 
         return (
@@ -623,9 +626,12 @@ class DomesticApi(Api):
             dict(index=0, key='order_date', not_null=True),
             dict(index=1, key='order_num', not_null=True),
             dict(index=2, key='origin_order_num'),
+            dict(index=13, key='order_type'),
             dict(index=4, key='product_code'),
             dict(index=7, key='count'),
-            dict(index=13, key='order_type')
+            dict(index=6, key='order_cancel_name'),
+            dict(index=10, key='executed_count'),
+            dict(index=11, key='executed_amount'),
         ]
 
         return (
