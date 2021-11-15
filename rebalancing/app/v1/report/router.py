@@ -29,6 +29,7 @@ async def create_report(request: ReportInput, user=Depends(login_required)):
         # get context
         context.update(account=api.account,
                        is_vts=api.controller.IsVTS(),
+                       created_time=report.created_time,
                        report_name=report.report_name)
 
         # create report
