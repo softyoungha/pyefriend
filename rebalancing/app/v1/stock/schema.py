@@ -104,6 +104,7 @@ class ProcessedOrdersOutput(OrderNum):
     order_type_name: Optional[str] = Field(None, title='매도매수구분명')
     executed_count: Optional[int] = Field(None, title='총체결수량')
     executed_amount: Optional[int] = Field(None, title='총체결금액')
+    is_cancel: Optional[str] = Field(None, title='취소여부')
 
 
 class CancelInput(OrderNum, LoginInput):
