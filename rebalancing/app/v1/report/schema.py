@@ -2,9 +2,6 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from rebalancing.utils.const import OrderType, Market
 
-ReportNameField = Field(...,
-                        title='리포트명',
-                        description='리포트 생성 기준')
 CreatedTimeField = Field(None,
                          title='Report 실행시간',
                          description='Report 생성시간(실행시간)')
@@ -27,7 +24,9 @@ class ReportInput(BaseModel):
 
 
 class ReportOutput(BaseModel):
-    report_name: str = ReportNameField
+    report_name: str = Field(...,
+                             title='리포트명',
+                             description='리포트 생성 기준')
     created_time: str = CreatedTimeField
 
 

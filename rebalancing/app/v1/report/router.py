@@ -28,7 +28,8 @@ async def create_report(request: ReportInput, user=Depends(login_required)):
 
         # get context
         context.update(account=api.account,
-                       is_vts=api.controller.IsVTS())
+                       is_vts=api.controller.IsVTS(),
+                       report_name=report.report_name)
 
         # create report
         report.save(delete_if_exists=True)
