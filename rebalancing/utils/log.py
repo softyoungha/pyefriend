@@ -11,7 +11,7 @@ def get_logger(name: str = 're-balancing',
     # get log format
     log_format = Config.get('core', 'LOG_FORMAT')
 
-    # create logger
+    # get or create logger
     logger = logging.getLogger(name)
 
     # set log level
@@ -20,8 +20,7 @@ def get_logger(name: str = 're-balancing',
     logger.setLevel(log_level)
 
     # delete all handlers
-    while logger.hasHandlers():
-        logger.removeHandler(logger.handlers[0])
+    remove_logger(logger=logger)
 
     # create formatter
     formatter = logging.Formatter(log_format,
@@ -41,3 +40,11 @@ def get_logger(name: str = 're-balancing',
         logger.addHandler(file_handler)
 
     return logger
+
+
+def remove_logger(logger_name: str = None, logger: logging.Logger = None):
+    if logger_name is not None:
+        logger = logging.getLogger(logger_name)
+
+    while logger.hasHandlers():
+        logger.removeHandler(logger.handlers[0])

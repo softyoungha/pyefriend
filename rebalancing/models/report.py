@@ -14,7 +14,7 @@ from rebalancing.exceptions import ReportNotFoundException
 from rebalancing.settings import IS_JUPYTER_KERNEL
 from rebalancing.config import Config, HOME_PATH
 from rebalancing.utils.const import How, OrderType
-from rebalancing.utils.log import get_logger
+from rebalancing.utils.log import get_logger, remove_logger
 from rebalancing.utils.orm_helper import provide_session
 from rebalancing.models import Product, Portfolio, ProductHistory, Setting
 from .base import Base, Length
@@ -273,8 +273,7 @@ class Report(Base):
 
     def remove_logger(self):
         """ logger handler 제거 """
-        while self.logger.hasHandlers():
-            self.logger.removeHandler(self.logger.handlers[0])
+        remove_logger(logger=self.logger)
 
     @provide_session
     def refresh_prices(self, session=None):
