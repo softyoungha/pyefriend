@@ -84,6 +84,7 @@ class UnProcessedOrdersOutput(OrderNum):
     product_code: str = Field(..., title='종목코드')
     count: int = Field(..., title='주문수량')
     order_type: str = Field(..., title='매도매수구분')
+    order_type_name: Optional[str] = Field(..., title='매도매수구분명')
 
 
 class ProcessedOrdersInput(UnProcessedOrdersInput):
