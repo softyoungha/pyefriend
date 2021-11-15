@@ -16,7 +16,7 @@ pywinpty<1,>=0.5
 # sqlalchemy
 numpy==1.21.4
 pandas==1.3.4
-sqlalchemy==1.4.26
+sqlalchemy==1.4.27
 
 # fastapi
 fastapi==0.70.0

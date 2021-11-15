@@ -1,7 +1,7 @@
 from typing import Optional
 
 from sqlalchemy import MetaData, Column, Integer, DateTime, func, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, DeclarativeMeta
 
 from rebalancing.settings import engine
 
@@ -9,7 +9,7 @@ from rebalancing.settings import engine
 metadata: Optional[MetaData] = MetaData(bind=engine)
 
 # create base
-Base = declarative_base(metadata=metadata)
+Base: Optional[DeclarativeMeta] = declarative_base(metadata=metadata)
 
 
 # init
