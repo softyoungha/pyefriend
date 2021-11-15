@@ -168,7 +168,7 @@ async def execute_plan(report_name: str,
     return report.execute_plan(how=how, n_diff=n_diff)
 
 
-@r.post('/{report_name}/execute', response_model=List[ExecuteReportOutput])
+@r.post('/{report_name}/status', response_model=List[ExecuteReportOutput])
 async def get_order_status(report_name: str,
                            created_time: Optional[str] = None,
                            user=Depends(login_required)):
