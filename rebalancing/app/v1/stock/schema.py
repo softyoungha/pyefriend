@@ -87,7 +87,6 @@ class UnProcessedOrdersOutput(OrderNum):
     order_type_name: Optional[str] = Field(None, title='매도매수구분명')
     executed_count: Optional[int] = Field(None, title='총체결수량')
     executed_amount: Optional[int] = Field(None, title='총체결금액')
-    order_cancel_name: Optional[str] = Field(None, title='정정취소구분명')
 
 
 class ProcessedOrdersInput(UnProcessedOrdersInput):

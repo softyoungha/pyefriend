@@ -627,9 +627,9 @@ class DomesticApi(Api):
             dict(index=1, key='order_num', not_null=True),
             dict(index=2, key='origin_order_num'),
             dict(index=13, key='order_type'),
+            dict(index=6, key='order_type_name'),   # efriend Expert에 정정취소구분명으로 등록되어있음
             dict(index=4, key='product_code'),
             dict(index=7, key='count'),
-            dict(index=6, key='order_cancel_name'),
             dict(index=10, key='executed_count'),
             dict(index=11, key='executed_amount'),
         ]
@@ -856,6 +856,9 @@ class OverSeasApi(Api):
             dict(index=5, key='order_type_name'),
             dict(index=10, key='count'),
             dict(index=13, key='price'),
+            dict(index=12, key='executed_count'),
+            dict(index=14, key='executed_amount'),
+            dict(index=16, key='is_cancel'),
         ]
 
         return (
@@ -874,10 +877,12 @@ class OverSeasApi(Api):
             dict(index=0, key='order_date', not_null=True),
             dict(index=2, key='order_num', not_null=True),
             dict(index=3, key='origin_order_num'),
-            dict(index=5, key='product_code'),
-            dict(index=17, key='count'),
             dict(index=6, key='order_type'),
             dict(index=7, key='order_type_name'),
+            dict(index=5, key='product_code'),
+            dict(index=17, key='count'),
+            dict(index=18, key='executed_count'),
+            dict(index=22, key='executed_amount'),
         ]
 
         return (
