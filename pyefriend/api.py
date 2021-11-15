@@ -179,6 +179,7 @@ class Api:
             record_ct = self.controller.GetMultiRecordCount(block_index)
 
             for record_idx in range(record_ct):
+                # skip 여부: not_null=True인 column이 ''일 경우 skip
                 skip = False
                 data = {}
                 for column in columns:
@@ -192,11 +193,12 @@ class Api:
 
                     if not_null and value == '':
                         # pk column의 값이 ''일 경우 break
+                        skip = True
                         break
 
                     data[key] = value if dtype == str else dtype(value)
 
-                if len(data) > 0:
+                if len(data) > 0 and not skip:
                     data_list.append(data)
 
             return data_list

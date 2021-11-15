@@ -80,7 +80,7 @@ class UnProcessedOrdersInput(LoginInput):
 
 class UnProcessedOrdersOutput(OrderNum):
     order_date: str = Field(..., title='주문일자(YYmmdd)')
-    origin_order_num: str = Field(..., title='원주문번호')
+    origin_order_num: Optional[str] = Field(None, title='원주문번호')
     product_code: str = Field(..., title='종목코드')
     count: int = Field(..., title='주문수량')
     order_type: str = Field(..., title='매도매수구분')
