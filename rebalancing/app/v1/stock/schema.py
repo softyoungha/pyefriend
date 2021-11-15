@@ -87,7 +87,7 @@ class UnProcessedOrdersOutput(OrderNum):
     order_type_name: Optional[str] = Field(None, title='매도매수구분명')
     executed_count: Optional[int] = Field(None, title='총체결수량')
     executed_amount: Optional[int] = Field(None, title='총체결금액')
-    order_cancel_name: Optional[int] = Field(None, title='정정취소구분명')
+    order_cancel_name: Optional[str] = Field(None, title='정정취소구분명')
 
 
 class ProcessedOrdersInput(UnProcessedOrdersInput):
@@ -99,7 +99,7 @@ class ProcessedOrdersOutput(OrderNum):
     origin_order_num: Optional[str] = Field(None, title='원주문번호')
     product_code: str = Field(..., title='종목코드')
     count: int = Field(..., title='주문수량')
-    price: str = Field(..., title='체결금액')
+    price: int = Field(..., title='체결금액')
     order_type: str = Field(..., title='매도매수구분')
     order_type_name: Optional[str] = Field(None, title='매도매수구분명')
     executed_count: Optional[int] = Field(None, title='총체결수량')
