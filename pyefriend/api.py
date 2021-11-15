@@ -599,7 +599,8 @@ class DomesticApi(Api):
             dict(index=1, key='order_num', not_null=True),
             dict(index=2, key='origin_order_num'),
             dict(index=7, key='product_code'),
-            dict(index=6, key='order_type'),
+            dict(index=5, key='order_type'),
+            dict(index=6, key='order_type_name'),
             dict(index=9, key='count'),
             dict(index=15, key='price'),
         ]
@@ -617,8 +618,8 @@ class DomesticApi(Api):
 
     def get_unprocessed_orders(self, **kwargs) -> List[Dict]:
         columns = [
-            dict(index=0, key='order_date', not_null=True),
-            dict(index=1, key='order_num'),
+            dict(index=0, key='order_date'),
+            dict(index=1, key='order_num', not_null=True),
             dict(index=2, key='origin_order_num'),
             dict(index=4, key='product_code'),
             dict(index=7, key='count'),
@@ -843,7 +844,8 @@ class OverSeasApi(Api):
             dict(index=2, key='order_num'),
             dict(index=3, key='origin_order_num'),
             dict(index=12, key='product_code'),
-            dict(index=5, key='order_type'),
+            dict(index=4, key='order_type'),
+            dict(index=5, key='order_type_name'),
             dict(index=10, key='count'),
             dict(index=13, key='price'),
         ]
@@ -862,11 +864,12 @@ class OverSeasApi(Api):
     def get_unprocessed_orders(self, market_code: str = None, **kwargs) -> List[Dict]:
         columns = [
             dict(index=0, key='order_date'),
-            dict(index=2, key='order_num'),
+            dict(index=2, key='order_num', not_null=True),
             dict(index=3, key='origin_order_num'),
             dict(index=5, key='product_code'),
             dict(index=17, key='count'),
-            dict(index=7, key='order_type'),
+            dict(index=6, key='order_type'),
+            dict(index=7, key='order_type_name'),
         ]
 
         return (
