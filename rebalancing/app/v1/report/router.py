@@ -154,12 +154,14 @@ async def adjust_plan(report_name: str,
 async def execute_plan(report_name: str,
                        created_time: Optional[str] = None,
                        how: How = How.MARKET,
-                       n_diff: int = 3,
+                       n_diff: int = 0,
                        user=Depends(login_required)):
     """
     ### 리밸런싱 플랜 실행
     - report_name: ~/report/ POST를 통해 생성된 리포트
     - created_time: None일 경우 가장 최신 날짜를 가져옴
+
+    n_diff: (현재가) +- n_diff * (호가 단위) 로 매수/매도
     """
     report: Report = Report.get(report_name=report_name,
                                 created_time=created_time,

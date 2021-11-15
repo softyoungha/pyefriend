@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, Field
 from rebalancing.utils.const import OrderType, Market
+
+Number = Union[int, float]
 
 CreatedTimeField = Field(None,
                          title='Report 실행시간',
@@ -39,24 +41,24 @@ class PricesOutput(BaseModel):
     product_code: str = Field(..., title='종목코드')
     product_name: str = Field(..., title='종목명')
     market_code: str = Field(..., title='거래소(KRX: 한국거래소/NASD/NYSE/AMEX')
-    current: float = Field(..., title='현재가')
-    minimum: float = Field(..., title='최저가')
-    maximum: float = Field(..., title='최고가')
-    opening: float = Field(..., title='시가')
-    base: float = Field(..., title='종가')
+    current: Number = Field(..., title='현재가')
+    minimum: Number = Field(..., title='최저가')
+    maximum: Number = Field(..., title='최고가')
+    opening: Number = Field(..., title='시가')
+    base: Number = Field(..., title='종가')
 
 
 class OrderBase(BaseModel):
     product_code: str = Field(..., title='종목코드')
     market_code: str = Field(..., title='거래소(KRX: 한국거래소/NASD/NYSE/AMEX')
-    count: str = Field(..., title='매도/매수 수량')
+    count: int = Field(..., title='매도/매수 수량')
     order_num: str = Field(..., title='주문번호')
     order_type: OrderType = Field(..., title='매도/매수 구분')
 
 
 class ExecuteReportOutput(OrderBase):
-    quote_unit: str = Field(..., title='호가단위')
-    price: str = Field(..., title='매도/매수 가격')
+    quote_unit: int = Field(..., title='호가단위')
+    price: int = Field(..., title='매도/매수 가격')
 
 
 class GetOrderOutput(OrderBase):
