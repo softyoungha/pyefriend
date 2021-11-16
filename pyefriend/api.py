@@ -11,7 +11,7 @@
 """
 import pandas as pd
 from logging import Logger
-from typing import List, Dict, Union, Optional, Tuple
+from typing import List, Dict, Union, Optional, Tuple, Any
 from datetime import datetime
 import requests
 
@@ -156,7 +156,8 @@ class Api:
                  multiple: bool = False,
                  columns: List[Dict] = None,
                  block_index: int = 0,
-                 as_type=None) -> Union[str, List[Dict]]:
+                 as_type=None,
+                 default: Any = None) -> Union[str, List[Dict]]:
         """
         pk = True인 column은 value가 ''인 것을 체크하여 for문을 나가므로 columns의 맨 앞에 위치해야합니다.
 
@@ -204,10 +205,14 @@ class Api:
             return data_list
         else:
             data = self.controller.GetSingleData(field_index, 0)
-            if as_type:
-                return as_type(data)
+
+            if data:
+                if as_type:
+                    return as_type(data)
+                else:
+                    return data
             else:
-                return data
+                return default
 
     def set_account_info(self):
         """ request 0, 1, 2에 계정 정보 입력 """
@@ -524,6 +529,32 @@ class DomesticApi(Api):
             for index, name in mapping
         }
 
+    def get_sector_info(self, sector_code: str, **kwargs) -> dict:
+        mapping = [
+            (0, 'current', float),
+            (6, 'opening', float),
+            (8, 'minimum', float),
+            (7, 'maximum', float),
+            (1, 'compared_yesterday_amount', float),
+            (2, 'compared_yesterday_sign', str),
+            (10, 'increase_product_count', int),
+            (11, 'decrease_product_count', int),
+            (12, 'nochange_product_count', int),
+            (13, 'maximum_product_count', int),
+            (14, 'minimum_product_count', int),
+        ]
+
+        (
+            self.set_data(0, 'U')  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, sector_code)  # 1: 종목코드
+                .request_data(Service.PUP02120000)
+        )
+
+        return {
+            name: type_(self.get_data(index))
+            for index, name, type_ in mapping
+        }
+
     def get_stock_price_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
         # set
         (
@@ -540,7 +571,6 @@ class DomesticApi(Api):
 
         # response
         return current, minimum, maximum, opening, base
-
 
     def get_stock_histories(self,
                             product_code: str,

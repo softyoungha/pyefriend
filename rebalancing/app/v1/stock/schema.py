@@ -175,3 +175,21 @@ class PopularProduct(BaseModel):
     continuous_nochange_days: int = Field(..., title='연속 보합 일수')
     continuous_decrease_days: int = Field(..., title='연속 하락 일수')
     continuous_minimum_days: int = Field(..., title='연속 하한 일수')
+
+
+class GetSectorInfoInput(LoginInput):
+    sector_code: str = Field(..., title='업종 코드')
+
+
+class SectorInfo(BaseModel):
+    current: float = Field(..., title='현재가')
+    opening: float = Field(..., title='시가')
+    minimum: float = Field(..., title='최저가')
+    maximum: float = Field(..., title='최고가')
+    compared_yesterday_amount: float = Field(..., title='전일 대비')
+    compared_yesterday_sign: str = Field(..., title='전일 대비 부호')
+    increase_product_count: int = Field(..., title='상승 종목 수')
+    decrease_product_count: int = Field(..., title='하락 종목 수')
+    nochange_product_count: int = Field(..., title='보합 종목 수')
+    maximum_product_count: int = Field(..., title='상한 종목 수')
+    minimum_product_count: int = Field(..., title='하한 종목 수')

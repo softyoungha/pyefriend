@@ -29,6 +29,7 @@ class Service:
     SCPH = 'SCPH'  # 주식 현재가 호가
     PST01010300 = 'PST01010300'  # 현재가(분별)
     KST13020000 = 'KST13020000'  # 상승 하락 종목
+    PUP02120000 = 'PUP02120000'  # 업종 지수정보
 
     # 미국(모의투자에서 제공되지 않을 수 있음)
     OS_ST01 = 'OS_ST01'  # 해외주식 현재가 체결
@@ -104,7 +105,7 @@ class SectorCode(str, Enum):
     GAS = '0017'  # 전기, 가스업
     CONSTRUCTION = '0018'  # 건설업
     WAREHOUSE = '0019'  # 운수, 창고
-    TELECOMMU = '0020'  # 통신업
+    TELECOM = '0020'  # 통신업
     FINANCE = '0021'  # 금융업
     BANK = '0022'  # 은행
     STOCK = '0024'  # 증권
