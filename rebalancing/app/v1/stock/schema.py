@@ -1,7 +1,7 @@
 from typing import Optional, Union, List
 from pydantic import BaseModel, Field
 
-from rebalancing.utils.const import Market
+from rebalancing.utils.const import Market, Direction, IndexCode
 
 # vars
 Number = Union[int, float]
@@ -74,11 +74,11 @@ class OrderNum(BaseModel):
     order_num: str = Field(..., title='주문번호')
 
 
-class UnProcessedOrdersInput(LoginInput):
+class UnProcessedOrderInput(LoginInput):
     market_code: Optional[str] = MarketField
 
 
-class UnProcessedOrdersOutput(OrderNum):
+class UnProcessedOrderOutput(OrderNum):
     order_date: str = Field(..., title='주문일자(YYmmdd)')
     origin_order_num: Optional[str] = Field(None, title='원주문번호')
     product_code: str = Field(..., title='종목코드')
@@ -89,11 +89,11 @@ class UnProcessedOrdersOutput(OrderNum):
     executed_amount: Optional[int] = Field(None, title='총체결금액')
 
 
-class ProcessedOrdersInput(UnProcessedOrdersInput):
+class ProcessedOrderInput(UnProcessedOrderInput):
     start_date: Optional[str] = Field(None, title='조회시작기간(YYmmdd)')
 
 
-class ProcessedOrdersOutput(OrderNum):
+class ProcessedOrderOutput(OrderNum):
     order_date: str = Field(..., title='주문일자(YYmmdd)')
     origin_order_num: Optional[str] = Field(None, title='원주문번호')
     product_code: str = Field(..., title='종목코드')
@@ -121,7 +121,7 @@ class GetChartInput(LoginInput):
     interval: int = Field(60, title='차트 단위')
 
 
-class GetChartOutput(BaseModel):
+class ProductChart(BaseModel):
     executed_date: str = Field(..., title='체결일자(YYYYmmdd)')
     executed_time: str = Field(..., title='체결시간(HHMMSS)')
     current: int = Field(..., title='현재가')
@@ -142,7 +142,7 @@ class AskBid(BaseModel):
     icdc: int = Field(..., title='매수/매도 잔량 증감(increase or decrease)')
 
 
-class GetSpreadOutput(BaseModel):
+class ProductSpread(BaseModel):
     accepted_time: str = Field(..., title='호가 접수시간')
     total_ask_count: int = Field(..., title='총 매도호가 잔량')
     total_bid_count: int = Field(..., title='총 매수호가 잔량')
@@ -150,3 +150,24 @@ class GetSpreadOutput(BaseModel):
     total_bid_count_icdc: int = Field(..., title='총 매수호가 잔량 증감')
     asks: List[AskBid] = Field(..., title='매도호가 정보 리스트')
     bids: List[AskBid] = Field(..., title='매수호가 정보 리스트')
+
+
+class ListPopularProductInput(LoginInput):
+    direction: Direction = Field(..., title='상한,상승,보합,하락,하한')
+    index_code: IndexCode = Field(..., title='전체(0000),코스피(0001), 코스닥(1001)')
+
+
+class PopularProduct(BaseModel):
+    product_code: str = Field(..., title='종목코드')
+    product_name: str = Field(..., title='종목명')
+    product_status: str = Field(..., title='종목상태')
+    current: str = Field(..., title='현재가')
+    compared_yesterday_amount: int = Field(..., title='전일 대비 금액')
+    compared_yesterday_sign: str = Field(..., title='전일 대비 부호')
+    total_volume: int = Field(..., title='누적 거래량')
+    total_amount: int = Field(..., title='누적 거래 대금')
+    continuous_maximum_days: int = Field(..., title='연속 상한 일수')
+    continuous_increase_days: int = Field(..., title='연속 상승 일수')
+    continuous_nochange_days: int = Field(..., title='연속 보합 일수')
+    continuous_decrease_days: int = Field(..., title='연속 하락 일수')
+    continuous_minimum_days: int = Field(..., title='연속 하한 일수')

@@ -23,8 +23,8 @@ class Length:
 class NamedColumns:
     CreatedTime = lambda: Column(DateTime(timezone=True),
                                  nullable=False,
-                                 server_default=func.created_time())
+                                 server_default=func.now())
     UpdatedTime = lambda: Column(DateTime(timezone=True),
                                  nullable=False,
-                                 server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+                                 onupdate=func.now())
     ID = lambda: Column(Integer(), primary_key=True, autoincrement=True)

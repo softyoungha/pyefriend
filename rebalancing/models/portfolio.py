@@ -48,12 +48,12 @@ class Portfolio(Base):
 
     @classmethod
     @provide_session
-    def update(cls, data: List[Dict], session: Session = None):
+    def bulk_update(cls, data: List[Dict], session: Session = None):
         session.bulk_update_mappings(cls, data)
 
     @classmethod
     @provide_session
-    def insert(cls, items: List[dict], session: Session = None):
+    def bulk_insert(cls, items: List[dict], session: Session = None):
         session.bulk_save_objects([cls(**item) for item in items])
 
     @classmethod

@@ -99,3 +99,17 @@ class DWM(str, Enum):
     D = 'D'  # 날짜 기준
     W = 'W'  # 주 기준
     M = 'M'  # 월 기준
+
+
+class Direction(str, Enum):
+    MAXIMUM = 'MAXIMUM'
+    INCREASE = 'INCREASE'
+    NOCHANGE = 'NOCHANGE'
+    DECREASE = 'DECREASE'
+    MINIMUM = 'MINIMUM'
+
+
+class IndexCode(str, Enum):
+    TOTAL = '0000'
+    KOSPI = '0001'
+    KOSDAQ = '1001'

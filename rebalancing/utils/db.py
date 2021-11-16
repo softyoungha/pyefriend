@@ -56,13 +56,13 @@ def insert_data(products: List[Dict] = None, data_path: str = None):
         ]
 
     # initialize
-    Product.insert([{'code': product.get('product_code'),
+    Product.bulk_insert([{'code': product.get('product_code'),
                      'name': product.get('product_name'),
                      'market_code': product.get('market_code')}
-                    for product in products])
-    Portfolio.insert([{'product_name': product.get('product_name'),
+                         for product in products])
+    Portfolio.bulk_insert([{'product_name': product.get('product_name'),
                        'weight': product.get('weight')}
-                      for product in products])
+                           for product in products])
 
 
 def init_data():

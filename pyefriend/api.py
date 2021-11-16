@@ -15,7 +15,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit
+from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit, Direction, IndexCode
 from .log import logger as pyefriend_logger
 from .controller import Controller
 from .exceptions import *
@@ -661,8 +661,8 @@ class DomesticApi(Api):
         results = []
 
         for order in unprocessed_orders:
-            order_num = order.get('원주문번호') or order.get('주문번호')
-            count = order.get('주문수량')
+            order_num = order.get('origin_order_num') or order.get('order_num')
+            count = order.get('count')
 
             result = self.cancel_order(order_num=order_num, count=count)
 
@@ -737,6 +737,51 @@ class DomesticApi(Api):
             dict(index=7, key='volume', type=int),
             dict(index=6, key='total_volume', type=int),
 
+        ]
+        data = self.get_data(multiple=True, columns=columns)
+        return data
+
+    def list_popular_products(self,
+                              direction: Direction = Direction.INCREASE,
+                              index_code: IndexCode = IndexCode.TOTAL,
+                              **kwargs):
+        if direction == Direction.MAXIMUM:
+            direction_num = '0'
+        elif direction == Direction.INCREASE:
+            direction_num = '1'
+        elif direction == Direction.NOCHANGE:
+            direction_num = '2'
+        elif direction == Direction.DECREASE:
+            direction_num = '3'
+        elif direction == Direction.MINIMUM:
+            direction_num = '4'
+        else:
+            raise ValueError('direction must be set')
+
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, '11302')
+                .set_data(2, '1')
+                .set_data(3, direction_num)
+                .set_data(4, index_code)
+                .request_data('KST13020000')
+        )
+
+        columns = [
+            dict(index=0, key='product_code', not_null=True),
+            dict(index=1, key='product_status', not_null=True),
+            dict(index=2, key='product_name'),
+            dict(index=3, key='current', type=int),
+            dict(index=4, key='compared_yesterday_amount', type=int),
+            dict(index=5, key='compared_yesterday_sign', type=str),
+            dict(index=7, key='total_volume', type=int),
+            dict(index=8, key='total_amount', type=int),
+            dict(index=13, key='continuous_maximum_days', type=int),
+            dict(index=14, key='continuous_minimum_days', type=int),
+            dict(index=15, key='continuous_increase_days', type=int),
+            dict(index=16, key='continuous_decrease_days', type=int),
+            dict(index=17, key='continuous_nochange_days', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data
@@ -914,9 +959,9 @@ class OverSeasApi(Api):
         results = []
 
         for order in unprocessed_orders:
-            order_num = order.get('원주문번호') or order.get('주문번호')
-            product_code = order.get('상품번호')
-            count = order.get('주문수량')
+            order_num = order.get('origin_order_num') or order.get('order_num')
+            product_code = order.get('product_code')
+            count = order.get('count')
 
             result = self.cancel_order(market_code=market_code,
                                        product_code=product_code,

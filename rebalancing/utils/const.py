@@ -25,6 +25,6 @@ __all__ = [
     'How',
     'OrderType',
     'DWM',
+    'Direction',
+    'IndexCode',
 ]
-
-

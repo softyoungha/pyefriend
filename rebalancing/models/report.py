@@ -300,7 +300,7 @@ class Report(Base):
         ]
 
         # update
-        Product.update(product_infos)
+        Product.bulk_update(product_infos)
         self.logger.info(f'종목 리스트가 최신화되었습니다: {len(product_infos)}')
 
         # update 'ProductHistory'
@@ -326,7 +326,7 @@ class Report(Base):
         ProductHistory.truncate()
 
         # insert
-        ProductHistory.insert(product_histories)
+        ProductHistory.bulk_insert(product_histories)
 
         self.logger.info('종목 History가 최신화되었습니다.')
 
@@ -578,14 +578,14 @@ class Report(Base):
                 continue
 
             # count: 양수
-            params.update(count=abs(difference))
+            params.bulk_update(count=abs(difference))
 
             # price: 계산
             price = self._calculate_appropriate_price(portfolio=dict(**params,
                                                                      difference=difference),
                                                       how=how,
                                                       n_diff=n_diff)
-            params.update(price=price)
+            params.bulk_update(price=price)
 
             if difference > 0:
                 order_num: str = self.api.buy_stock(**params)
@@ -655,11 +655,11 @@ class Report(Base):
 
             # 상태 업데이트(체결/미체결)
             if order_num in processed_orders:
-                report_order.update('process', True)
+                report_order.bulk_update('process', True)
             elif order_num in unprocessed_orders:
-                report_order.update('process', False)
+                report_order.bulk_update('process', False)
             else:
-                report_order.update('process', None)
+                report_order.bulk_update('process', None)
 
         return report_orders
 

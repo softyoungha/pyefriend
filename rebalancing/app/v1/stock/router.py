@@ -137,8 +137,8 @@ async def sell_stock(request: BuyOrSellInput, user=Depends(login_required)):
     }
 
 
-@r.post('/order/processed', response_model=List[ProcessedOrdersOutput])
-async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login_required)):
+@r.post('/order/processed', response_model=List[ProcessedOrderOutput])
+async def get_processed_orders(request: ProcessedOrderInput, user=Depends(login_required)):
     """### start_date 이후의 체결된 주문 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
@@ -146,8 +146,8 @@ async def get_processed_orders(request: ProcessedOrdersInput, user=Depends(login
                                     market_code=request.market_code)
 
 
-@r.post('/order/unprocessed', response_model=List[UnProcessedOrdersOutput])
-async def get_unprocessed_orders(request: UnProcessedOrdersInput, user=Depends(login_required)):
+@r.post('/order/unprocessed', response_model=List[UnProcessedOrderOutput])
+async def get_unprocessed_orders(request: UnProcessedOrderInput, user=Depends(login_required)):
     """### 미체결된 주문 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
@@ -159,10 +159,12 @@ async def cancel_order(request: CancelInput, user=Depends(login_required)):
     """### 주문 취소 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.cancel_order(order_num=request.order_num,
-                            count=request.count,
-                            product_code=request.product_code,
-                            market_code=request.market_code)
+    return {
+        'order_num': api.cancel_order(order_num=request.order_num,
+                                      count=request.count,
+                                      product_code=request.product_code,
+                                      market_code=request.market_code)
+    }
 
 
 @r.post('/order/cancel-all', response_model=List[str])
@@ -173,7 +175,7 @@ async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_r
     return api.cancel_all_unprocessed_orders(market_code=request.market_code)
 
 
-@r.post('/product/chart', response_model=List[GetChartOutput])
+@r.post('/product/chart', response_model=List[ProductChart])
 async def get_chart(request: GetChartInput,
                     user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
@@ -187,7 +189,7 @@ async def get_chart(request: GetChartInput,
                          interval=request.interval)
 
 
-@r.post('/product/spread', response_model=GetSpreadOutput)
+@r.post('/product/spread', response_model=ProductSpread)
 async def get_spread(request: GetSpreadInput,
                      user=Depends(login_required)):
     """### 종목 현재시간 기준 매수/매도호가 정보  """
@@ -198,3 +200,17 @@ async def get_spread(request: GetSpreadInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_spread(product_code=request.product_code)
+
+
+@r.post('/product/popular', response_model=List[PopularProduct])
+async def list_popular_products(request: ListPopularProductInput,
+                                user=Depends(login_required)):
+    """### 상승 하락 종목 리스트  """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.list_popular_products(direction=request.direction,
+                                     index_code=request.index_code)
