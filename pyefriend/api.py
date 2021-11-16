@@ -796,10 +796,10 @@ class DomesticApi(Api):
         columns = [
             dict(index=0, key='executed_date', not_null=True),
             dict(index=1, key='executed_time', not_null=True),
-            dict(index=2, key='current', type=int),
-            dict(index=4, key='minimum', type=int),
-            dict(index=5, key='maximum', type=int),
-            dict(index=3, key='opening', type=int),
+            dict(index=2, key='current', type=float),
+            dict(index=4, key='minimum', type=float),
+            dict(index=5, key='maximum', type=float),
+            dict(index=3, key='opening', type=float),
             dict(index=7, key='volume', type=int),
             dict(index=6, key='total_volume', type=int),
         ]
@@ -818,7 +818,7 @@ class DomesticApi(Api):
 
         columns = [
             dict(index=0, key='executed_time', not_null=True),
-            dict(index=1, key='current', type=int),
+            dict(index=1, key='current', type=float, not_null=True),
             dict(index=5, key='volume', type=int),
             dict(index=6, key='total_volume', type=int),
         ]
