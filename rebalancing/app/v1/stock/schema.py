@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from rebalancing.utils.const import Market, Direction, IndexCode
 
 # vars
-Number = Union[int, float]
+Number = Union[float, int]
 MarketField = Field(None,
                     title='장 구분 코드',
                     description='해외주식일 경우'

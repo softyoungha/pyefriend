@@ -2,7 +2,7 @@ from typing import Optional, Union
 from pydantic import BaseModel, Field
 from rebalancing.utils.const import OrderType, Market
 
-Number = Union[int, float]
+Number = Union[float, int]
 
 CreatedTimeField = Field(None,
                          title='Report 실행시간',
