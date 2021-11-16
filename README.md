@@ -124,7 +124,7 @@ product_code: str = '005930'
 
 """ 종목 조회 """
 # return: 현재가, 저가, 고가, 시가, 기준가
-current, minimum, maximum, opening, base = api.get_stock_price_info(product_code=product_code)
+current, minimum, maximum, opening, base = api.get_product_prices(product_code=product_code)
 
 """ 종목 매수 """
 # count: 수량

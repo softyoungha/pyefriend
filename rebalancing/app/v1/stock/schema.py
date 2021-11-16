@@ -54,7 +54,7 @@ class Currency(BaseModel):
     currency: float = Field(..., title='환율')
 
 
-class ProductHistory(BaseModel):
+class PriceHistory(BaseModel):
     standard_date: str = Field(..., title='영업일자')
     minimum: Number = Field(..., title='저가')
     maximum: Number = Field(..., title='고가')
@@ -116,11 +116,11 @@ class CancelAllInput(LoginInput):
     market_code: Optional[str] = MarketField
 
 
-class GetProductInfoInput(LoginInput):
+class GetProductInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
 
 
-class GetChartInput(GetProductInfoInput):
+class GetChartInput(GetProductInput):
     product_code: str = Field(..., title='종목코드')
     interval: int = Field(60, title='차트 단위')
 
@@ -141,7 +141,7 @@ class ProductChart(BaseModel):
     total_volume: int = Field(..., title='누적 체결량')
 
 
-class GetSpreadInput(GetProductInfoInput):
+class GetSpreadInput(GetProductInput):
     pass
 
 
@@ -177,7 +177,7 @@ class PopularProduct(BaseModel):
     continuous_minimum_days: int = Field(..., title='연속 하한 일수')
 
 
-class GetSectorInfoInput(LoginInput):
+class GetSectorInput(LoginInput):
     sector_code: str = Field(..., title='업종 코드')
 
 

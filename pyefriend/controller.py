@@ -91,20 +91,17 @@ class Controller:
         self._set_event_handler(self.instance.ReceiveData, handler)
 
     # Wrapper
-    def SetSingleData(self, field_index: int, value: Union[str, int]) -> str:
+    def SetSingleData(self, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 단건(Single 형) 데이터 값일 때 사용하는 공통함수 """
-        value_type_str = 'int' if isinstance(value, int) else 'QString'
-        return self.dynamic_call(f'SetSingleData(int, {value_type_str})', field_index, value)
+        return self.dynamic_call(f'SetSingleData(int, QString)', field_index, value)
 
-    def SetSingleDataEx(self, block_index: int, field_index: int, value: Union[str, int]) -> str:
+    def SetSingleDataEx(self, block_index: int, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 다건 데이터 값일 때 사용하는 공통함수 """
-        value_type_str = 'int' if isinstance(value, int) else 'QString'
-        return self.dynamic_call(f'SetSingleDataEx(int, int, {value_type_str})', block_index, field_index, value)
+        return self.dynamic_call(f'SetSingleDataEx(int, int, QString)', block_index, field_index, value)
 
-    def SetMultiData(self, record_index: int, field_index: int, value: Union[str, int]) -> str:
+    def SetMultiData(self, record_index: int, field_index: int, value: str) -> str:
         """ 사용자가 요청할 서비스의 Input 이 다건(Multi 형) 데이터 값일 때 사용하는 공통함수 """
-        value_type_str = 'int' if isinstance(value, int) else 'QString'
-        return self.dynamic_call(f'SetMultiData(int, int, {value_type_str})', record_index, field_index, value)
+        return self.dynamic_call(f'SetMultiData(int, int, QString)', record_index, field_index, value)
 
     def GetSingleFieldCount(self) -> int:
         """

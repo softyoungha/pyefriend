@@ -87,7 +87,7 @@ async def get_currency(request: LoginInput, user=Depends(login_required)):
     }
 
 
-@r.post('/info/kospi', response_model=List[ProductHistory])
+@r.post('/info/kospi', response_model=List[PriceHistory])
 async def get_kospi_histories(request: LoginInput,
                               standard: DWM = DWM.D,
                               user=Depends(login_required)):
@@ -97,7 +97,7 @@ async def get_kospi_histories(request: LoginInput,
     return api.get_kospi_histories(standard=standard)
 
 
-@r.post('/info/sp500', response_model=List[ProductHistory])
+@r.post('/info/sp500', response_model=List[PriceHistory])
 async def get_sp500_histories(request: LoginInput,
                               standard: DWM = DWM.D,
                               user=Depends(login_required)):
@@ -176,7 +176,7 @@ async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_r
 
 
 @r.post('/product', response_model=ProductInfo)
-async def get_product_info(request: GetProductInfoInput,
+async def get_product_info(request: GetProductInput,
                            user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     if request.market != Market.DOMESTIC:
@@ -185,7 +185,22 @@ async def get_product_info(request: GetProductInfoInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_stock_info(product_code=request.product_code)
+    return api.get_product_info(product_code=request.product_code)
+
+
+@r.post('/product/history', response_model=List[PriceHistory])
+async def list_product_histories(request: GetProductInput,
+                                 standard: DWM = DWM.D,
+                                 user=Depends(login_required)):
+    """### 종목명 및 대/중/소 업종 코드 """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.list_product_histories(product_code=request.product_code,
+                                      standard=standard)
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
@@ -237,8 +252,8 @@ async def list_popular_products(request: LoginInput,
                                      last_day=last_day)
 
 
-@r.post('/sector/info', response_model=SectorInfo)
-async def get_sector_info(request: GetSectorInfoInput,
+@r.post('/sector', response_model=SectorInfo)
+async def get_sector_info(request: GetSectorInput,
                           user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     if request.market != Market.DOMESTIC:
@@ -250,9 +265,10 @@ async def get_sector_info(request: GetSectorInfoInput,
     return api.get_sector_info(sector_code=request.sector_code)
 
 
-@r.post('/sector/history')
-async def get_sector_info(request: GetSectorInfoInput,
-                          user=Depends(login_required)):
+@r.post('/sector/history', response_model=List[PriceHistory])
+async def list_sector_histories(request: GetSectorInput,
+                                standard: DWM = DWM.D,
+                                user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -260,6 +276,5 @@ async def get_sector_info(request: GetSectorInfoInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    data = api.get_sector_histories(sector_code=request.sector_code)
-    print(data)
-    return data
+    return api.list_sector_histories(sector_code=request.sector_code,
+                                     standard=standard)

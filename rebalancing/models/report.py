@@ -283,8 +283,8 @@ class Report(Base):
         # update 'Product'
         self.logger.info('종목 리스트를 최신화합니다.')
         product_infos = [(product.code,
-                          self.api.get_stock_price_info(product_code=product.code,
-                                                        market_code=product.market_code))
+                          self.api.get_product_prices(product_code=product.code,
+                                                      market_code=product.market_code))
                          for product in products]
 
         product_infos = [
@@ -306,8 +306,8 @@ class Report(Base):
         # update 'ProductHistory'
         self.logger.info('종목 History를 최신화합니다.')
         product_histories = [(product.name,
-                              self.api.get_stock_histories(product_code=product.code,
-                                                           market_code=product.market_code))
+                              self.api.list_product_histories(product_code=product.code,
+                                                              market_code=product.market_code))
                              for product in products]
         product_histories = [
             {

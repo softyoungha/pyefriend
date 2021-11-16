@@ -456,14 +456,14 @@ class Api:
     def is_domestic(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_price_info(self, product_code: str, **kwargs):
+    def get_product_prices(self, product_code: str, **kwargs):
         """
         입력한 종목의 현재가, 최저가, 최고가, 시가, 전일종가 로드
         :return 현재가, 최저가, 최고가, 시가, 전일종가 (Tuple)
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_histories(self, product_code: str, standard: DWM = DWM.W, **kwargs) -> List[Dict]:
+    def list_product_histories(self, product_code: str, standard: DWM = DWM.W, **kwargs) -> List[Dict]:
         """
         일자별 상세 정보 로드
         :param standard: D: 일/ W: 주/ M: 월
@@ -521,7 +521,7 @@ class DomesticApi(Api):
     def unit(self):
         return Unit.KRW
 
-    def get_stock_info(self, product_code: str, **kwargs) -> dict:
+    def get_product_info(self, product_code: str, **kwargs) -> dict:
         mapping = [
             (2, 'product_name'),
             (6, 'sector_code')
@@ -531,6 +531,44 @@ class DomesticApi(Api):
             name: self.controller.GetSingleDataStockMaster(product_code, index)
             for index, name in mapping
         }
+
+    def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
+        # set
+        (
+            self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.SCP)
+        )
+
+        current = int(self.get_data(11))  # 11: 주식 현재가
+        minimum = int(self.get_data(20))  # 19: 주식 최저가
+        maximum = int(self.get_data(19))  # 20: 주식 최고가
+        opening = int(self.get_data(18))  # 19: 주식 시가
+        base = int(self.get_data(23))  # 23: 주식 기준가(전일 종가)
+
+        # response
+        return current, minimum, maximum, opening, base
+
+    def list_product_histories(self,
+                               product_code: str,
+                               standard: DWM = DWM.D,
+                               **kwargs) -> List[Dict]:
+        columns = [
+            dict(index=0, key='standard_date', not_null=True),
+            dict(index=3, key='minimum', dtype=int),
+            dict(index=2, key='maximum', dtype=int),
+            dict(index=1, key='opening', dtype=int),
+            dict(index=4, key='closing', dtype=int),
+            dict(index=5, key='volume', dtype=int),
+        ]
+
+        return (
+            self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, product_code)  # 1: 종목코드
+                .set_data(2, standard)  # D: 일/ W: 주/ M: 월
+                .request_data(Service.SCPD)
+                .get_data(multiple=True, columns=columns)
+        )
 
     def get_sector_info(self, sector_code: str, **kwargs) -> dict:
         mapping = [
@@ -558,63 +596,33 @@ class DomesticApi(Api):
             for index, name, type_ in mapping
         }
 
-    def get_sector_histories(self, sector_code: str, start_date: str='20211116', standard: DWM = DWM.D):
+    def list_sector_histories(self,
+                              sector_code: str,
+                              start_date: str = None,
+                              standard: DWM = DWM.D):
+        today = datetime.today().strftime('%Y%m%d')
+
+        if start_date is None:
+            start_date = today
+
         columns = [
             dict(index=0, key='standard_date', not_null=True),
-            dict(index=1, key='current', not_null=True),
             dict(index=7, key='minimum', dtype=int),
             dict(index=6, key='maximum', dtype=int),
             dict(index=5, key='opening', dtype=int),
-            dict(index=4, key='closing', dtype=int),
+            dict(index=1, key='closing', not_null=True),
             dict(index=9, key='volume', dtype=int),
         ]
 
         return (
-            self.set_data(0, 'U', 1)  # 0: 시장분류코드 / J: 주식, ETF, ETN
+            self.set_data(0, 'U', 0)
+                .set_data(1, sector_code, 0)
+                .set_data(0, 'U', 1)  # 0: 시장분류코드 / J: 주식, ETF, ETN
                 .set_data(1, sector_code, 1)  # 1: 종목코드
                 .set_data(2, start_date, 1)
                 .set_data(3, standard, 1)  # D: 일/ W: 주/ M: 월
                 .request_data(Service.PUP02120000)
                 .get_data(multiple=True, columns=columns, block_index=1)
-        )
-
-    def get_stock_price_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
-        # set
-        (
-            self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
-                .set_data(1, product_code)  # 1: 종목코드
-                .request_data(Service.SCP)
-        )
-
-        current = int(self.get_data(11))  # 11: 주식 현재가
-        minimum = int(self.get_data(20))  # 19: 주식 최저가
-        maximum = int(self.get_data(19))  # 20: 주식 최고가
-        opening = int(self.get_data(18))  # 19: 주식 시가
-        base = int(self.get_data(23))  # 23: 주식 기준가(전일 종가)
-
-        # response
-        return current, minimum, maximum, opening, base
-
-    def get_stock_histories(self,
-                            product_code: str,
-                            standard: DWM = DWM.D,
-                            **kwargs) -> List[Dict]:
-
-        columns = [
-            dict(index=0, key='standard_date', not_null=True),
-            dict(index=3, key='minimum', dtype=int),
-            dict(index=2, key='maximum', dtype=int),
-            dict(index=1, key='opening', dtype=int),
-            dict(index=4, key='closing', dtype=int),
-            dict(index=5, key='volume', dtype=int),
-        ]
-
-        return (
-            self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
-                .set_data(1, product_code)  # 1: 종목코드
-                .set_data(2, standard)  # D: 일/ W: 주/ M: 월
-                .request_data(Service.SCPD)
-                .get_data(multiple=True, columns=columns)
         )
 
     def buy_stock(self,
@@ -864,10 +872,10 @@ class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
 
-    def get_stock_price_info(self,
-                             product_code: str,
-                             market_code: str = None,
-                             **kwargs) -> Tuple[float, float, float, float, float]:
+    def get_product_prices(self,
+                           product_code: str,
+                           market_code: str = None,
+                           **kwargs) -> Tuple[float, float, float, float, float]:
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
@@ -884,11 +892,11 @@ class OverSeasApi(Api):
         # response
         return current, minimum, maximum, opening, base
 
-    def get_stock_histories(self,
-                            product_code: str,
-                            standard: DWM = DWM.D,
-                            market_code: str = None,
-                            **kwargs) -> List[Dict]:
+    def list_product_histories(self,
+                               product_code: str,
+                               standard: DWM = DWM.D,
+                               market_code: str = None,
+                               **kwargs) -> List[Dict]:
         if standard == DWM.D:
             standard = '0'
         elif standard == DWM.W:
