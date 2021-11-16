@@ -108,13 +108,14 @@ pyefriend에서 High-level로 API를 활용하는 방법은 다음과 같습니�
 # 국내 조회/매수/매도시 사용법 """
 
 from pyefriend import load_api
+
 # or from pyefriend.helper import load_api
 
 """ api instance 생성 """
 # market: 'domestic'(국내)/'overseas'(해외)
 # account: efriend Expert 로그인한 계정 내에 존재하는 계좌
 # password: 한국투자증권 매수/매도시 입력 비밀번호
-api = load_api(market='domestic',   
+api = load_api(market='domestic',
                account='5005775101',
                password='password')
 
@@ -123,7 +124,7 @@ product_code: str = '005930'
 
 """ 종목 조회 """
 # return: 현재가, 저가, 고가, 시가, 기준가
-current, minimum, maximum, opening, base = api.get_stock_info(product_code=product_code)
+current, minimum, maximum, opening, base = api.get_stock_price_info(product_code=product_code)
 
 """ 종목 매수 """
 # count: 수량
@@ -132,13 +133,13 @@ current, minimum, maximum, opening, base = api.get_stock_info(product_code=produ
 buy_order_num: str = api.buy_stock(product_code=product_code, count=3, price=50000)
 
 """ 종목 매도 """
-sell_order_num: str = api.sell_stock(product_code=product_code, count=2, price=90000) # 9만전자 가자
+sell_order_num: str = api.sell_stock(product_code=product_code, count=2, price=90000)  # 9만전자 가자
 
 """ 매수/매도 취소 """
 api.cancel_order(order_num=buy_order_num, count=3)
 ```
 
-get_stock_info, buy_stock, sell_stock, cancel_order 와 같이 High-level 사용이 가능합니다.
+get_stock_price_info, buy_stock, sell_stock, cancel_order 와 같이 High-level 사용이 가능합니다.
 
 국내 주식 API와 해외 주식 API를 직접 호출해서 다음과 같이 사용할 수 있습니다.
 
@@ -168,7 +169,7 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 #### Common functions
   - evaluate_amount
   - get_stock_name
-  - get_stock_info
+  - get_stock_price_info
   - get_stock_histories
   - buy_stock
   - sell_stock
@@ -347,7 +348,7 @@ efriend Service 리스트는 efriend Expert 프로그램 실행시 도움말에�
 class DomesticApi(Api):
     # 국내 주식 조회 API
     ...
-    def get_stock_info(self, product_code: str, market_code: str = None) -> Tuple[int, int, int, int, int]:
+    def get_stock_price_info(self, product_code: str, market_code: str = None) -> Tuple[int, int, int, int, int]:
         # set
         (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN

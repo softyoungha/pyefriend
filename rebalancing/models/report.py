@@ -283,8 +283,8 @@ class Report(Base):
         # update 'Product'
         self.logger.info('종목 리스트를 최신화합니다.')
         product_infos = [(product.code,
-                          self.api.get_stock_info(product_code=product.code,
-                                                  market_code=product.market_code))
+                          self.api.get_stock_price_info(product_code=product.code,
+                                                        market_code=product.market_code))
                          for product in products]
 
         product_infos = [

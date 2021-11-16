@@ -72,17 +72,45 @@ class MarketCode(str, Enum):
 
 
 class ProductCode:
-    # 업종 코드: 'U'
-    KOSPI = '0001'
-    KOSDAQ = '1001'
-    KOSPI200 = '2001'
-
     # S&P 500
     SPX = 'SPX'
 
     # 시장분류코드: 'J'
     SAMSUNG = '005930'
     APPLE = 'AAPL'  # NASD
+
+
+class SectorCode(str, Enum):
+    """ 업종 코드 """
+    KOSPI = '0001'  # KOSPI
+    KOSDAQ = '1001'  # KOSDAQ
+    KOSPI200 = '2001'  # KOSPI200
+
+    LARGE = '0002'  # 대형주
+    MEDIUM = '0003'  # 중형주
+    SMALL = '0004'  # 소형주유통회사
+    FOOD = '0005'  # 음식료품
+    CLOTHES = '0006'  # 섬유, 의복
+    PAPER = '0007'  # 종이, 목재
+    CHEMISTRY = '0008'  # 화학
+    MEDICINE = '0009'  # 의약품
+    NONMETAL = '0010'  # 비금속광물
+    STEEL = '0011'  # 철강, 금속
+    MACHINE = '0012'  # 기계
+    ELECTRONIC = '0013'  # 전기, 전자
+    MEDICAL = '0014'  # 의료정밀
+    EQUIPMENT = '0015'  # 운수, 장비
+    DISTRIBUTION = '0016'  # 유통업
+    GAS = '0017'  # 전기, 가스업
+    CONSTRUCTION = '0018'  # 건설업
+    WAREHOUSE = '0019'  # 운수, 창고
+    TELECOMMU = '0020'  # 통신업
+    FINANCE = '0021'  # 금융업
+    BANK = '0022'  # 은행
+    STOCK = '0024'  # 증권
+    INSURANCE = '0025'  # 보험
+    SERVICE = '0026'  # 서비스업
+    MANUFACTURING = '0027'  # 제조업
 
 
 class Currency:

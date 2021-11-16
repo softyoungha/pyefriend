@@ -116,9 +116,20 @@ class CancelAllInput(LoginInput):
     market_code: Optional[str] = MarketField
 
 
-class GetChartInput(LoginInput):
+class GetProductInfoInput(LoginInput):
+    product_code: str = Field(..., title='종목코드')
+
+
+class GetChartInput(GetProductInfoInput):
     product_code: str = Field(..., title='종목코드')
     interval: int = Field(60, title='차트 단위')
+
+
+class ProductInfo(BaseModel):
+    product_name: str = Field(..., title='품목명')
+    sector_ltype_cd: str = Field(..., title='업종 대유형 코드')
+    sector_mtype_cd: str = Field(..., title='업종 중유형 코드')
+    sector_stype_cd: str = Field(..., title='업종 소유형 코드')
 
 
 class ProductChart(BaseModel):
@@ -132,8 +143,8 @@ class ProductChart(BaseModel):
     total_volume: int = Field(..., title='누적 체결량')
 
 
-class GetSpreadInput(LoginInput):
-    product_code: str = Field(..., title='종목코드')
+class GetSpreadInput(GetProductInfoInput):
+    pass
 
 
 class AskBid(BaseModel):

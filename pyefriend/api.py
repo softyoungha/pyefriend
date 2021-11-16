@@ -15,7 +15,7 @@ from typing import List, Dict, Union, Optional, Tuple
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit, Direction, IndexCode
+from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit, Direction, IndexCode, SectorCode
 from .log import logger as pyefriend_logger
 from .controller import Controller
 from .exceptions import *
@@ -409,7 +409,7 @@ class Api:
         # response
         return (
             self.set_data(0, 'U')  # 0: 시장분류코드 / J: 주식, ETF, ETN
-                .set_data(1, ProductCode.KOSPI)  # 1: 종목코드
+                .set_data(1, SectorCode.KOSPI)  # 1: 종목코드
                 .set_data(2, standard)  # D: 일/ W: 주/ M: 월
                 .request_data(Service.SCPD)
                 .get_data(multiple=True, columns=columns)
@@ -448,11 +448,7 @@ class Api:
     def is_domestic(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_name(self, product_code: str, **kwargs):
-        """ 종목명 반환 """
-        raise NotImplementedError('해당 함수가 설정되어야 합니다.')
-
-    def get_stock_info(self, product_code: str, **kwargs):
+    def get_stock_price_info(self, product_code: str, **kwargs):
         """
         입력한 종목의 현재가, 최저가, 최고가, 시가, 전일종가 로드
         :return 현재가, 최저가, 최고가, 시가, 전일종가 (Tuple)
@@ -517,10 +513,20 @@ class DomesticApi(Api):
     def unit(self):
         return Unit.KRW
 
-    def get_stock_name(self, product_code: str, **kwargs):
-        return self.controller.GetSingleDataStockMaster(product_code, 2)
+    def get_stock_info(self, product_code: str, **kwargs) -> dict:
+        mapping = [
+            (2, 'product_name'),
+            (5, 'sector_ltype_cd'),
+            (6, 'sector_mtype_cd'),
+            (7, 'sector_stype_cd'),
+        ]
 
-    def get_stock_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
+        return {
+            name: self.controller.GetSingleDataStockMaster(product_code, index)
+            for index, name in mapping
+        }
+
+    def get_stock_price_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
         # set
         (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
@@ -536,6 +542,7 @@ class DomesticApi(Api):
 
         # response
         return current, minimum, maximum, opening, base
+
 
     def get_stock_histories(self,
                             product_code: str,
@@ -806,10 +813,10 @@ class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
 
-    def get_stock_info(self,
-                       product_code: str,
-                       market_code: str = None,
-                       **kwargs) -> Tuple[float, float, float, float, float]:
+    def get_stock_price_info(self,
+                             product_code: str,
+                             market_code: str = None,
+                             **kwargs) -> Tuple[float, float, float, float, float]:
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))

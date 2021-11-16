@@ -175,6 +175,19 @@ async def cancel_unprocessed_order(request: CancelAllInput, user=Depends(login_r
     return api.cancel_all_unprocessed_orders(market_code=request.market_code)
 
 
+@r.post('/product', response_model=ProductInfo)
+async def get_product_info(request: GetProductInfoInput,
+                           user=Depends(login_required)):
+    """### 종목명 및 대/중/소 업종 코드 """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.get_stock_info(product_code=request.product_code)
+
+
 @r.post('/product/chart', response_model=List[ProductChart])
 async def get_chart(request: GetChartInput,
                     user=Depends(login_required)):
