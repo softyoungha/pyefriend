@@ -627,7 +627,7 @@ class DomesticApi(Api):
             dict(index=1, key='order_num', not_null=True),
             dict(index=2, key='origin_order_num'),
             dict(index=13, key='order_type'),
-            dict(index=6, key='order_type_name'),   # efriend Expert에 정정취소구분명으로 등록되어있음
+            dict(index=6, key='order_type_name'),  # efriend Expert에 정정취소구분명으로 등록되어있음
             dict(index=4, key='product_code'),
             dict(index=7, key='count'),
             dict(index=10, key='executed_count'),
@@ -744,6 +744,7 @@ class DomesticApi(Api):
     def list_popular_products(self,
                               direction: Direction = Direction.INCREASE,
                               index_code: IndexCode = IndexCode.TOTAL,
+                              last_day: bool = False,
                               **kwargs):
         if direction == Direction.MAXIMUM:
             direction_num = '0'
@@ -758,12 +759,17 @@ class DomesticApi(Api):
         else:
             raise ValueError('direction must be set')
 
+        if last_day:
+            date = '1'  # 전일
+        else:
+            date = '0'  # 당일
+
         (
             self
                 .set_data(0, 'J')
                 .set_data(1, '11302')
-                .set_data(2, '1')
-                .set_data(3, direction_num)
+                .set_data(2, direction_num)
+                .set_data(2, date)
                 .set_data(4, str(index_code))
                 .request_data(Service.KST13020000)
         )

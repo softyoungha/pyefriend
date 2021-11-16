@@ -152,11 +152,6 @@ class ProductSpread(BaseModel):
     bids: List[AskBid] = Field(..., title='매수호가 정보 리스트')
 
 
-class ListPopularProductInput(LoginInput):
-    direction: Direction = Field(..., title='상한,상승,보합,하락,하한')
-    index_code: IndexCode = Field(..., title='전체(0000),코스피(0001), 코스닥(1001)')
-
-
 class PopularProduct(BaseModel):
     product_code: str = Field(..., title='종목코드')
     product_name: str = Field(..., title='종목명')
