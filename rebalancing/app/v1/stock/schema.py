@@ -120,9 +120,12 @@ class GetProductInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
 
 
-class GetChartInput(GetProductInput):
-    product_code: str = Field(..., title='종목코드')
+class Interval(BaseModel):
     interval: int = Field(60, title='차트 단위')
+
+
+class GetProductChartInput(GetProductInput, Interval):
+    pass
 
 
 class ProductInfo(BaseModel):
@@ -137,6 +140,13 @@ class ProductChart(BaseModel):
     minimum: int = Field(..., title='저가')
     maximum: int = Field(..., title='고가')
     opening: int = Field(..., title='시가')
+    volume: int = Field(..., title='체결량')
+    total_volume: int = Field(..., title='누적 체결량')
+
+
+class SectorChart(BaseModel):
+    executed_time: str = Field(..., title='체결시간(HHMMSS)')
+    current: int = Field(..., title='현재가')
     volume: int = Field(..., title='체결량')
     total_volume: int = Field(..., title='누적 체결량')
 
@@ -193,3 +203,7 @@ class SectorInfo(BaseModel):
     nochange_product_count: int = Field(..., title='보합 종목 수')
     maximum_product_count: int = Field(..., title='상한 종목 수')
     minimum_product_count: int = Field(..., title='하한 종목 수')
+
+
+class GetSectorChartInput(GetSectorInput, Interval):
+    pass

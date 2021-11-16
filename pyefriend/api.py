@@ -783,7 +783,7 @@ class DomesticApi(Api):
             ]
         }
 
-    def get_chart(self, product_code: str, interval: int = 60, **kwargs):
+    def get_product_chart(self, product_code: str, interval: int = 60, **kwargs):
         """ interval별 현/시/고/체결량 제공 """
         (
             self
@@ -802,7 +802,25 @@ class DomesticApi(Api):
             dict(index=3, key='opening', type=int),
             dict(index=7, key='volume', type=int),
             dict(index=6, key='total_volume', type=int),
+        ]
+        data = self.get_data(multiple=True, columns=columns)
+        return data
 
+    def get_sector_chart(self, sector_code: str, interval: int = 60, **kwargs):
+        """ interval별 현/시/고/체결량 제공 """
+        (
+            self
+                .set_data(0, 'U')
+                .set_data(1, sector_code)
+                .set_data(2, str(interval))
+                .request_data(Service.PUP02100200)
+        )
+
+        columns = [
+            dict(index=0, key='executed_time', not_null=True),
+            dict(index=1, key='current', type=int),
+            dict(index=5, key='volume', type=int),
+            dict(index=6, key='total_volume', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data

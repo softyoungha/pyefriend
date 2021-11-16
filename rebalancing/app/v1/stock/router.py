@@ -204,8 +204,8 @@ async def list_product_histories(request: GetProductInput,
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
-async def get_chart(request: GetChartInput,
-                    user=Depends(login_required)):
+async def get_product_chart(request: GetProductChartInput,
+                            user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -213,8 +213,8 @@ async def get_chart(request: GetChartInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_chart(product_code=request.product_code,
-                         interval=request.interval)
+    return api.get_product_chart(product_code=request.product_code,
+                                 interval=request.interval)
 
 
 @r.post('/product/spread', response_model=ProductSpread)
@@ -278,3 +278,17 @@ async def list_sector_histories(request: GetSectorInput,
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_sector_histories(sector_code=request.sector_code,
                                      standard=standard)
+
+
+@r.post('/sector/chart', response_model=List[SectorChart])
+async def get_sector_chart(request: GetSectorChartInput,
+                           user=Depends(login_required)):
+    """### interval별 종목의 현/시/고/체결량 제공  """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.get_sector_chart(sector_code=request.sector_code,
+                                interval=request.interval)
