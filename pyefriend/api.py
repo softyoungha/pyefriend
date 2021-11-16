@@ -396,7 +396,7 @@ class Api:
         total_amount = deposit + amount_stock
         return deposit, stocks, total_amount
 
-    def get_kospi_histories(self, standard: str = DWM.D):
+    def get_kospi_histories(self, standard: DWM = DWM.D):
         columns = [
             dict(index=0, key='standard_date', not_null=True),
             dict(index=3, key='minimum', dtype=float),
@@ -768,9 +768,9 @@ class DomesticApi(Api):
             self
                 .set_data(0, 'J')
                 .set_data(1, '11302')
-                .set_data(2, str(direction_num))
+                .set_data(2, direction_num)
                 .set_data(3, date)
-                .set_data(4, str(index_code))
+                .set_data(4, index_code)
                 .request_data(Service.KST13020000)
         )
 
