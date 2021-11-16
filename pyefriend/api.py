@@ -607,10 +607,10 @@ class DomesticApi(Api):
 
         columns = [
             dict(index=0, key='standard_date', not_null=True),
-            dict(index=7, key='minimum', dtype=int),
-            dict(index=6, key='maximum', dtype=int),
-            dict(index=5, key='opening', dtype=int),
-            dict(index=1, key='closing', not_null=True),
+            dict(index=7, key='minimum', dtype=float),
+            dict(index=6, key='maximum', dtype=float),
+            dict(index=5, key='opening', dtype=float),
+            dict(index=1, key='closing', dtype=float),
             dict(index=9, key='volume', dtype=int),
         ]
 
