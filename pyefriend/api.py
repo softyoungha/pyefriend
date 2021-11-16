@@ -204,7 +204,10 @@ class Api:
 
             return data_list
         else:
-            data = self.controller.GetSingleData(field_index, 0)
+            if block_index is not None:
+                data = self.controller.GetSingleDataEx(block_index, field_index, 0)
+            else:
+                data = self.controller.GetSingleData(field_index, 0)
 
             if data:
                 if as_type:
@@ -554,6 +557,26 @@ class DomesticApi(Api):
             name: type_(self.get_data(index))
             for index, name, type_ in mapping
         }
+
+    def get_sector_histories(self, sector_code: str, start_date: str='20211116', standard: DWM = DWM.D):
+        columns = [
+            dict(index=0, key='standard_date', not_null=True),
+            dict(index=1, key='current', not_null=True),
+            dict(index=7, key='minimum', dtype=int),
+            dict(index=6, key='maximum', dtype=int),
+            dict(index=5, key='opening', dtype=int),
+            dict(index=4, key='closing', dtype=int),
+            dict(index=9, key='volume', dtype=int),
+        ]
+
+        return (
+            self.set_data(0, 'U', 1)  # 0: 시장분류코드 / J: 주식, ETF, ETN
+                .set_data(1, sector_code, 1)  # 1: 종목코드
+                .set_data(2, start_date, 1)
+                .set_data(3, standard, 1)  # D: 일/ W: 주/ M: 월
+                .request_data(Service.PUP02120000)
+                .get_data(multiple=True, columns=columns, block_index=1)
+        )
 
     def get_stock_price_info(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
         # set

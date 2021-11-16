@@ -248,3 +248,18 @@ async def get_sector_info(request: GetSectorInfoInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_sector_info(sector_code=request.sector_code)
+
+
+@r.post('/sector/history')
+async def get_sector_info(request: GetSectorInfoInput,
+                          user=Depends(login_required)):
+    """### 종목명 및 대/중/소 업종 코드 """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    data = api.get_sector_histories(sector_code=request.sector_code)
+    print(data)
+    return data
