@@ -516,9 +516,7 @@ class DomesticApi(Api):
     def get_stock_info(self, product_code: str, **kwargs) -> dict:
         mapping = [
             (2, 'product_name'),
-            (5, 'sector_ltype_cd'),
-            (6, 'sector_mtype_cd'),
-            (7, 'sector_stype_cd'),
+            (6, 'sector_code')
         ]
 
         return {

@@ -127,9 +127,7 @@ class GetChartInput(GetProductInfoInput):
 
 class ProductInfo(BaseModel):
     product_name: str = Field(..., title='품목명')
-    sector_ltype_cd: str = Field(..., title='업종 대유형 코드')
-    sector_mtype_cd: str = Field(..., title='업종 중유형 코드')
-    sector_stype_cd: str = Field(..., title='업종 소유형 코드')
+    sector_code: str = Field(..., title='업종 중유형 코드')
 
 
 class ProductChart(BaseModel):
