@@ -138,7 +138,7 @@ class ProductChart(BaseModel):
 
 class SectorChart(BaseModel):
     executed_time: str = Field(..., title='체결시간(HHMMSS)')
-    current: int = Field(..., title='현재가')
+    current: float = Field(..., title='현재가')
     volume: int = Field(..., title='체결량')
     total_volume: int = Field(..., title='누적 체결량')
 
