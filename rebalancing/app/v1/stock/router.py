@@ -204,7 +204,8 @@ async def list_product_histories(request: GetProductInput,
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
-async def get_product_chart(request: GetProductChartInput,
+async def get_product_chart(request: GetProductInput,
+                            interval: int = 60,
                             user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
@@ -214,7 +215,7 @@ async def get_product_chart(request: GetProductChartInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_product_chart(product_code=request.product_code,
-                                 interval=request.interval)
+                                 interval=interval)
 
 
 @r.post('/product/spread', response_model=ProductSpread)
@@ -281,7 +282,8 @@ async def list_sector_histories(request: GetSectorInput,
 
 
 @r.post('/sector/chart', response_model=List[SectorChart])
-async def get_sector_chart(request: GetSectorChartInput,
+async def get_sector_chart(request: GetSectorInput,
+                           interval: int = 60,
                            user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
@@ -291,4 +293,4 @@ async def get_sector_chart(request: GetSectorChartInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_sector_chart(sector_code=request.sector_code,
-                                interval=request.interval)
+                                interval=interval)

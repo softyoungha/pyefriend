@@ -120,14 +120,6 @@ class GetProductInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
 
 
-class Interval(BaseModel):
-    interval: int = Field(60, title='차트 단위')
-
-
-class GetProductChartInput(GetProductInput, Interval):
-    pass
-
-
 class ProductInfo(BaseModel):
     product_name: str = Field(..., title='품목명')
     sector_code: str = Field(..., title='업종 중유형 코드')
@@ -205,5 +197,5 @@ class SectorInfo(BaseModel):
     minimum_product_count: int = Field(..., title='하한 종목 수')
 
 
-class GetSectorChartInput(GetSectorInput, Interval):
+class GetSectorChartInput(GetSectorInput):
     pass
