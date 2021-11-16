@@ -415,7 +415,7 @@ class Api:
                 .get_data(multiple=True, columns=columns)
         )
 
-    def get_sp500_histories(self, standard: str = DWM.D):
+    def get_sp500_histories(self, standard: DWM = DWM.D):
         if standard == DWM.D:
             standard = '0'
         elif standard == DWM.W:
@@ -459,7 +459,7 @@ class Api:
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-    def get_stock_histories(self, product_code: str, standard: str = DWM.W, **kwargs) -> List[Dict]:
+    def get_stock_histories(self, product_code: str, standard: DWM = DWM.W, **kwargs) -> List[Dict]:
         """
         일자별 상세 정보 로드
         :param standard: D: 일/ W: 주/ M: 월
@@ -539,7 +539,7 @@ class DomesticApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            standard: str = DWM.D,
+                            standard: DWM = DWM.D,
                             **kwargs) -> List[Dict]:
 
         columns = [
@@ -828,7 +828,7 @@ class OverSeasApi(Api):
 
     def get_stock_histories(self,
                             product_code: str,
-                            standard: str = DWM.D,
+                            standard: DWM = DWM.D,
                             market_code: str = None,
                             **kwargs) -> List[Dict]:
         if standard == DWM.D:
