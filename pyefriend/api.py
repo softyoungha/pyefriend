@@ -565,7 +565,7 @@ class DomesticApi(Api):
         return (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
                 .set_data(1, product_code)  # 1: 종목코드
-                .set_data(2, standard)  # D: 일/ W: 주/ M: 월
+                .set_data(2, standard.value)  # D: 일/ W: 주/ M: 월
                 .request_data(Service.SCPD)
                 .get_data(multiple=True, columns=columns)
         )
@@ -620,7 +620,7 @@ class DomesticApi(Api):
                 .set_data(0, 'U', 1)  # 0: 시장분류코드 / J: 주식, ETF, ETN
                 .set_data(1, sector_code, 1)  # 1: 종목코드
                 .set_data(2, start_date, 1)
-                .set_data(3, standard, 1)  # D: 일/ W: 주/ M: 월
+                .set_data(3, standard.value, 1)  # D: 일/ W: 주/ M: 월
                 .request_data(Service.PUP02120000)
                 .get_data(multiple=True, columns=columns, block_index=1)
         )
@@ -823,7 +823,8 @@ class DomesticApi(Api):
             dict(index=6, key='total_volume', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
-        return data
+
+        return [row for row in data if row['executed_time'] < '153001']
 
     def list_popular_products(self,
                               direction: Direction = Direction.INCREASE,
@@ -854,7 +855,7 @@ class DomesticApi(Api):
                 .set_data(1, '11302')
                 .set_data(2, direction_num)
                 .set_data(3, date)
-                .set_data(4, index_code)
+                .set_data(4, index_code.value)
                 .request_data(Service.KST13020000)
         )
 
