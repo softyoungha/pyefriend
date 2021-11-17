@@ -578,6 +578,8 @@ class DomesticApi(Api):
             (7, 'maximum', float),
             (1, 'compared_yesterday_amount', float),
             (2, 'compared_yesterday_sign', str),
+            (9, 'last_volume', int),
+            (4, 'total_volume', int),
             (10, 'increase_product_count', int),
             (11, 'decrease_product_count', int),
             (12, 'nochange_product_count', int),

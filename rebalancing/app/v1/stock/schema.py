@@ -190,6 +190,8 @@ class SectorInfo(BaseModel):
     maximum: float = Field(..., title='최고가')
     compared_yesterday_amount: float = Field(..., title='전일 대비')
     compared_yesterday_sign: str = Field(..., title='전일 대비 부호')
+    last_volume: int = Field(..., title='전일 거래량')
+    total_volume: int = Field(..., title='누적 거래량')
     increase_product_count: int = Field(..., title='상승 종목 수')
     decrease_product_count: int = Field(..., title='하락 종목 수')
     nochange_product_count: int = Field(..., title='보합 종목 수')
