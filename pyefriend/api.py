@@ -821,8 +821,8 @@ class DomesticApi(Api):
         columns = [
             dict(index=0, key='executed_time', not_null=True),
             dict(index=1, key='current', type=float, not_null=True),
-            dict(index=5, key='volume', type=int),
-            dict(index=6, key='total_volume', type=int),
+            dict(index=5, key='total_volume', type=int),
+            dict(index=6, key='volume', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
 

@@ -254,8 +254,7 @@ async def list_popular_products(request: LoginInput,
 
 
 @r.post('/sector', response_model=SectorInfo)
-async def get_sector_info(request: GetSectorInput,
-                          user=Depends(login_required)):
+async def get_sector_info(request: GetSectorInput, user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
