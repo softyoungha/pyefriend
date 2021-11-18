@@ -125,6 +125,14 @@ class ProductInfo(BaseModel):
     sector_code: str = Field(..., title='업종 중유형 코드')
 
 
+class ProductPrice(BaseModel):
+    current: str = Field(..., title='주식 현재가')
+    minimum: str = Field(..., title='주식 최저가')
+    maximum: str = Field(..., title='주식 최고가')
+    opening: str = Field(..., title='주식 시가')
+    base: str = Field(..., title='주식 기준가(전일 종가)')
+
+
 class ProductChart(BaseModel):
     executed_date: str = Field(..., title='체결일자(YYYYmmdd)')
     executed_time: str = Field(..., title='체결시간(HHMMSS)')
