@@ -126,11 +126,11 @@ class ProductInfo(BaseModel):
 
 
 class ProductPrice(BaseModel):
-    current: str = Field(..., title='주식 현재가')
-    minimum: str = Field(..., title='주식 최저가')
-    maximum: str = Field(..., title='주식 최고가')
-    opening: str = Field(..., title='주식 시가')
-    base: str = Field(..., title='주식 기준가(전일 종가)')
+    current: Number = Field(..., title='주식 현재가')
+    minimum: Number = Field(..., title='주식 최저가')
+    maximum: Number = Field(..., title='주식 최고가')
+    opening: Number = Field(..., title='주식 시가')
+    base: Number = Field(..., title='주식 기준가(전일 종가)')
 
 
 class ProductChart(BaseModel):
