@@ -140,15 +140,15 @@ class Direction(str, Enum):
     MINIMUM = 'MINIMUM'
 
 
-class IndexCode(Enum):
-    TOTAL = '0000'
-    KOSPI = '0001'
-    KOSDAQ = '1001'
+class IndexCode(str, Enum):
+    TOTAL = 'TOTAL'
+    KOSPI = 'KOSPI'
+    KOSDAQ = 'KOSDAQ'
 
 
-class NetBuySell(Enum):
-    SIM_NET_BUY = '00'
-    SIM_NET_SELL = '01'
-    SUM_NET_BUY = '02'
-    SUM_NET_SELL = '03'
-    TOTAL = '04'
+class NetBuySell(str, Enum):
+    SIM_NET_BUY = 'SIM_NET_BUY'
+    SIM_NET_SELL = 'SIM_NET_SELL'
+    SUM_NET_BUY = 'SUM_NET_BUY'
+    SUM_NET_SELL = 'SUM_NET_SELL'
+    TOTAL = 'TOTAL'

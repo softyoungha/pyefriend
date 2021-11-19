@@ -274,7 +274,7 @@ async def list_popular_products(request: LoginInput,
 @r.post('/product/foreigner', response_model=List[ForeignerNetBuySell])
 async def list_foreigner_net_buy_or_sell(request: LoginInput,
                                          net_buy_sell: NetBuySell,
-                                         index_code: IndexCode = IndexCode.TOTAL,
+                                         index: IndexCode = IndexCode.TOTAL,
                                          user=Depends(login_required)):
     """
     ### 외국인 순매수/순매도 순위 리스트
@@ -288,7 +288,7 @@ async def list_foreigner_net_buy_or_sell(request: LoginInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_foreigner_net_buy_or_sell(net_buy_sell=net_buy_sell,
-                                              index_code=index_code)
+                                              index_code=index)
 
 
 @r.post('/sector', response_model=SectorInfo)

@@ -833,6 +833,13 @@ class DomesticApi(Api):
                               index_code: IndexCode = IndexCode.TOTAL,
                               last_day: bool = False,
                               **kwargs):
+        if index_code == IndexCode.TOTAL:
+            index_code = '0000'
+        elif index_code == IndexCode.KOSPI:
+            index_code = '0001'
+        elif index_code == IndexCode.KOSDAQ:
+            index_code = '1001'
+
         if direction == Direction.MAXIMUM:
             direction_num = '0'
         elif direction == Direction.INCREASE:
@@ -891,6 +898,17 @@ class DomesticApi(Api):
             index_code = '2001'
         else:
             raise ValueError('index_code must be set')
+
+        if net_buy_sell == NetBuySell.SIM_NET_BUY:
+            net_buy_sell = '00'
+        if net_buy_sell == NetBuySell.SIM_NET_SELL:
+            net_buy_sell = '01'
+        if net_buy_sell == NetBuySell.SUM_NET_BUY:
+            net_buy_sell = '02'
+        if net_buy_sell == NetBuySell.SUM_NET_SELL:
+            net_buy_sell = '03'
+        if net_buy_sell == NetBuySell.TOTAL:
+            net_buy_sell = '04'
 
         (
             self
