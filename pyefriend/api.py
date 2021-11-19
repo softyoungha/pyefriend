@@ -949,7 +949,7 @@ class OverSeasApi(Api):
     def get_product_prices(self,
                            product_code: str,
                            market_code: str = None,
-                           **kwargs) -> Tuple[float, float, float, float, float]:
+                           **kwargs) -> Tuple[float, float, float, float, float, int]:
         (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
@@ -963,8 +963,17 @@ class OverSeasApi(Api):
         opening = float(self.get_data(4))  # 4: 시가
         base = float(self.get_data(3))  # 3: 전일종가
 
+        (
+            self.set_auth(0)  # 권한 확인
+                .set_data(1, MarketCode.as_short(market_code))
+                .set_data(2, product_code)  # 1: 종목코드
+                .request_data(Service.OS_ST02)
+        )
+
+        total_volume = int(self.get_data(8))
+
         # response
-        return current, minimum, maximum, opening, base
+        return current, minimum, maximum, opening, base, total_volume
 
     def list_product_histories(self,
                                product_code: str,
