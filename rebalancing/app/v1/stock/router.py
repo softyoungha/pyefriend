@@ -272,14 +272,14 @@ async def list_popular_products(request: LoginInput,
 
 
 @r.post('/product/foreigner', response_model=List[ForeignerNetBuySell])
-async def list_popular_products(request: LoginInput,
-                                net_buy_sell: NetBuySell,
-                                index_code: IndexCode = IndexCode.TOTAL,
-                                user=Depends(login_required)):
+async def list_foreigner_net_buy_or_sell(request: LoginInput,
+                                         net_buy_sell: NetBuySell,
+                                         index_code: IndexCode = IndexCode.TOTAL,
+                                         user=Depends(login_required)):
     """
-    ### 상승 하락 종목 리스트
-    - direction: 'MAXIMUM' 상한, 'INCREASE' 상승, 'NOCHANGE' 보합, 'DECREASE' 하락, 'MINIMUM' 하한
-    - index_code: '0000' 전체, '0001' 코스피, '1001' 코스닥
+    ### 외국인 순매수/순매도 순위 리스트
+    - SIM NET BUY/SELL(동시순매수(도)): 외국인장중가집계와 기관종합장중가집계 모두 순매수(도)한 종목의 합산 값을 기준으로 상위순으로 종목이 조회됩니다.
+    - SUM NET BUY/SELL(합산순매수(도)): 외국인장중가집계와 기관종합장중가집계 합산 값을 기준으로 순매수(도) 상위순으로 종목이 조회됩니다.
     """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,

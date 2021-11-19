@@ -147,10 +147,6 @@ class IndexCode(Enum):
 
 
 class NetBuySell(Enum):
-    """
-    - SIM NET BUY/SELL(동시순매수(도)): 외국인장중가집계와 기관종합장중가집계 모두 순매수(도)한 종목의 합산 값을 기준으로 상위순으로 종목이 조회됩니다.
-    - SUM NET BUY/SELL(합산순매수(도)): 외국인장중가집계와 기관종합장중가집계 합산 값을 기준으로 순매수(도) 상위순으로 종목이 조회됩니다.
-    """
     SIM_NET_BUY = '00'
     SIM_NET_SELL = '01'
     SUM_NET_BUY = '02'
