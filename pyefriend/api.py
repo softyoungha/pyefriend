@@ -864,7 +864,7 @@ class DomesticApi(Api):
                 .set_data(1, '11302')
                 .set_data(2, direction_num)
                 .set_data(3, date)
-                .set_data(4, index_code.value)
+                .set_data(4, index_code)
                 .request_data(Service.KST13020000)
         )
 
