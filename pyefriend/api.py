@@ -545,10 +545,10 @@ class DomesticApi(Api):
         maximum = int(self.get_data(19))  # 20: 주식 최고가
         opening = int(self.get_data(18))  # 19: 주식 시가
         base = int(self.get_data(23))  # 23: 주식 기준가(전일 종가)
-        volume = int(self.get_data(16))  # 16: 누적 거래량
+        total_volume = int(self.get_data(16))  # 16: 누적 거래량
 
         # response
-        return current, minimum, maximum, opening, base, volume
+        return current, minimum, maximum, opening, base, total_volume
 
     def list_product_histories(self,
                                product_code: str,
