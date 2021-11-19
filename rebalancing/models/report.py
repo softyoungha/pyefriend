@@ -296,7 +296,7 @@ class Report(Base):
                 'opening': opening,
                 'base': base,
             }
-            for code, (current, minimum, maximum, opening, base) in product_infos
+            for code, (current, minimum, maximum, opening, base, volume) in product_infos
         ]
 
         # update

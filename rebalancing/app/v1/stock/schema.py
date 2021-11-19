@@ -132,6 +132,7 @@ class ProductPrice(BaseModel):
     maximum: Number = Field(..., title='주식 최고가')
     opening: Number = Field(..., title='주식 시가')
     base: Number = Field(..., title='주식 기준가(전일 종가)')
+    volume: int = Field(..., title='누적 거래량')
 
 
 class ProductChart(BaseModel):

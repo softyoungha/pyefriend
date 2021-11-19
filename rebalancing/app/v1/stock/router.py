@@ -196,13 +196,14 @@ async def get_product_prices(request: GetProductInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    current, minimum, maximum, opening, base = api.get_product_prices(product_code=request.product_code)
+    current, minimum, maximum, opening, base, volume = api.get_product_prices(product_code=request.product_code)
     return {
         'current': current,
         'minimum': minimum,
         'maximum': maximum,
         'opening': opening,
         'base': base,
+        'volume': volume
     }
 
 

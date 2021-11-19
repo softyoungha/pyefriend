@@ -532,7 +532,7 @@ class DomesticApi(Api):
             for index, name in mapping
         }
 
-    def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int]:
+    def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int, int]:
         # set
         (
             self.set_data(0, 'J')  # 0: 시장분류코드 / J: 주식, ETF, ETN
@@ -545,9 +545,10 @@ class DomesticApi(Api):
         maximum = int(self.get_data(19))  # 20: 주식 최고가
         opening = int(self.get_data(18))  # 19: 주식 시가
         base = int(self.get_data(23))  # 23: 주식 기준가(전일 종가)
+        volume = int(self.get_data(16))  # 16: 누적 거래량
 
         # response
-        return current, minimum, maximum, opening, base
+        return current, minimum, maximum, opening, base, volume
 
     def list_product_histories(self,
                                product_code: str,
