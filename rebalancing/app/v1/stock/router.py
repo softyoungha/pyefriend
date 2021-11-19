@@ -1,11 +1,9 @@
-import os
-from typing import Optional, List
-from fastapi import APIRouter, Request, Response, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException
 
 from pyefriend import load_api
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
-from rebalancing.utils.const import DWM
 from rebalancing.app.auth import login_required
+from rebalancing.utils.const import *
 from .schema import *
 
 r = APIRouter(prefix='/stock',
@@ -271,6 +269,26 @@ async def list_popular_products(request: LoginInput,
     return api.list_popular_products(direction=direction,
                                      index_code=index,
                                      last_day=last_day)
+
+
+@r.post('/product/foreigner', response_model=List[ForeignerNetBuySell])
+async def list_popular_products(request: LoginInput,
+                                net_buy_sell: NetBuySell,
+                                index_code: IndexCode = IndexCode.TOTAL,
+                                user=Depends(login_required)):
+    """
+    ### 상승 하락 종목 리스트
+    - direction: 'MAXIMUM' 상한, 'INCREASE' 상승, 'NOCHANGE' 보합, 'DECREASE' 하락, 'MINIMUM' 하한
+    - index_code: '0000' 전체, '0001' 코스피, '1001' 코스닥
+    """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.list_foreigner_net_buy_or_sell(net_buy_sell=net_buy_sell,
+                                              index_code=index_code)
 
 
 @r.post('/sector', response_model=SectorInfo)

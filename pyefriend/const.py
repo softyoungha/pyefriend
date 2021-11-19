@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class System:
     """ 시스템 정보 """
     CSLID = '08E39D09-206D-43D1-AC78-D1AE3635A4E9'
@@ -31,6 +30,7 @@ class Service:
     KST13020000 = 'KST13020000'  # 상승 하락 종목
     PUP02120000 = 'PUP02120000'  # 업종 지수정보
     PUP02100200 = 'PUP02100200'  # 업종 현재주시(분틱)
+    PST045600C0 = 'PST045600C0'  # 외인기관동시합산매수
 
     # 미국(모의투자에서 제공되지 않을 수 있음)
     OS_ST01 = 'OS_ST01'  # 해외주식 현재가 체결
@@ -140,7 +140,19 @@ class Direction(str, Enum):
     MINIMUM = 'MINIMUM'
 
 
-class IndexCode(str, Enum):
+class IndexCode(Enum):
     TOTAL = '0000'
     KOSPI = '0001'
     KOSDAQ = '1001'
+
+
+class NetBuySell(Enum):
+    """
+    - SIM NET BUY/SELL(동시순매수(도)): 외국인장중가집계와 기관종합장중가집계 모두 순매수(도)한 종목의 합산 값을 기준으로 상위순으로 종목이 조회됩니다.
+    - SUM NET BUY/SELL(합산순매수(도)): 외국인장중가집계와 기관종합장중가집계 합산 값을 기준으로 순매수(도) 상위순으로 종목이 조회됩니다.
+    """
+    SIM_NET_BUY = '00'
+    SIM_NET_SELL = '01'
+    SUM_NET_BUY = '02'
+    SUM_NET_SELL = '03'
+    TOTAL = '04'

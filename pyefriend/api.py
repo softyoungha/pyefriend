@@ -15,10 +15,10 @@ from typing import List, Dict, Union, Optional, Tuple, Any
 from datetime import datetime
 import requests
 
-from .const import Service, MarketCode, Currency, ProductCode, DWM, Unit, Direction, IndexCode, SectorCode
+from .exceptions import *
+from .const import *
 from .log import logger as pyefriend_logger
 from .controller import Controller
-from .exceptions import *
 
 # [Section] Variables
 
@@ -875,6 +875,40 @@ class DomesticApi(Api):
             dict(index=15, key='continuous_increase_days', type=int),
             dict(index=16, key='continuous_decrease_days', type=int),
             dict(index=17, key='continuous_nochange_days', type=int),
+        ]
+        data = self.get_data(multiple=True, columns=columns)
+        return data
+
+    def list_foreigner_net_buy_or_sell(self,
+                                       net_buy_sell: NetBuySell,
+                                       index_code: IndexCode = IndexCode.TOTAL,
+                                       **kwargs):
+        if index_code == IndexCode.TOTAL:
+            index_code = '0000'
+        elif index_code == IndexCode.KOSPI:
+            index_code = '1001'
+        elif index_code == IndexCode.KOSDAQ:
+            index_code = '2001'
+        else:
+            raise ValueError('index_code must be set')
+
+        (
+            self
+                .set_data(0, net_buy_sell.value)
+                .set_data(1, index_code)
+                .request_data(Service.PST045600C0)
+        )
+
+        columns = [
+            dict(index=0, key='rank', not_null=True),
+            dict(index=1, key='product_code', not_null=True),
+            dict(index=2, key='product_name'),
+            dict(index=3, key='closing_price', type=int),
+            dict(index=14, key='foreigner_total_ask', type=int),
+            dict(index=15, key='foreigner_total_bid', type=str),
+            dict(index=7, key='total_volume', type=int),
+            dict(index=10, key='net_quantity', type=int),
+            dict(index=13, key='fake_net_quantity', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data

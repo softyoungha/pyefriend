@@ -1,7 +1,8 @@
 from typing import Optional, Union, List
+
 from pydantic import BaseModel, Field
 
-from rebalancing.utils.const import Market, Direction, IndexCode
+from rebalancing.utils.const import Market
 
 # vars
 Number = Union[float, int]
@@ -209,3 +210,15 @@ class SectorInfo(BaseModel):
 
 class GetSectorChartInput(GetSectorInput):
     pass
+
+
+class ForeignerNetBuySell(BaseModel):
+    rank: int = Field(..., title='순위')
+    product_code: str = Field(..., title='종목코드')
+    product_name: str = Field(..., title='종목명')
+    closing_price: int = Field(..., title='종가')
+    foreigner_total_ask: int = Field(..., title='외국인총매도수량')
+    foreigner_total_bid: int = Field(..., title='외국인총매수수량')
+    total_volume: int = Field(..., title='거래량')
+    net_quantity: int = Field(..., title='합산수량')
+    fake_net_quantity: int = Field(..., title='합산수량(가집계)')
