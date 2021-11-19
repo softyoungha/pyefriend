@@ -912,7 +912,7 @@ class DomesticApi(Api):
 
         (
             self
-                .set_data(0, net_buy_sell.value)
+                .set_data(0, net_buy_sell)
                 .set_data(1, index_code)
                 .request_data(Service.PST045600C0)
         )
