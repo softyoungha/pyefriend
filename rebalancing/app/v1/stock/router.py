@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import APIRouter, status, Depends, HTTPException
 
 from pyefriend import load_api
@@ -222,6 +223,23 @@ async def list_product_histories(request: GetProductInput,
                                       standard=standard)
 
 
+@r.post('/product/history/daily', response_model=List[PriceHistory])
+async def list_product_histories_daily(request: GetProductInput,
+                                       start_date: date,
+                                       end_date: date,
+                                       user=Depends(login_required)):
+    """### 일자별 종목의 현/시/고/체결량 제공  """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.list_product_histories_daily(product_code=request.product_code,
+                                            start_date=start_date,
+                                            end_date=end_date)
+
+
 @r.post('/product/chart', response_model=List[ProductChart])
 async def get_product_chart(request: GetProductInput,
                             interval: int = 60,
@@ -235,6 +253,8 @@ async def get_product_chart(request: GetProductInput,
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.get_product_chart(product_code=request.product_code,
                                  interval=interval)
+
+
 
 
 @r.post('/product/spread', response_model=ProductSpread)

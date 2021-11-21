@@ -12,7 +12,7 @@
 import pandas as pd
 from logging import Logger
 from typing import List, Dict, Union, Optional, Tuple, Any
-from datetime import datetime
+from datetime import datetime, date
 import requests
 
 from .exceptions import *
@@ -570,6 +570,41 @@ class DomesticApi(Api):
                 .request_data(Service.SCPD)
                 .get_data(multiple=True, columns=columns)
         )
+
+    def list_product_histories_daily(self,
+                                     product_code: str,
+                                     start_date: Union[date, str],
+                                     end_date: Union[date, str],
+                                     **kwargs):
+        """ 일자별 현/시/고/체결량 제공 """
+
+        if isinstance(start_date, date):
+            start_date = start_date.strftime('%Y%m%d')
+
+        if isinstance(end_date, date):
+            end_date = end_date.strftime('%Y%m%d')
+
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, product_code)  # 1: 종목코드
+                .set_data(0, 'J', 1)
+                .set_data(1, product_code, 1)
+                .set_data(2, start_date, 1)
+                .set_data(3, end_date, 1)
+                .request_data(Service.KST03010100)
+        )
+
+        columns = [
+            dict(index=0, key='standard_date', not_null=True),
+            dict(index=4, key='minimum', type=float),
+            dict(index=3, key='maximum', type=float),
+            dict(index=2, key='opening', type=float),
+            dict(index=1, key='closing', not_null=True),
+            dict(index=5, key='volume', type=int),
+        ]
+        data = self.get_data(multiple=True, columns=columns)
+        return data
 
     def get_sector_info(self, sector_code: str, **kwargs) -> dict:
         mapping = [
