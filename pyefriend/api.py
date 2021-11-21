@@ -603,7 +603,7 @@ class DomesticApi(Api):
             dict(index=1, key='closing', not_null=True),
             dict(index=5, key='volume', type=int),
         ]
-        data = self.get_data(multiple=True, columns=columns)
+        data = self.get_data(multiple=True, columns=columns, block_index=1)
         return data
 
     def get_sector_info(self, sector_code: str, **kwargs) -> dict:
