@@ -225,8 +225,8 @@ async def list_product_histories(request: GetProductInput,
 
 @r.post('/product/history/daily', response_model=List[PriceHistory])
 async def list_product_histories_daily(request: GetProductInput,
-                                       start_date: date,
-                                       end_date: date,
+                                       start_date: str,
+                                       end_date: str,
                                        user=Depends(login_required)):
     """### 일자별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
