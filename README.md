@@ -31,7 +31,7 @@ pyefriend_api 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대
 
 ## Warning
 
-- pyefriend, rebalancing 코드는 개인 투자 목적으로 사용하거나 스터디 용도로만 사용하실 수 있습니다. 
+- pyefriend 코드는 개인 투자 목적으로 사용하거나 스터디 용도로만 사용하실 수 있습니다. 
 - pyefriend는 [한국투자증권 Expert 표준 API Reference Guide](https://new.real.download.dws.co.kr/download/expert_manual.pdf)
   (2021-11-09 기준)를 참고하여 작성하였습니다.
 
@@ -92,7 +92,7 @@ activate.bat
 
 ## Getting started
 
-pyefriend, rebalancing 모듈 모두 다음의 조건에서 정상작동됩니다. 
+pyefriend 모듈 모두 다음의 조건에서 정상작동됩니다. 
 
 - Python 32bix **관리자** 모드 실행
 - efriend expert **관리자** 모드 후 로그인 완료(모의투자일 경우는 비밀번호만, 운영일 경우 공인인증서 입력 후 로그인까지 완료) 

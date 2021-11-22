@@ -4,9 +4,9 @@
 :: You can create virtual env with the command `python -m venv venv`
 
 :: set Environment variables
-set REBAL_HOME=%cd%
-set REBAL_CONF=%cd%/config.test.yml
-set REBAL_PASSWORD=password
+set EFRIEND_HOME=%cd%
+set EFRIEND_CONF=%cd%/config.test.yml
+set EFRIEND_PASSWORD=password
 
 :: Activate Python
 %cd%\venv\Scripts\activate

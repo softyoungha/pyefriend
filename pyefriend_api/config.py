@@ -6,10 +6,10 @@ from pyefriend_api.exceptions import ConfigException
 from pyefriend_api.utils.tool import load_yaml
 
 
-HOME_PATH = os.getenv("REBAL_HOME", None)
-CONF_PATH = os.getenv("REBAL_CONF", None)
+HOME_PATH = os.getenv("EFRIEND_HOME", None)
+CONF_PATH = os.getenv("EFRIEND_CONF", None)
 
-assert HOME_PATH is not None, "환경변수 'REBAL_HOME'를 설정해야합니다."
+assert HOME_PATH is not None, "환경변수 'EFRIEND_HOME'를 설정해야합니다."
 
 if CONF_PATH is None:
     CONF_PATH = os.path.join(HOME_PATH, 'config.yml')
@@ -30,9 +30,9 @@ def get_config_yaml() -> dict:
 
     else:
         raise FileNotFoundError(f"config.yml 파일을 찾을 수 없습니다: \n"
-                                f"1. 환경변수에 'REBAL_CONF'를 추가하세요.\n"
-                                f"2. rebalancing module 내의 config.template.yml을 복사하여"
-                                f"'REBAL_CONF'로 위치시킨 후 config 내용을 수정하세요.")
+                                f"1. 환경변수에 'EFRIEND_CONF'를 추가하세요.\n"
+                                f"2. pyefriend module 내의 config.template.yml을 복사하여"
+                                f"'EFRIEND_CONF'로 위치시킨 후 config 내용을 수정하세요.")
 
 
 class Config:

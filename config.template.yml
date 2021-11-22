@@ -5,9 +5,6 @@ core:
   # 계좌명('-' 없이)초기 설정시 사용되며 db 구성 이후 update로 설정 가능.
   account: ''
 
-  # 리포트 저장 위치(REBAL_HOME에 대한 상대경로)
-  report_dir: 'report/test'
-
 
 fastapi:
 
@@ -16,7 +13,7 @@ fastapi:
 
   # fastapi 비밀번호 환경변수명(해당 환경변수에 password 저장)
   # activate.bat 에서 설정할 수 있음
-  password_env: REBAL_PASSWORD
+  password_env: EFRIEND_PASSWORD
 
   # 비밀번호 암호화시 사용하는 SECRET_KEY
   secret_key: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
