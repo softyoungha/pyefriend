@@ -6,7 +6,7 @@
 :: set Environment variables
 set EFRIEND_HOME=%cd%
 set EFRIEND_CONF=%cd%/config.real.yml
-set EFRIEND_PASSWORD=password
+set EFRIEND_PASSWORD=Dmazhffk1!!
 
 :: Activate Python
 %cd%\venv\Scripts\activate
