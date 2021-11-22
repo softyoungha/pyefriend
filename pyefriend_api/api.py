@@ -102,5 +102,4 @@ def create_app(debug: bool = True) -> FastAPI:
     return app
 
 
-if __name__ == '__main__':
-    app = create_app()
+app = create_app()
