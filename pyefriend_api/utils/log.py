@@ -3,7 +3,7 @@ import logging
 from pyefriend_api.config import Config
 
 
-def get_logger(name: str = 're-balancing',
+def get_logger(name: str = 'api',
                log_level: int = None,
                use_stream: bool = True,
                use_file: bool = True,
@@ -23,8 +23,7 @@ def get_logger(name: str = 're-balancing',
     remove_logger(logger=logger)
 
     # create formatter
-    formatter = logging.Formatter(log_format,
-                                  datefmt='%Y-%m-%d %H:%M:%S')
+    formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
 
     # stream handler
     if use_stream:

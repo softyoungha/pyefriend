@@ -55,5 +55,5 @@ def initialize():
     configure_sqlalchemy_session()
 
 
-logger.info('Initialize Re-balancing!')
+logger.info('Initialize Py-Efriend!')
 initialize()
