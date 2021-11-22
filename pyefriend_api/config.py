@@ -2,8 +2,8 @@
 import os
 from typing import Any, Optional, List
 
-from rebalancing.exceptions import ConfigException
-from rebalancing.utils.tool import load_yaml
+from pyefriend_api.exceptions import ConfigException
+from pyefriend_api.utils.tool import load_yaml
 
 
 HOME_PATH = os.getenv("REBAL_HOME", None)

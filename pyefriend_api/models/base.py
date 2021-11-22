@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import MetaData, Column, Integer, DateTime, func, text
 from sqlalchemy.orm import declarative_base, DeclarativeMeta
 
-from rebalancing.settings import engine
+from pyefriend_api.settings import engine
 
 # create metadata
 metadata: Optional[MetaData] = MetaData(bind=engine)

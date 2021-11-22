@@ -2,8 +2,8 @@ import os
 from typing import Optional, List
 from fastapi import APIRouter, Request, Response, status, Depends
 
-from rebalancing.models.setting import Setting as SettingModel
-from rebalancing.app.auth import login_required
+from pyefriend_api.models.setting import Setting as SettingModel
+from pyefriend_api.app.auth import login_required
 from .schema import SettingOrm, SettingUpdate
 
 r = APIRouter(prefix='/setting',

@@ -7,9 +7,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from rebalancing.config import Config
-from rebalancing.utils.password import verify_password, get_hashed_password
-from rebalancing.exceptions import CredentialException
+from pyefriend_api.config import Config
+from pyefriend_api.utils.password import verify_password, get_hashed_password
+from pyefriend_api.exceptions import CredentialException
 
 
 # fastapi 비밀번호가 담긴 환경변수명

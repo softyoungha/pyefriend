@@ -3,8 +3,8 @@ from fastapi import APIRouter, status, Depends, HTTPException
 
 from pyefriend import load_api
 from pyefriend.exceptions import NotConnectedException, AccountNotExistsException
-from rebalancing.app.auth import login_required
-from rebalancing.utils.const import *
+from pyefriend_api.app.auth import login_required
+from pyefriend_api.utils.const import *
 from .schema import *
 
 r = APIRouter(prefix='/stock',

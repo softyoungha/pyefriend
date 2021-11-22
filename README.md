@@ -9,15 +9,13 @@ pyefriend는 한국투자증권 OpenAPI(**efriend Expert**)과 연동하여
 국내/해외 주식의 가격 종목 리스트 관리 및 조회를 할 수 있으며,
 추가적으로 입력한 계좌에 대한 리밸런싱 리포트를 자동 생성하여 Next plan을 결정할 수 있도록 도와줍니다.  
 
-패키지는 **pyefriend**와 **rebalancing** 두가지 모듈로 구성되어 있습니다.
+패키지는 **pyefriend**와 **pyefriend_api** 두가지 모듈로 구성되어 있습니다.
 pyefriend 모듈은 PyQt5 패키지를 사용하여 efriend Expert와 상호작용하여 종목 조회/매수/매도할 수 있으며,
 Low-level(**pyefriend/controller.py**), High-level(**pyefriend/api.py**) API를 제공합니다.
-그리고 rebalancing 모듈에 대한 dependency를 가지고 있지 않기 때문에 별도의 설정 없이 단독으로 사용할 수 있습니다.
+그리고 pyefriend_api 모듈에 대한 dependency를 가지고 있지 않기 때문에 별도의 설정 없이 단독으로 사용할 수 있습니다.
 
-rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대해 
-국내/해외 총 예수금, 종목별 시/종/저/고/기준가, KOSPI/SP&500 지수 등을 조회할 수 있고 
-이를 토대로 **리밸런싱(Re-balancing)** 포트폴리오, 플랜을 생성합니다. 
-리밸런싱에 대한 이론은 구글 검색을 참고하시기 바랍니다.
+pyefriend_api 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대해 
+국내/해외 총 예수금, 종목별 시/종/저/고/기준가, KOSPI/SP&500 지수 등을 조회할 수 있습니다.
 
 * pyefriend 모듈은 [eFriendPy](https://github.com/pjueon/eFriendPy)를 참고하여 만든 코드를 재해석하여 구성하였습니다.
 
@@ -26,7 +24,6 @@ rebalancing 모듈은 pyefriend 모듈을 활용하여 설정한 계좌에 대�
 - [Warning](#warning)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
-- [Rebalancing](#rebalancing)
 - [Process](#process)
 - [ETC](#etc)
 - [Links](#links)
@@ -189,154 +186,6 @@ parameter, return type 등의 자세한 내용은 api.py 내에서 주석과 함
 
 <br/>
 
-### Module: rebalancing
-
-1. rebalancing의 초기 설정을 위해서는 먼저 환경변수 설정을 해야합니다.
-
-    ```shell
-    # 실행 경로
-    set REBAL_HOME=.
-    
-    # config.yml 위치(입력하지 않을 경우 %REBAL_HOME%/config.yml 로 자동 설정)
-    set REBAL_CONF=./config.yml
-    
-    # FastAPI 실행시 관리자 로그인을 위한 계정 비밀번호
-    set REBAL_PASSWORD=password
-    ```
-    
-    > Windows cmd.exe에서는 `set`으로 해당 cmd 세션에 대해서 환경변수를 설정할 수 있습니다.
-    > 
-    > 새로운 cmd에서는 새롭게 설정해주어야 합니다.
-    > 
-    > 환경변수를 유지하고 싶다면 컴퓨터 환경변수로 등록하거나 Pycharm 세팅을 활용하시면 됩니다.   
-    
-2. REBAL_CONF 위치에 `config.template.yml`을 복사하여 설정값을 변경합니다.
-
-    config.yml은 다음과 같이 section/key/value 형식으로 구성되어 있습니다.
-    ```yaml
-    # .../config.yml (%REBAL_CONF%)
-    section:  
-      # key description
-      key: value
-      ...
-    ```
-
-3. database를 생성합니다.
-   
-    config.yml -> `database` section -> `sqlalchemy_conn_str` 에서
-    이미 생성되어 있는 다른 database connection을 설정할 수 있습니다.
-    혹은, sqlite3(config.template.yml) 경로를 사용자 경로에 맞춰 변경한 뒤 다음의 코드를 실행하면
-       
-    ```shell
-    # cmd terminal: run ipython
-    ipython
-    ```
-    ```python
-    # ipython 
-    from rebalancing.utils.db import init_db
-    
-    # database 생성
-    init_db()
-    ```
-    
-    `init_db` 함수 실행과 동시에 sqlite3 database 파일(ex. database.db)이 생성되며
-    rebalancing에서 사용하는 모든 테이블들이 생성됩니다.
-    
-    > rebalancing 내에서 사용하는 database 작업이 개인 사용 목적이므로 많은 세션을 요구하지 않고, 
-      잦은 transaction이 일어나지 않으므로 sqlite3만으로도 충분합니다.
-      
-    > database 내에 'setting' 테이블이 init_db 실행과 함께 값이 insert됩니다.
-
-4. db table 내에 data를 insert합니다.
-
-    ```python
-    from rebalancing.utils.db import init_data
-    
-    # 초기 데이터 insert
-    init_data()
-    ```
-    
-    생성되는 초기 데이터는 국민연금기관의 국내/해외 투자 포트폴리오를 기반으로 계산된 데이터입니다.
-    ([국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp))
-    
-    - rebalancing/data/init_data_domestic.csv
-    - rebalancing/data/init_data_overseas.csv
-    
-    weight 국민연금기관이 투자한 금액으로, 리밸런싱할 비율을 계산하는 값입니다.
-
-5. 생성된 'portfolio' 테이블에서 포트폴리오에서 사용할 종목만 use_yn = 1 로 변경
-
-    가진 예산이 50만원일 때 모든 종목을 use_yn = 1로 하여도 개별 종목들이 비싸기 때문에
-    리밸런싱으로 계산할 수 없습니다.(엔씨소프트 주식 현재가 70만원)
-    따라서 예산에 감안해서 리밸런싱을 진행할 종목들을 선택해야 하고, 
-    예산도 어느정도 확보한 상태에서 분산투자가 가능합니다. 
-    
-    > DBeaver와 같은 DB 접속 Tool을 사용하여 변경하는 것을 권장합니다.  
-
-6. 리밸런싱 실행
-
-    리밸런싱을 실행하는 방법은 총 세가지가 있습니다.
-  
-    ### 방법1: cmd에서 python 프로그램으로 실행
-      
-    `python -m rebalancing -h` 커맨드를 입력하면 다음과 같이 help 메시지가 출력됩니다.
-    
-    > cmd.exe가 역시 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
-    
-    ```text
-    (venv) C:\...\rebalancing> python -m rebalancing -h
-    usage: __main__.py [-h] --market {domestic,overseas} [--created CREATED] [--test] [--account ACCOUNT] [--password] [--skip-refresh]
-    
-    Re-balancing 모듈 실행
-    
-    optional arguments:
-      -h, --help            show this help message and exit
-      --market {domestic,overseas}, -t {domestic,overseas}
-                            domestic: 국내 투자 선택
-                            overseas: 해외 투자 선택
-      --created CREATED, -c CREATED
-                            Report 생성이력(YYYYmmdd_HH_MM_SS format)
-      --account ACCOUNT, -a ACCOUNT
-                            계좌명('-' 제외), 입력하지 않을 경우 config.yml에서 사용
-      --password, -p        계좌 매수/매도시 입력 비밀번호
-                            입력하지 않을 경우 config.yml에서 사용
-                            -p/--password 입력 후 별도로 입력
-      --skip-refresh, -s    입력시 종목 최신화 skip
-    
-    ```
-
-    ### 방법2: jupyter notebook에서 모듈 임포트 후 커스텀 코드로 실행
-    
-    rebalancing_example.ipynb를 참고하세요.
-
-    ### 방법3: FastAPI 실행 후 request
-
-    다음의 커맨드로 FastAPI를 실행합니다.
-    
-    > cmd.exe가 관리자 모드로 실행되어야 하며, 이후 `activate.bat`을 통해 venv가 activate 되어야 합니다.
-    
-    ```shell
-    uvicorn rebalancing.api:app --reload
-    ```
-    
-    브라우저에서 `http://localhost:8000`로 접속하면 **Re-balancing App** 화면이 나옵니다.
-    
-    > fastapi 기본포트는 8000입니다.
-    >
-    > 타 컴퓨터에서 접속이 가능하게 하려면 `--host 0.0.0.0`, 포트를 변경하려면 `--port xxxx`를 추가합니다.
-    >
-    > --reload 옵션이 있으면 python source code가 변경되었을 때 다시 리로딩합니다.
-    > 
-    > 프로젝트 폴더 내 config.template.yml 이나 md 파일, csv 파일이 변경되어도 리로딩되지 않으므로 참고하세요.
-    
-    ```shell
-    uvicorn rebalancing.api:app --host 0.0.0.0 --port 8080 --reload
-    ```
-    
-    Re-balancing App 에 관한 내용은 App 실행시 상단 Description, 혹은 rebalancing/DESCRIPTION.md를 확인하세요.
-
-<br/>
-
 ## Custom API Control
 
 efriend Service 리스트는 efriend Expert 프로그램 실행시 도움말에서 인터페이스 정의서를 확인하거나, 
@@ -403,18 +252,6 @@ class MyApi(DomesticApi):
 
 
 ---
-
-## Process
-
-1. refresh: DB 주식 시세 최신화
-
-2. planning: 매수, 매도 수량 책정
-
-3. re-balance: 현재 수량과 비교하여 주문
-
-## ETC
-
-[국민연금 포트폴리오](https://fund.nps.or.kr/jsppage/fund/mpc/mpc_03.jsp)
 
 ## Links
 

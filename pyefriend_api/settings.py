@@ -7,9 +7,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from rebalancing.config import Config, HOME_PATH
-from rebalancing.utils.log import get_logger
-from rebalancing.utils.tool import is_jupyter_kernel
+from pyefriend_api.config import Config, HOME_PATH
+from pyefriend_api.utils.log import get_logger
+from pyefriend_api.utils.tool import is_jupyter_kernel
 
 # 기본 폴더
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

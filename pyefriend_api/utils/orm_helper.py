@@ -4,7 +4,7 @@ from inspect import signature
 from contextlib import contextmanager
 from sqlalchemy.orm import Session
 
-from rebalancing import settings
+from pyefriend_api import settings
 
 
 @contextmanager

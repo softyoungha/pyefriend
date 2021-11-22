@@ -2,8 +2,8 @@ from typing import Optional
 from sqlalchemy import Column, Integer, Text, String, JSON, Float, Index, ForeignKey, Boolean
 from sqlalchemy.orm import Session
 
-from rebalancing.utils.orm_helper import provide_session
-from rebalancing.config import Config
+from pyefriend_api.utils.orm_helper import provide_session
+from pyefriend_api.config import Config
 from .base import Base, Length
 
 

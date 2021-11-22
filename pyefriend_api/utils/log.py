@@ -1,6 +1,6 @@
 import logging
 
-from rebalancing.config import Config
+from pyefriend_api.config import Config
 
 
 def get_logger(name: str = 're-balancing',

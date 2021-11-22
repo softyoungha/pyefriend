@@ -2,7 +2,7 @@ from typing import Optional, Union, List
 
 from pydantic import BaseModel, Field
 
-from rebalancing.utils.const import Market
+from pyefriend_api.utils.const import Market
 
 # vars
 Number = Union[float, int]
