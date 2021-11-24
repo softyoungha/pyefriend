@@ -617,10 +617,11 @@ class DomesticApi(Api):
             dict(index=4, key='minimum', type=float),
             dict(index=3, key='maximum', type=float),
             dict(index=2, key='opening', type=float),
-            dict(index=1, key='closing', not_null=True),
+            dict(index=1, key='closing', type=float, not_null=True),
             dict(index=5, key='volume', type=int),
         ]
         data = self.get_data(multiple=True, columns=columns, block_index=1)
+        data = [e for e in data if e['closing'] != 0]
         return data
 
     def get_sector_info(self, sector_code: str, **kwargs) -> dict:
