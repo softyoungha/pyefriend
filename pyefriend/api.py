@@ -50,6 +50,9 @@ def get_or_create_controller(logger=None, raise_error: bool = True):
                     elif msg_code == '90000000':
                         raise NotInVTSException(msg)
 
+                    elif msg_code == '40070000':
+                        raise BiddingException(msg)
+
                     else:
                         raise UnExpectedException(msg)
 
@@ -527,10 +530,27 @@ class DomesticApi(Api):
             (6, 'sector_code')
         ]
 
-        return {
+        response_data = {
             name: self.controller.GetSingleDataStockMaster(product_code, index)
             for index, name in mapping
         }
+
+        # request
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.KST03010100)
+        )
+
+        # response
+        per = self.get_data(26)
+        eps = self.get_data(27)
+
+        response_data['per'] = per
+        response_data['eps'] = eps
+
+        return response_data
 
     def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int, int]:
         # set

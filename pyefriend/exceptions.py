@@ -32,3 +32,7 @@ class MarketClosingException(Exception):
 
 class NotInVTSException(Exception):
     """ 모의투자에서는 제공되지 않는 서비스 """
+
+
+class BiddingException(Exception):
+    """ 모의투자 주문처리 불가(매매불가 종목) """

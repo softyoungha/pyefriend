@@ -124,6 +124,8 @@ class GetProductInput(LoginInput):
 class ProductInfo(BaseModel):
     product_name: str = Field(..., title='품목명')
     sector_code: str = Field(..., title='업종 중유형 코드')
+    per: float = Field(..., title='PER')
+    eps: float = Field(..., title='EPS')
 
 
 class ProductPrice(BaseModel):
