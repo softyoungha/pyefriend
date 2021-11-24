@@ -544,11 +544,8 @@ class DomesticApi(Api):
         )
 
         # response
-        per = self.get_data(26)
-        eps = self.get_data(27)
-
-        response_data['per'] = per
-        response_data['eps'] = eps
+        response_data['per'] = float(self.get_data(26))
+        response_data['eps'] = float(self.get_data(27))
 
         return response_data
 
