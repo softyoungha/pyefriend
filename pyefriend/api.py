@@ -614,11 +614,11 @@ class DomesticApi(Api):
 
         columns = [
             dict(index=0, key='standard_date', not_null=True),
-            dict(index=4, key='minimum', type=float),
-            dict(index=3, key='maximum', type=float),
-            dict(index=2, key='opening', type=float),
-            dict(index=1, key='closing', type=float, not_null=True),
-            dict(index=5, key='volume', type=int),
+            dict(index=4, key='minimum', dtype=float),
+            dict(index=3, key='maximum', dtype=float),
+            dict(index=2, key='opening', dtype=float),
+            dict(index=1, key='closing', dtype=float, not_null=True),
+            dict(index=5, key='volume', dtype=int),
         ]
         data = self.get_data(multiple=True, columns=columns, block_index=1)
         data = [e for e in data if e['closing'] != 0]
@@ -803,16 +803,16 @@ class DomesticApi(Api):
 
         columns = [
             dict(index=0, key='accepted_time'),
-            dict(index=61, key='total_ask_count', type=int),
-            dict(index=62, key='total_bid_count', type=int),
-            dict(index=63, key='total_ask_count_icdc', type=int),
-            dict(index=64, key='total_bid_count_icdc', type=int),
-            *[dict(index=i, key=f'ask_price_{order}', type=int) for order, i in enumerate(range(1, 11))],
-            *[dict(index=i, key=f'bid_price_{order}', type=int) for order, i in enumerate(range(11, 21))],
-            *[dict(index=i, key=f'ask_count_{order}', type=int) for order, i in enumerate(range(21, 31))],
-            *[dict(index=i, key=f'bid_count_{order}', type=int) for order, i in enumerate(range(31, 41))],
-            *[dict(index=i, key=f'ask_count_icdc_{order}', type=int) for order, i in enumerate(range(41, 51))],
-            *[dict(index=i, key=f'bid_count_icdc_{order}', type=int) for order, i in enumerate(range(51, 61))],
+            dict(index=61, key='total_ask_count', dtype=int),
+            dict(index=62, key='total_bid_count', dtype=int),
+            dict(index=63, key='total_ask_count_icdc', dtype=int),
+            dict(index=64, key='total_bid_count_icdc', dtype=int),
+            *[dict(index=i, key=f'ask_price_{order}', dtype=int) for order, i in enumerate(range(1, 11))],
+            *[dict(index=i, key=f'bid_price_{order}', dtype=int) for order, i in enumerate(range(11, 21))],
+            *[dict(index=i, key=f'ask_count_{order}', dtype=int) for order, i in enumerate(range(21, 31))],
+            *[dict(index=i, key=f'bid_count_{order}', dtype=int) for order, i in enumerate(range(31, 41))],
+            *[dict(index=i, key=f'ask_count_icdc_{order}', dtype=int) for order, i in enumerate(range(41, 51))],
+            *[dict(index=i, key=f'bid_count_icdc_{order}', dtype=int) for order, i in enumerate(range(51, 61))],
         ]
         data = self.get_data(multiple=True, columns=columns)[0]
         return {
@@ -852,12 +852,12 @@ class DomesticApi(Api):
         columns = [
             dict(index=0, key='executed_date', not_null=True),
             dict(index=1, key='executed_time', not_null=True),
-            dict(index=2, key='current', type=float),
-            dict(index=4, key='maximum', type=float),
-            dict(index=5, key='minimum', type=float),
-            dict(index=3, key='opening', type=float),
-            dict(index=7, key='volume', type=int),
-            dict(index=6, key='total_volume', type=int),
+            dict(index=2, key='current', dtype=float),
+            dict(index=4, key='maximum', dtype=float),
+            dict(index=5, key='minimum', dtype=float),
+            dict(index=3, key='opening', dtype=float),
+            dict(index=7, key='volume', dtype=int),
+            dict(index=6, key='total_volume', dtype=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data
@@ -874,9 +874,9 @@ class DomesticApi(Api):
 
         columns = [
             dict(index=0, key='executed_time', not_null=True),
-            dict(index=1, key='current', type=float, not_null=True),
-            dict(index=5, key='total_volume', type=int),
-            dict(index=6, key='volume', type=int),
+            dict(index=1, key='current', dtype=float, not_null=True),
+            dict(index=5, key='total_volume', dtype=int),
+            dict(index=6, key='volume', dtype=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
 
@@ -926,16 +926,16 @@ class DomesticApi(Api):
             dict(index=0, key='product_code', not_null=True),
             dict(index=1, key='product_status', not_null=True),
             dict(index=2, key='product_name'),
-            dict(index=3, key='current', type=int),
-            dict(index=4, key='compared_yesterday_amount', type=int),
-            dict(index=5, key='compared_yesterday_sign', type=str),
-            dict(index=7, key='total_volume', type=int),
-            dict(index=8, key='total_amount', type=int),
-            dict(index=13, key='continuous_maximum_days', type=int),
-            dict(index=14, key='continuous_minimum_days', type=int),
-            dict(index=15, key='continuous_increase_days', type=int),
-            dict(index=16, key='continuous_decrease_days', type=int),
-            dict(index=17, key='continuous_nochange_days', type=int),
+            dict(index=3, key='current', dtype=int),
+            dict(index=4, key='compared_yesterday_amount', dtype=int),
+            dict(index=5, key='compared_yesterday_sign', dtype=str),
+            dict(index=7, key='total_volume', dtype=int),
+            dict(index=8, key='total_amount', dtype=int),
+            dict(index=13, key='continuous_maximum_days', dtype=int),
+            dict(index=14, key='continuous_minimum_days', dtype=int),
+            dict(index=15, key='continuous_increase_days', dtype=int),
+            dict(index=16, key='continuous_decrease_days', dtype=int),
+            dict(index=17, key='continuous_nochange_days', dtype=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data
@@ -975,12 +975,12 @@ class DomesticApi(Api):
             dict(index=0, key='rank', not_null=True),
             dict(index=1, key='product_code', not_null=True),
             dict(index=2, key='product_name'),
-            dict(index=3, key='closing_price', type=int),
-            dict(index=14, key='foreigner_total_ask', type=int),
-            dict(index=15, key='foreigner_total_bid', type=str),
-            dict(index=7, key='total_volume', type=int),
-            dict(index=10, key='net_quantity', type=int),
-            dict(index=13, key='fake_net_quantity', type=int),
+            dict(index=3, key='closing_price', dtype=int),
+            dict(index=14, key='foreigner_total_ask', dtype=int),
+            dict(index=15, key='foreigner_total_bid', dtype=str),
+            dict(index=7, key='total_volume', dtype=int),
+            dict(index=10, key='net_quantity', dtype=int),
+            dict(index=13, key='fake_net_quantity', dtype=int),
         ]
         data = self.get_data(multiple=True, columns=columns)
         return data
