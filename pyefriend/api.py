@@ -592,6 +592,7 @@ class DomesticApi(Api):
                                      product_code: str,
                                      start_date: Union[date, str],
                                      end_date: Union[date, str],
+                                     market: Market,
                                      **kwargs):
         """ 일자별 현/시/고/체결량 제공 """
 
@@ -601,11 +602,16 @@ class DomesticApi(Api):
         if isinstance(end_date, date):
             end_date = end_date.strftime('%Y%m%d')
 
+        if market == Market.DOMESTIC:
+            market_code = 'J'
+        elif market == Market.OVERSEAS:
+            market_code = 'N'
+
         (
             self
-                .set_data(0, 'J')
+                .set_data(0, market_code)
                 .set_data(1, product_code)  # 1: 종목코드
-                .set_data(0, 'J', 1)
+                .set_data(0, market_code, 1)
                 .set_data(1, product_code, 1)
                 .set_data(2, start_date, 1)
                 .set_data(3, end_date, 1)

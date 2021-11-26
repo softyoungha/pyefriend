@@ -213,10 +213,6 @@ async def list_product_histories(request: GetProductInput,
                                  standard: DWM = DWM.D,
                                  user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
-    if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
-
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories(product_code=request.product_code,
@@ -229,22 +225,19 @@ async def list_product_histories_daily(request: GetProductInput,
                                        end_date: str,
                                        user=Depends(login_required)):
     """### 일자별 종목의 현/시/고/체결량 제공  """
-    if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
-
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories_daily(product_code=request.product_code,
                                             start_date=start_date,
-                                            end_date=end_date)
+                                            end_date=end_date,
+                                            market=request.market)
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
 async def get_product_chart(request: GetProductInput,
                             interval: int = 60,
                             user=Depends(login_required)):
-    """### interval별 종목의 현/시/고/체결량 제공  """
+    """### interval별 종목의 현/시/고/체결량 제공(해당 URI는 국내(domestic)만 가능합니다.)  """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='해당 URI는 국내(domestic)만 가능합니다.')
@@ -255,12 +248,10 @@ async def get_product_chart(request: GetProductInput,
                                  interval=interval)
 
 
-
-
 @r.post('/product/spread', response_model=ProductSpread)
 async def get_spread(request: GetSpreadInput,
                      user=Depends(login_required)):
-    """### 종목 현재시간 기준 매수/매도호가 정보  """
+    """### 종목 현재시간 기준 매수/매도호가 정보(해당 URI는 국내(domestic)만 가능합니다.)  """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='해당 URI는 국내(domestic)만 가능합니다.')
@@ -277,7 +268,7 @@ async def list_popular_products(request: LoginInput,
                                 last_day: bool = False,
                                 user=Depends(login_required)):
     """
-    ### 상승 하락 종목 리스트
+    ### 상승 하락 종목 리스트(해당 URI는 국내(domestic)만 가능합니다.)
     - direction: 'MAXIMUM' 상한, 'INCREASE' 상승, 'NOCHANGE' 보합, 'DECREASE' 하락, 'MINIMUM' 하한
     - index_code: '0000' 전체, '0001' 코스피, '1001' 코스닥
     """
@@ -298,7 +289,7 @@ async def list_foreigner_net_buy_or_sell(request: LoginInput,
                                          index: IndexCode = IndexCode.TOTAL,
                                          user=Depends(login_required)):
     """
-    ### 외국인 순매수/순매도 순위 리스트
+    ### 외국인 순매수/순매도 순위 리스트(해당 URI는 국내(domestic)만 가능합니다.)
     - SIM NET BUY/SELL(동시순매수(도)): 외국인장중가집계와 기관종합장중가집계 모두 순매수(도)한 종목의 합산 값을 기준으로 상위순으로 종목이 조회됩니다.
     - SUM NET BUY/SELL(합산순매수(도)): 외국인장중가집계와 기관종합장중가집계 합산 값을 기준으로 순매수(도) 상위순으로 종목이 조회됩니다.
     """
@@ -314,7 +305,7 @@ async def list_foreigner_net_buy_or_sell(request: LoginInput,
 
 @r.post('/sector', response_model=SectorInfo)
 async def get_sector_info(request: GetSectorInput, user=Depends(login_required)):
-    """### 종목명 및 대/중/소 업종 코드 """
+    """### 종목명 및 대/중/소 업종 코드(해당 URI는 국내(domestic)만 가능합니다.) """
     if request.market != Market.DOMESTIC:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='해당 URI는 국내(domestic)만 가능합니다.')
