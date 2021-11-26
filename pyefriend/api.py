@@ -483,6 +483,48 @@ class Api:
         """
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
+    def list_product_histories_daily(self,
+                                     product_code: str,
+                                     start_date: Union[date, str],
+                                     end_date: Union[date, str],
+                                     market: Market,
+                                     **kwargs):
+        """ 일자별 현/시/고/체결량 제공 """
+
+        if isinstance(start_date, date):
+            start_date = start_date.strftime('%Y%m%d')
+
+        if isinstance(end_date, date):
+            end_date = end_date.strftime('%Y%m%d')
+
+        if market == Market.DOMESTIC:
+            market_code = 'J'
+        elif market == Market.OVERSEAS:
+            market_code = 'N'
+
+        (
+            self
+                .set_data(0, market_code)
+                .set_data(1, product_code)  # 1: 종목코드
+                .set_data(0, market_code, 1)
+                .set_data(1, product_code, 1)
+                .set_data(2, start_date, 1)
+                .set_data(3, end_date, 1)
+                .request_data(Service.KST03010100)
+        )
+
+        columns = [
+            dict(index=0, key='standard_date', not_null=True),
+            dict(index=4, key='minimum', dtype=float),
+            dict(index=3, key='maximum', dtype=float),
+            dict(index=2, key='opening', dtype=float),
+            dict(index=1, key='closing', dtype=float, not_null=True),
+            dict(index=5, key='volume', dtype=int),
+        ]
+        data = self.get_data(multiple=True, columns=columns, block_index=1)
+        data = [e for e in data if e['closing'] != 0]
+        return data
+
     def buy_stock(self, product_code: str, count: int, price: int = 0, **kwargs) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 시장가로 매수
@@ -587,48 +629,6 @@ class DomesticApi(Api):
                 .request_data(Service.SCPD)
                 .get_data(multiple=True, columns=columns)
         )
-
-    def list_product_histories_daily(self,
-                                     product_code: str,
-                                     start_date: Union[date, str],
-                                     end_date: Union[date, str],
-                                     market: Market,
-                                     **kwargs):
-        """ 일자별 현/시/고/체결량 제공 """
-
-        if isinstance(start_date, date):
-            start_date = start_date.strftime('%Y%m%d')
-
-        if isinstance(end_date, date):
-            end_date = end_date.strftime('%Y%m%d')
-
-        if market == Market.DOMESTIC:
-            market_code = 'J'
-        elif market == Market.OVERSEAS:
-            market_code = 'N'
-
-        (
-            self
-                .set_data(0, market_code)
-                .set_data(1, product_code)  # 1: 종목코드
-                .set_data(0, market_code, 1)
-                .set_data(1, product_code, 1)
-                .set_data(2, start_date, 1)
-                .set_data(3, end_date, 1)
-                .request_data(Service.KST03010100)
-        )
-
-        columns = [
-            dict(index=0, key='standard_date', not_null=True),
-            dict(index=4, key='minimum', dtype=float),
-            dict(index=3, key='maximum', dtype=float),
-            dict(index=2, key='opening', dtype=float),
-            dict(index=1, key='closing', dtype=float, not_null=True),
-            dict(index=5, key='volume', dtype=int),
-        ]
-        data = self.get_data(multiple=True, columns=columns, block_index=1)
-        data = [e for e in data if e['closing'] != 0]
-        return data
 
     def get_sector_info(self, sector_code: str, **kwargs) -> dict:
         mapping = [
