@@ -189,15 +189,15 @@ async def get_product_info(request: GetProductInput,
 
 @r.post('/product/price', response_model=ProductPrice)
 async def get_product_prices(request: GetProductInput,
+                             market_code: MarketCode = None,
                              user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
-    if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
-
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    current, minimum, maximum, opening, base, total_volume = api.get_product_prices(product_code=request.product_code)
+    current, minimum, maximum, opening, base, total_volume = (
+        api.get_product_prices(product_code=request.product_code,
+                               market_code=market_code)
+    )
     return {
         'current': current,
         'minimum': minimum,
