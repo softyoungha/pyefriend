@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from pyefriend_api.utils.const import Market
 
 # vars
-Number = Union[float, int]
 MarketField = Field(None,
                     title='장 구분 코드',
                     description='해외주식일 경우'
@@ -34,21 +33,21 @@ class LoginOutput(LoginInput):
 
 
 class Deposit(BaseModel):
-    deposit: Number = Field(..., title='예수금')
+    deposit: float = Field(..., title='예수금')
 
 
 class Stock(BaseModel):
     product_code: str = Field(..., title='종목코드')
     product_name: str = Field(..., title='종목명')
-    current: Number = Field(..., title='현재가')
+    current: float = Field(..., title='현재가')
     count: int = Field(..., title='수량')
-    price: Number = Field(..., title='총 평가금액')
+    price: float = Field(..., title='총 평가금액')
     unit: str = Field(..., title='단위')
 
 
 class Amount(Deposit):
     stocks: List[Stock] = Field(None, title='주식리스트')
-    total_amount: Number = Field(..., title='주식 전체 평가금액 + 예수금')
+    total_amount: float = Field(..., title='주식 전체 평가금액 + 예수금')
 
 
 class Currency(BaseModel):
@@ -57,10 +56,10 @@ class Currency(BaseModel):
 
 class PriceHistory(BaseModel):
     standard_date: str = Field(..., title='영업일자')
-    minimum: Number = Field(..., title='저가')
-    maximum: Number = Field(..., title='고가')
-    opening: Number = Field(..., title='시가')
-    closing: Number = Field(..., title='종가')
+    minimum: float = Field(..., title='저가')
+    maximum: float = Field(..., title='고가')
+    opening: float = Field(..., title='시가')
+    closing: float = Field(..., title='종가')
     volume: int = Field(..., title='체결량')
 
 
@@ -68,7 +67,7 @@ class BuyOrSellInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
     market_code: Optional[str] = MarketField
     count: int = Field(..., title='매수/매도수량')
-    price: Number = Field(..., title='매수/매도가격')
+    price: float = Field(..., title='매수/매도가격')
 
 
 class OrderNum(BaseModel):
@@ -129,11 +128,11 @@ class ProductInfo(BaseModel):
 
 
 class ProductPrice(BaseModel):
-    current: Number = Field(..., title='주식 현재가')
-    minimum: Number = Field(..., title='주식 최저가')
-    maximum: Number = Field(..., title='주식 최고가')
-    opening: Number = Field(..., title='주식 시가')
-    base: Number = Field(..., title='주식 기준가(전일 종가)')
+    current: float = Field(..., title='주식 현재가')
+    minimum: float = Field(..., title='주식 최저가')
+    maximum: float = Field(..., title='주식 최고가')
+    opening: float = Field(..., title='주식 시가')
+    base: float = Field(..., title='주식 기준가(전일 종가)')
     total_volume: int = Field(..., title='누적 거래량')
 
 
