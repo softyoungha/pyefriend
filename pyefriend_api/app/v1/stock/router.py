@@ -211,12 +211,16 @@ async def get_product_prices(request: GetProductInput,
 @r.post('/product/history', response_model=List[PriceHistory])
 async def list_product_histories(request: GetProductInput,
                                  standard: DWM = DWM.D,
+                                 standard_date: str = None,
+                                 market_code: MarketCode = None,
                                  user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories(product_code=request.product_code,
-                                      standard=standard)
+                                      standard=standard,
+                                      standard_date=standard_date,
+                                      market_code=market_code)
 
 
 @r.post('/product/history/daily', response_model=List[PriceHistory])

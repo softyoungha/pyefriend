@@ -618,7 +618,7 @@ class DomesticApi(Api):
             dict(index=3, key='minimum', dtype=int),
             dict(index=2, key='maximum', dtype=int),
             dict(index=1, key='opening', dtype=int),
-            dict(index=4, key='closing', dtype=int),
+            dict(index=4, key='closing', dtype=int, not_null=True),
             dict(index=5, key='volume', dtype=int),
         ]
 
@@ -1005,6 +1005,31 @@ class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
 
+    def get_product_info(self, product_code: str, **kwargs) -> dict:
+        mapping = [
+            (2, 'product_name'),
+            (6, 'sector_code')
+        ]
+
+        response_data = {
+            name: self.controller.GetSingleDataStockMaster(product_code, index)
+            for index, name in mapping
+        }
+
+        # request
+        (
+            self
+                .set_data(0, 'J')
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.KST03010100)
+        )
+
+        # response
+        response_data['per'] = float(self.get_data(26))
+        response_data['eps'] = float(self.get_data(27))
+
+        return response_data
+
     def get_product_prices(self,
                            product_code: str,
                            market_code: str = None,
@@ -1037,7 +1062,8 @@ class OverSeasApi(Api):
     def list_product_histories(self,
                                product_code: str,
                                standard: DWM = DWM.D,
-                               market_code: str = None,
+                               market_code: MarketCode = None,
+                               standard_date: str = None,
                                **kwargs) -> List[Dict]:
         if standard == DWM.D:
             standard = '0'
@@ -1054,15 +1080,18 @@ class OverSeasApi(Api):
             dict(index=1, key='closing', dtype=float),
             dict(index=8, key='volume', dtype=int),
         ]
-
-        return (
+        data = (
             self.set_auth(0)  # 권한 확인
                 .set_data(1, MarketCode.as_short(market_code))
                 .set_data(2, product_code)  # 1: 종목코드
                 .set_data(3, standard)
+                .set_data(4, standard_date)
                 .request_data(Service.OS_ST03)
                 .get_data(multiple=True, columns=columns, block_index=1)
         )
+        data = [e for e in data if e['closing'] != 0]
+
+        return data
 
     def buy_stock(self,
                   product_code: str,
