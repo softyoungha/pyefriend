@@ -118,6 +118,7 @@ class CancelAllInput(LoginInput):
 
 class GetProductInput(LoginInput):
     product_code: str = Field(..., title='종목코드')
+    market_code: Optional[str] = MarketField
 
 
 class ProductInfo(BaseModel):
