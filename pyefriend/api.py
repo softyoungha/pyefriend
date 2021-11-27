@@ -1006,31 +1006,6 @@ class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
 
-    def get_product_info(self, product_code: str, **kwargs) -> dict:
-        mapping = [
-            (2, 'product_name'),
-            (6, 'sector_code')
-        ]
-
-        response_data = {
-            name: self.controller.GetSingleDataStockMaster(product_code, index)
-            for index, name in mapping
-        }
-
-        # request
-        (
-            self
-                .set_data(0, 'J')
-                .set_data(1, product_code)  # 1: 종목코드
-                .request_data(Service.KST03010100)
-        )
-
-        # response
-        response_data['per'] = float(self.get_data(26))
-        response_data['eps'] = float(self.get_data(27))
-
-        return response_data
-
     def get_product_prices(self,
                            product_code: str,
                            market_code: str = None,
