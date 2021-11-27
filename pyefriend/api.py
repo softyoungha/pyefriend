@@ -95,13 +95,13 @@ class Api:
         if not self.is_connected:
             raise NotConnectedException()
 
-        logger.info(f"계좌가 존재하는 지 확인합니다.: '{self.account}'")
+        logger.debug(f"계좌가 존재하는 지 확인합니다.: '{self.account}'")
 
         if not self.is_account_exist:
             raise AccountNotExistsException()
 
         if self.controller.IsVTS():
-            logger.info(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.account}'")
+            logger.debug(f"모의투자에 성공적으로 연결되었습니다. 타겟 계좌: '{self.account}'")
         else:
             logger.warning(f"실제계좌에 성공적으로 연결되었습니다. 타겟 계좌: '{self.account}'")
 
@@ -1047,6 +1047,14 @@ class OverSeasApi(Api):
         maximum = float(self.get_data(5))  # 5: 고가
         opening = float(self.get_data(4))  # 4: 시가
         base = float(self.get_data(3))  # 3: 전일종가
+
+        (
+            self.set_auth(0)  # 권한 확인
+                .set_data(1, MarketCode.as_short(market_code))
+                .set_data(2, product_code)  # 1: 종목코드
+                .request_data(Service.OS_ST01)
+        )
+
         total_volume = int(self.get_data(8))
 
         # response
