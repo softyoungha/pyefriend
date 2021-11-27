@@ -212,7 +212,11 @@ async def list_product_histories(request: GetProductInput,
                                  standard: DWM = DWM.D,
                                  standard_date: str = None,
                                  user=Depends(login_required)):
-    """### 종목명 및 대/중/소 업종 코드 """
+    """
+    ### 종목명 및 대/중/소 업종 코드의 일/주/월별 주가 리스트 제공
+
+    - standard_date: 해외의 경우 기준일자 기준으로 조회 가능
+    """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories(product_code=request.product_code,
@@ -231,8 +235,7 @@ async def list_product_histories_daily(request: GetProductInput,
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories_daily(product_code=request.product_code,
                                             start_date=start_date,
-                                            end_date=end_date,
-                                            market=request.market)
+                                            end_date=end_date)
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
