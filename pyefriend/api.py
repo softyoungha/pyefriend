@@ -459,6 +459,31 @@ class Api:
     def is_domestic(self):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
+    def get_product_info(self, product_code: str, **kwargs) -> dict:
+        mapping = [
+            (6, 'sector_code')
+        ]
+
+        response_data = {
+            name: self.controller.GetSingleDataStockMaster(product_code, index)
+            for index, name in mapping
+        }
+
+        # request
+        (
+            self
+                .set_data(0, 'J' if self.is_domestic else 'N')
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.KST03010100)
+        )
+
+        # response
+        response_data['product_name'] = self.get_data(6) or product_code
+        response_data['per'] = float(self.get_data(26))
+        response_data['eps'] = float(self.get_data(27))
+
+        return response_data
+
     def get_product_prices(self, product_code: str, **kwargs):
         """
         입력한 종목의 현재가, 최저가, 최고가, 시가, 전일종가 로드
@@ -530,31 +555,6 @@ class DomesticApi(Api):
     @property
     def unit(self):
         return Unit.KRW
-
-    def get_product_info(self, product_code: str, **kwargs) -> dict:
-        mapping = [
-            (6, 'sector_code')
-        ]
-
-        response_data = {
-            name: self.controller.GetSingleDataStockMaster(product_code, index)
-            for index, name in mapping
-        }
-
-        # request
-        (
-            self
-                .set_data(0, 'J')
-                .set_data(1, product_code)  # 1: 종목코드
-                .request_data(Service.KST03010100)
-        )
-
-        # response
-        response_data['product_name'] = self.get_data(6) or product_code
-        response_data['per'] = float(self.get_data(26))
-        response_data['eps'] = float(self.get_data(27))
-
-        return response_data
 
     def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int, int]:
         # set
