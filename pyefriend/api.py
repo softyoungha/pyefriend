@@ -533,7 +533,6 @@ class DomesticApi(Api):
 
     def get_product_info(self, product_code: str, **kwargs) -> dict:
         mapping = [
-            (2, 'product_name'),
             (6, 'sector_code')
         ]
 
@@ -551,6 +550,7 @@ class DomesticApi(Api):
         )
 
         # response
+        response_data['product_name'] = self.get_data(6) or product_code
         response_data['per'] = float(self.get_data(26))
         response_data['eps'] = float(self.get_data(27))
 
