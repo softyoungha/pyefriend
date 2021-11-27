@@ -490,7 +490,6 @@ class Api:
                                      **kwargs):
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
-
     def buy_stock(self, product_code: str, count: int, price: int = 0, **kwargs) -> str:
         """
         설정한 price보다 낮으면 product_code의 종목 시장가로 매수
@@ -1121,14 +1120,19 @@ class OverSeasApi(Api):
         last_date = histories.pop(-1)['standard_date']
 
         while True:
-            histories += self.list_product_histories(product_code=product_code,
-                                                     standard=DWM.D,
-                                                     market_code=market_code,
-                                                     end_date=last_date)
+            new_histories = self.list_product_histories(product_code=product_code,
+                                                        standard=DWM.D,
+                                                        market_code=market_code,
+                                                        end_date=last_date)
 
+            # append
+            histories += new_histories
+
+            # get last date
             last_date = histories.pop(-1)['standard_date']
 
-            if start_date > last_date:
+            # break
+            if start_date > last_date or len(new_histories) < 2:
                 break
 
         # restrict
