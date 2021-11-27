@@ -1047,14 +1047,6 @@ class OverSeasApi(Api):
         maximum = float(self.get_data(5))  # 5: 고가
         opening = float(self.get_data(4))  # 4: 시가
         base = float(self.get_data(3))  # 3: 전일종가
-
-        (
-            self.set_auth(0)  # 권한 확인
-                .set_data(1, MarketCode.as_short(market_code))
-                .set_data(2, product_code)  # 1: 종목코드
-                .request_data(Service.OS_ST02)
-        )
-
         total_volume = int(self.get_data(8))
 
         # response
