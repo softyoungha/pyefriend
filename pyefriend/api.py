@@ -1117,25 +1117,29 @@ class OverSeasApi(Api):
             # restrict
             return [history for history in histories if history['standard_date'] >= start_date]
 
-        last_date = histories.pop(-1)['standard_date']
-
         while True:
+            # get last date
+            last_date = histories.pop(-1)['standard_date']
+            print(last_date)
+
+            # break
+            if start_date > last_date:
+                break
+
             new_histories = self.list_product_histories(product_code=product_code,
                                                         standard=DWM.D,
                                                         market_code=market_code,
                                                         end_date=last_date)
 
-            # append
-            histories += new_histories
-
-            # get last date
-            last_date = histories.pop(-1)['standard_date']
+            if len(new_histories) < 2:
+                break
 
             print(last_date, len(new_histories))
 
-            # break
-            if start_date > last_date or len(new_histories) < 2:
-                break
+            # append
+            histories += new_histories
+
+
 
         # restrict
         return [history for history in histories if history['standard_date'] >= start_date]
