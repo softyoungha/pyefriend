@@ -1131,6 +1131,8 @@ class OverSeasApi(Api):
             # get last date
             last_date = histories.pop(-1)['standard_date']
 
+            print(last_date, len(new_histories))
+
             # break
             if start_date > last_date or len(new_histories) < 2:
                 break
