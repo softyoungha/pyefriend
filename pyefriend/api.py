@@ -1111,7 +1111,7 @@ class OverSeasApi(Api):
         histories = self.list_product_histories(product_code=product_code,
                                                 standard=DWM.D,
                                                 market_code=market_code,
-                                                end_date=end_date)
+                                                standard_date=end_date)
 
         if len(histories) < 100:
             # restrict
@@ -1129,7 +1129,7 @@ class OverSeasApi(Api):
             new_histories = self.list_product_histories(product_code=product_code,
                                                         standard=DWM.D,
                                                         market_code=market_code,
-                                                        end_date=last_date)
+                                                        standard_date=last_date)
 
             if len(new_histories) < 2:
                 break
@@ -1138,8 +1138,6 @@ class OverSeasApi(Api):
 
             # append
             histories += new_histories
-
-
 
         # restrict
         return [history for history in histories if history['standard_date'] >= start_date]
