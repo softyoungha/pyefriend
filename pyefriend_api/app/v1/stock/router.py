@@ -235,7 +235,8 @@ async def list_product_histories_daily(request: GetProductInput,
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     return api.list_product_histories_daily(product_code=request.product_code,
                                             start_date=start_date,
-                                            end_date=end_date)
+                                            end_date=end_date,
+                                            market_code=request.market_code)
 
 
 @r.post('/product/chart', response_model=List[ProductChart])
