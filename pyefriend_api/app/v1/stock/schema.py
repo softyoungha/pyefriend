@@ -123,11 +123,11 @@ class GetProductInput(LoginInput):
 
 class ProductInfo(BaseModel):
     product_name: str = Field(..., title='품목명')
-    sector_code: str = Field(..., title='업종 중유형 코드')
-    per: float = Field(..., title='PER')
-    eps: float = Field(..., title='EPS')
     price: float = Field(..., title='현재가')
     market_code: Optional[str] = MarketField
+    sector_code: Optional[str] = Field(None, title='업종 중유형 코드')
+    per: Optional[float] = Field(None, title='PER')
+    eps: Optional[float] = Field(None, title='EPS')
 
 
 class ProductPrice(BaseModel):
