@@ -460,29 +460,7 @@ class Api:
         raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
     def get_product_info(self, product_code: str, **kwargs) -> dict:
-        mapping = [
-            (6, 'sector_code')
-        ]
-
-        response_data = {
-            name: self.controller.GetSingleDataStockMaster(product_code, index)
-            for index, name in mapping
-        }
-
-        # request
-        (
-            self
-                .set_data(0, 'J' if self.is_domestic else 'N')
-                .set_data(1, product_code)  # 1: 종목코드
-                .request_data(Service.KST03010100)
-        )
-
-        # response
-        response_data['product_name'] = self.get_data(6) or product_code
-        response_data['per'] = float(self.get_data(26))
-        response_data['eps'] = float(self.get_data(27))
-
-        return response_data
+        raise NotImplementedError('해당 함수가 설정되어야 합니다.')
 
     def get_product_prices(self, product_code: str, **kwargs):
         """
@@ -555,6 +533,32 @@ class DomesticApi(Api):
     @property
     def unit(self):
         return Unit.KRW
+
+    def get_product_info(self, product_code: str, **kwargs) -> dict:
+        mapping = [
+            (6, 'sector_code')
+        ]
+
+        response_data = {
+            name: self.controller.GetSingleDataStockMaster(product_code, index)
+            for index, name in mapping
+        }
+
+        # request
+        (
+            self
+                .set_data(0, 'J' if self.is_domestic else 'N')
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.KST03010100)
+        )
+
+        # response
+        response_data['product_name'] = self.get_data(6) or product_code
+        response_data['per'] = float(self.get_data(26))
+        response_data['eps'] = float(self.get_data(27))
+        response_data['price'] = float(self.get_data(7))
+
+        return response_data
 
     def get_product_prices(self, product_code: str, **kwargs) -> Tuple[int, int, int, int, int, int]:
         # set
@@ -1005,6 +1009,25 @@ class OverSeasApi(Api):
 
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
+
+    def get_product_info(self, product_code: str, market_code: str = None, **kwargs) -> dict:
+        price, *_ = self.get_product_prices(product_code=product_code, market_code=market_code)
+
+        # request
+        (
+            self
+                .set_data(0, 'N')
+                .set_data(1, product_code)  # 1: 종목코드
+                .request_data(Service.KST03010100)
+        )
+
+        # response
+        response_data = {}
+        response_data['product_name'] = self.get_data(6) or product_code
+        response_data['price'] = float(price)
+        response_data['market_code'] = market_code
+
+        return response_data
 
     def get_product_prices(self,
                            product_code: str,

@@ -126,6 +126,8 @@ class ProductInfo(BaseModel):
     sector_code: str = Field(..., title='업종 중유형 코드')
     per: float = Field(..., title='PER')
     eps: float = Field(..., title='EPS')
+    price: float = Field(..., title='현재가')
+    market_code: Optional[str] = MarketField
 
 
 class ProductPrice(BaseModel):
