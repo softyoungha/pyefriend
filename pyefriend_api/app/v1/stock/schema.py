@@ -98,11 +98,11 @@ class ProcessedOrderOutput(OrderNum):
     origin_order_num: Optional[str] = Field(None, title='원주문번호')
     product_code: str = Field(..., title='종목코드')
     count: int = Field(..., title='주문수량')
-    price: int = Field(..., title='체결금액')
+    price: float = Field(..., title='체결금액')
     order_type: str = Field(..., title='매도매수구분')
     order_type_name: Optional[str] = Field(None, title='매도매수구분명')
     executed_count: Optional[int] = Field(None, title='총체결수량')
-    executed_amount: Optional[int] = Field(None, title='총체결금액')
+    executed_amount: Optional[float] = Field(None, title='총체결금액')
     is_cancel: Optional[str] = Field(None, title='취소여부')
 
 
@@ -140,10 +140,10 @@ class ProductPrice(BaseModel):
 class ProductChart(BaseModel):
     executed_date: str = Field(..., title='체결일자(YYYYmmdd)')
     executed_time: str = Field(..., title='체결시간(HHMMSS)')
-    current: int = Field(..., title='현재가')
-    minimum: int = Field(..., title='저가')
-    maximum: int = Field(..., title='고가')
-    opening: int = Field(..., title='시가')
+    current: float = Field(..., title='현재가')
+    minimum: float = Field(..., title='저가')
+    maximum: float = Field(..., title='고가')
+    opening: float = Field(..., title='시가')
     volume: int = Field(..., title='체결량')
     total_volume: int = Field(..., title='누적 체결량')
 
@@ -160,7 +160,7 @@ class GetSpreadInput(GetProductInput):
 
 
 class AskBid(BaseModel):
-    price: int = Field(..., title='매수/매도 가격')
+    price: float = Field(..., title='매수/매도 가격')
     count: int = Field(..., title='매수/매도 잔량')
     icdc: int = Field(..., title='매수/매도 잔량 증감(increase or decrease)')
 
@@ -179,11 +179,11 @@ class PopularProduct(BaseModel):
     product_code: str = Field(..., title='종목코드')
     product_name: str = Field(..., title='종목명')
     product_status: str = Field(..., title='종목상태')
-    current: str = Field(..., title='현재가')
+    current: float = Field(..., title='현재가')
     compared_yesterday_amount: int = Field(..., title='전일 대비 금액')
     compared_yesterday_sign: str = Field(..., title='전일 대비 부호')
     total_volume: int = Field(..., title='누적 거래량')
-    total_amount: int = Field(..., title='누적 거래 대금')
+    total_amount: float = Field(..., title='누적 거래 대금')
     continuous_maximum_days: int = Field(..., title='연속 상한 일수')
     continuous_increase_days: int = Field(..., title='연속 상승 일수')
     continuous_nochange_days: int = Field(..., title='연속 보합 일수')
@@ -219,7 +219,7 @@ class ForeignerNetBuySell(BaseModel):
     rank: int = Field(..., title='순위')
     product_code: str = Field(..., title='종목코드')
     product_name: str = Field(..., title='종목명')
-    closing_price: int = Field(..., title='종가')
+    closing_price: float = Field(..., title='종가')
     foreigner_total_ask: int = Field(..., title='외국인총매도수량')
     foreigner_total_bid: int = Field(..., title='외국인총매수수량')
     total_volume: int = Field(..., title='거래량')

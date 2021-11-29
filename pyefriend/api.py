@@ -1163,7 +1163,7 @@ class OverSeasApi(Api):
             dict(index=0, key='order_date', not_null=True),
             dict(index=2, key='order_num', not_null=True),
             dict(index=3, key='origin_order_num'),
-            dict(index=12, key='product_code'),
+            dict(index=8, key='product_code'),
             dict(index=4, key='order_type'),
             dict(index=5, key='order_type_name'),
             dict(index=10, key='count'),
