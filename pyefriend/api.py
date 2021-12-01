@@ -302,7 +302,11 @@ class Api:
     def overseas_deposit(self) -> float:
         columns = [
             dict(index=0, key='currency_code'),
+            dict(index=2, key='deposit'),
             dict(index=4, key='available_amount'),
+            dict(index=5, key='margin'),
+            dict(index=7, key='resellable_amount'),
+            dict(index=8, key='orderable_amount'),
         ]
 
         data = (
@@ -315,7 +319,7 @@ class Api:
         data = [item for item in data if item['currency_code'] == Unit.USD]
 
         if len(data) > 0:
-            return float(data[0].get('available_amount', 0))
+            return float(data[0].get('orderable_amount', 0))
 
         else:
             return 0.0
