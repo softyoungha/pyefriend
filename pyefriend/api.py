@@ -1065,7 +1065,7 @@ class OverSeasApi(Api):
     def list_product_histories(self,
                                product_code: str,
                                standard: DWM = DWM.D,
-                               market_code: MarketCode = None,
+                               market_code: str = None,
                                standard_date: str = None,
                                **kwargs) -> List[Dict]:
         if standard == DWM.D:
@@ -1100,7 +1100,7 @@ class OverSeasApi(Api):
                                      product_code: str,
                                      start_date: Union[date, str],
                                      end_date: Union[date, str],
-                                     market_code: MarketCode = None,
+                                     market_code: str = None,
                                      **kwargs):
         """ 일자별 현/시/고/체결량 제공 """
 
@@ -1122,7 +1122,6 @@ class OverSeasApi(Api):
         while True:
             # get last date
             last_date = histories.pop(-1)['standard_date']
-            print(last_date)
 
             # break
             if start_date > last_date:
@@ -1135,8 +1134,6 @@ class OverSeasApi(Api):
 
             if len(new_histories) < 2:
                 break
-
-            print(last_date, len(new_histories))
 
             # append
             histories += new_histories
