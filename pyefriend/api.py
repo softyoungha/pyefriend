@@ -288,6 +288,7 @@ class Api:
             dict(index=11, key='current', dtype=int),
             dict(index=7, key='count', dtype=int),
             dict(index=12, key='price', dtype=int),
+            dict(index=10, key='my_price', dtype=int),
         ]
 
         stocks = (
@@ -333,6 +334,7 @@ class Api:
             dict(index=12, key='current', dtype=float),
             dict(index=8, key='count', dtype=int),
             dict(index=11, key='price', dtype=float),
+            dict(index=10, key='my_price', dtype=float),
         ]
 
         stocks = (

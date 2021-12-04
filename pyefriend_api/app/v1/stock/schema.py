@@ -42,6 +42,7 @@ class Stock(BaseModel):
     current: float = Field(..., title='현재가')
     count: int = Field(..., title='수량')
     price: float = Field(..., title='총 평가금액')
+    my_price: float = Field(..., title='매입금액')
     unit: str = Field(..., title='단위')
 
 
