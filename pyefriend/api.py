@@ -318,6 +318,7 @@ class Api:
 
         # filter USD
         data = [item for item in data if item['currency_code'] == Unit.USD]
+        print(data)
 
         if len(data) > 0:
             return float(data[0].get('orderable_amount', 0))
