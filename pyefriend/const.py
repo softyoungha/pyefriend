@@ -37,6 +37,7 @@ class Service:
     OS_ST01 = 'OS_ST01'  # 해외주식 현재가 체결
     OS_ST02 = 'OS_ST02'  # 해외주식 현재가 10호가(?)
     OS_ST03 = 'OS_ST03'  # 해외주식 일,주,월 종가 시세
+    OS_CH_DNCL = 'OS_CH_DNCL'  # 주간 외화예수금
     OS_US_DNCL = 'OS_US_DNCL'  # 야간 외화예수금
     OS_US_CBLC = 'OS_US_CBLC'  # 미국 잔고
     OS_OS3004R = 'OS_OS3004R'  # 해외 증거금 조회

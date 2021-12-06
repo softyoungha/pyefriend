@@ -309,10 +309,14 @@ class Api:
             dict(index=7, key='resellable_amount'),
             dict(index=8, key='orderable_amount'),
         ]
+        if 9 < datetime.now().hour < 21:
+            service = Service.OS_CH_DNCL
+        else:
+            service = Service.OS_US_DNCL
 
         data = (
             self.set_account_info()  # 계정 정보
-                .request_data(Service.OS_US_DNCL)
+                .request_data(service)
                 .get_data(multiple=True, columns=columns)
         )
 
