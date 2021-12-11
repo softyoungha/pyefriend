@@ -53,6 +53,9 @@ def get_or_create_controller(logger=None, raise_error: bool = True):
                     elif msg_code == '40070000':
                         raise BiddingException(msg)
 
+                    elif msg_code == 'APBK1664':
+                        raise MarketClosingException(msg)
+
                     else:
                         raise UnExpectedException(msg)
 

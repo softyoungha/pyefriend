@@ -28,6 +28,8 @@ class UnAuthorizedAccountException(Exception):
 
 class MarketClosingException(Exception):
     """ 장 종료 """
+    def __init__(self, detail: str):
+        self.detail = detail
 
 
 class NotInVTSException(Exception):
