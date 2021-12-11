@@ -13,7 +13,7 @@ from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagge
 from pyefriend_api.settings import BASE_DIR
 from pyefriend_api.app.auth import r as auth_router
 from pyefriend_api.app.router import r as app_router
-from pyefriend.exceptions import MarketClosingException
+from pyefriend.exceptions import UnExpectedException
 
 # rebalance app info
 title = 'Py-Efriend API'
@@ -97,13 +97,8 @@ def create_app(debug: bool = True) -> FastAPI:
         print('exc.body: ', exc.body)
         return JSONResponse(content={'detail': msg}, status_code=status.HTTP_400_BAD_REQUEST)
 
-    @app.exception_handler(MarketClosingException)
-    async def auth_exception_handler(request: Request, exc: MarketClosingException):
-        print(exc.detail)
-        return JSONResponse(content={'detail': exc.detail}, status_code=status.HTTP_400_BAD_REQUEST)
-
-    @app.exception_handler(MarketClosingException)
-    async def auth_exception_handler(request: Request, exc: MarketClosingException):
+    @app.exception_handler(UnExpectedException)
+    async def auth_exception_handler(request: Request, exc: UnExpectedException):
         print(exc.detail)
         return JSONResponse(content={'detail': exc.detail}, status_code=status.HTTP_400_BAD_REQUEST)
 
