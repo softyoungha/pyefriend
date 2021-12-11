@@ -3,6 +3,8 @@
 
 class UnExpectedException(Exception):
     """ 예상치못한 에러 """
+    def __init__(self, detail: str):
+        self.detail = detail
 
 
 class NotConnectedException(Exception):
@@ -15,26 +17,23 @@ class NotConnectedException(Exception):
         super().__init__(msg)
 
 
-class AccountNotExistsException(Exception):
+class AccountNotExistsException(UnExpectedException):
     """ 입력한 계좌가 존재하지 않습니다. """
-    def __init__(self):
-        msg = "입력한 계좌가 존재하지 않습니다."
-        super().__init__(msg)
+    def __init__(self, detail: str = "입력한 계좌가 존재하지 않습니다."):
+        super().__init__(detail)
 
 
-class UnAuthorizedAccountException(Exception):
+class UnAuthorizedAccountException(UnExpectedException):
     """ 계좌 권한 관련 에러 """
 
 
-class MarketClosingException(Exception):
+class MarketClosingException(UnExpectedException):
     """ 장 종료 """
-    def __init__(self, detail: str):
-        self.detail = detail
 
 
-class NotInVTSException(Exception):
+class NotInVTSException(UnExpectedException):
     """ 모의투자에서는 제공되지 않는 서비스 """
 
 
-class BiddingException(Exception):
+class BiddingException(UnExpectedException):
     """ 모의투자 주문처리 불가(매매불가 종목) """

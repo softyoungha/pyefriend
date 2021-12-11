@@ -102,6 +102,11 @@ def create_app(debug: bool = True) -> FastAPI:
         print(exc.detail)
         return JSONResponse(content={'detail': exc.detail}, status_code=status.HTTP_400_BAD_REQUEST)
 
+    @app.exception_handler(MarketClosingException)
+    async def auth_exception_handler(request: Request, exc: MarketClosingException):
+        print(exc.detail)
+        return JSONResponse(content={'detail': exc.detail}, status_code=status.HTTP_400_BAD_REQUEST)
+
     app.include_router(auth_router)
     app.include_router(app_router)
 
