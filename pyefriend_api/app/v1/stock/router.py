@@ -192,7 +192,9 @@ async def get_product_status(request: GetProductInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_product_status(product_code=request.product_code, market_code=request.market_code)
+    return {
+        'status': api.get_product_status(product_code=request.product_code, market_code=request.market_code)
+    }
 
 
 @r.post('/product/price', response_model=ProductPrice)
