@@ -48,6 +48,7 @@ class Service:
     OS_US_CNC = 'OS_US_CNC'  # 미국 주식 주문 취소
     PFX06910200 = 'PFX06910200'  # 해외증시 시간별 조회
     PFX06910000 = 'PFX06910000'  # 해외증시 일주월별 조회
+    OS_COMM = 'OS_COMM'
 
 
 class MarketCode(str, Enum):

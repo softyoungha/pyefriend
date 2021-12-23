@@ -141,8 +141,7 @@ async def get_processed_orders(request: ProcessedOrderInput, user=Depends(login_
     """### start_date 이후의 체결된 주문 리스트 반환 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_processed_orders(start_date=request.start_date,
-                                    market_code=request.market_code)
+    return api.get_processed_orders(start_date=request.start_date,                                    market_code=request.market_code)
 
 
 @r.post('/order/unprocessed', response_model=List[UnProcessedOrderOutput])
@@ -180,8 +179,20 @@ async def get_product_info(request: GetProductInput,
     """### 종목명 및 가격 """
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_product_info(product_code=request.product_code,
-                                market_code=request.market_code)
+    return api.get_product_info(product_code=request.product_code, market_code=request.market_code)
+
+
+@r.post('/product/status')
+async def get_product_status(request: GetProductInput,
+                             user=Depends(login_required)):
+    """### 종목명 및 가격 """
+    if request.market != Market.DOMESTIC:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+
+    # create api
+    api = load_api(**request.dict(include={'market', 'account', 'password'}))
+    return api.get_product_status(product_code=request.product_code, market_code=request.market_code)
 
 
 @r.post('/product/price', response_model=ProductPrice)
@@ -191,8 +202,7 @@ async def get_product_prices(request: GetProductInput,
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
     current, minimum, maximum, opening, base, total_volume = (
-        api.get_product_prices(product_code=request.product_code,
-                               market_code=request.market_code)
+        api.get_product_prices(product_code=request.product_code, market_code=request.market_code)
     )
     return {
         'current': current,
@@ -242,13 +252,11 @@ async def get_product_chart(request: GetProductInput,
                             user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공(해당 URI는 국내(domestic)만 가능합니다.)  """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_product_chart(product_code=request.product_code,
-                                 interval=interval)
+    return api.get_product_chart(product_code=request.product_code, interval=interval)
 
 
 @r.post('/product/spread', response_model=ProductSpread)
@@ -256,8 +264,7 @@ async def get_spread(request: GetSpreadInput,
                      user=Depends(login_required)):
     """### 종목 현재시간 기준 매수/매도호가 정보(해당 URI는 국내(domestic)만 가능합니다.)  """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
@@ -281,9 +288,7 @@ async def list_popular_products(request: LoginInput,
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.list_popular_products(direction=direction,
-                                     index_code=index,
-                                     last_day=last_day)
+    return api.list_popular_products(direction=direction, index_code=index, last_day=last_day)
 
 
 @r.post('/product/foreigner', response_model=List[ForeignerNetBuySell])
@@ -297,21 +302,18 @@ async def list_foreigner_net_buy_or_sell(request: LoginInput,
     - SUM NET BUY/SELL(합산순매수(도)): 외국인장중가집계와 기관종합장중가집계 합산 값을 기준으로 순매수(도) 상위순으로 종목이 조회됩니다.
     """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.list_foreigner_net_buy_or_sell(net_buy_sell=net_buy_sell,
-                                              index_code=index)
+    return api.list_foreigner_net_buy_or_sell(net_buy_sell=net_buy_sell, index_code=index)
 
 
 @r.post('/sector', response_model=SectorInfo)
 async def get_sector_info(request: GetSectorInput, user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드(해당 URI는 국내(domestic)만 가능합니다.) """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
@@ -324,13 +326,11 @@ async def list_sector_histories(request: GetSectorInput,
                                 user=Depends(login_required)):
     """### 종목명 및 대/중/소 업종 코드 """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.list_sector_histories(sector_code=request.sector_code,
-                                     standard=standard)
+    return api.list_sector_histories(sector_code=request.sector_code, standard=standard)
 
 
 @r.post('/sector/chart', response_model=List[SectorChart])
@@ -339,10 +339,8 @@ async def get_sector_chart(request: GetSectorInput,
                            user=Depends(login_required)):
     """### interval별 종목의 현/시/고/체결량 제공  """
     if request.market != Market.DOMESTIC:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='해당 URI는 국내(domestic)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
-    return api.get_sector_chart(sector_code=request.sector_code,
-                                interval=interval)
+    return api.get_sector_chart(sector_code=request.sector_code, interval=interval)

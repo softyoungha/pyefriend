@@ -1024,6 +1024,15 @@ class OverSeasApi(Api):
     def set_auth(self, index: int = 0):
         return self.set_data(index, self.controller.GetOverSeasStockSise())
 
+    def get_product_status(self, market_code: str, product_code: str) -> str:
+        (
+            self.set_auth(0)  # 권한 확인
+                .set_data(1, MarketCode.as_short(market_code))
+                .set_data(2, product_code)  # 1: 종목코드
+                .request_data(Service.OS_COMM)
+        )
+        return self.get_data(0)
+
     def get_product_info(self, product_code: str, market_code: str = None, **kwargs) -> dict:
         price, *_ = self.get_product_prices(product_code=product_code, market_code=market_code)
 
