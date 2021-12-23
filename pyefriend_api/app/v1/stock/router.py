@@ -186,9 +186,9 @@ async def get_product_info(request: GetProductInput,
 async def get_product_status(request: GetProductInput,
                              user=Depends(login_required)):
     """### 종목명 및 가격 """
-    if request.market != Market.DOMESTIC:
+    if request.market != Market.OVERSEAS:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='해당 URI는 국내(domestic)만 가능합니다.')
+                            detail='해당 URI는 해외(overseas)만 가능합니다.')
 
     # create api
     api = load_api(**request.dict(include={'market', 'account', 'password'}))
