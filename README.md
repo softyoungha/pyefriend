@@ -1,4 +1,4 @@
-# pyefriend
+# pyefriend(deprecated)
 
 한국투자증권에서 새롭게 OpenAPI를 개편하였습니다
 
