@@ -4,7 +4,11 @@
 
 - https://apiportal.koreainvestment.com/apiservice/oauth2#L_214b9e22-8f2e-4fba-9688-587279f1061a
 
-이 repo는 이전 버전의 OpenAPI를 대상으로 만든 것이므로 개편된 걸 사용하시면 더욱 좋으실듯 합니다..
+# 주의!
+
+**이 repo는 이전 버전의 OpenAPI를 대상으로 만든 것이므로 새로 개편된 Open API 걸 사용하시면 더욱 좋으실듯 합니다..**
+
+- https://apiportal.koreainvestment.com/apiservice/oauth2#L_5c87ba63-740a-4166-93ac-803510bb9c02
 
 ##### By Youngha Park
 
